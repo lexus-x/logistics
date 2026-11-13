@@ -1,0 +1,11 @@
+# Password-protected results page (personal data). Deploy: from cluster/site, npx wrangler@3.114.17 deploy
+# Password: npx wrangler@3.114.17 secret put PASSWORD (kept in ../../.delivery_plan_password, chmod 600)
+name = "delivery-plan"
+main = "worker.mjs"
+compatibility_date = "2025-01-01"
+workers_dev = true
+
+[assets]
+directory = "../../output/ryry_viz"
+binding = "ASSETS"
+run_worker_first = true

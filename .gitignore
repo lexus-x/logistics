@@ -1,0 +1,43 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.bak
+
+# Virtual environments, package managers, and caches
+.venv/
+.bin/
+.uv-cache/
+.ultralytics/
+.kaggle/
+
+# Credentials and secrets
+.*_token
+.*_password
+.env*
+*.sock
+
+# Sensitive personal data (PII) and raw datasets
+data/
+output/ryry_viz/
+
+# Model weights, checkpoints, and raw runs
+weights/
+runs/
+*.pt
+*.npz
+
+# Reference PDFs (copyrighted papers)
+reference paper/*.pdf
+
+# Stand-in results backup
+cluster/results_standin/
+
+# Intralogistics detection study (separate project)
+src/
+PLAN.md
+explainer.html
+setup.sh
+*detection_pipeline*
+output/reports/literature_loco.md
+output/reports/proposal.html

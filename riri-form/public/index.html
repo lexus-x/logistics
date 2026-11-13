@@ -1,0 +1,805 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#1437a6">
+<title>Delivery data questions</title>
+<link rel="preload" href="/fonts/barlow-condensed-600.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  @font-face { font-family: Barlow; font-weight: 400; font-display: swap; src: url(/fonts/barlow-400.woff2) format("woff2"); }
+  @font-face { font-family: Barlow; font-weight: 500; font-display: swap; src: url(/fonts/barlow-500.woff2) format("woff2"); }
+  @font-face { font-family: Barlow; font-weight: 600; font-display: swap; src: url(/fonts/barlow-600.woff2) format("woff2"); }
+  @font-face { font-family: "Barlow Condensed"; font-weight: 600; font-display: swap; src: url(/fonts/barlow-condensed-600.woff2) format("woff2"); }
+
+  :root {
+    --ground: #1437a6; --deep: #0f2b8a; --deep-2: #0b2170;
+    --paper: #f4f7ff; --haze: #c3d0fa; --line: #7f97e6;
+    --kraft: #e8be84; --kraft-dark: #b98a50; --ink: #0b1c5e;
+    --hangul: "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+    --body: Barlow, var(--hangul);
+    --display: "Barlow Condensed", Barlow, var(--hangul);
+    --ease: cubic-bezier(.6, 0, .2, 1);
+    --spring: cubic-bezier(.3, 1.6, .5, 1);
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html { -webkit-text-size-adjust: 100%; scroll-padding-top: 56px; }
+  body {
+    margin: 0; min-height: 100dvh; color: var(--paper); font: 400 18px/1.5 var(--body);
+    background: var(--ground) radial-gradient(rgb(244 247 255 / .13) 1px, transparent 1.5px) 0 0 / 28px 28px;
+    overflow-x: hidden;
+  }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  :focus-visible { outline: 2px solid var(--paper); outline-offset: 3px; }
+  h1:focus, h2:focus { outline: none; }
+
+  /* Layout: one long story. The dock with the truck stays on screen and the page scrolls past it. */
+  .top { position: sticky; top: 0; z-index: 3; display: flex; justify-content: space-between; gap: 16px; padding: 18px clamp(16px, 4vw, 48px) 14px; color: var(--haze); font-size: 16px; background: linear-gradient(var(--ground) 72%, transparent); }
+  main { padding: 0 clamp(16px, 4vw, 48px) 170px; }
+  .step { display: grid; grid-template-columns: minmax(0, .92fr) minmax(0, 1.2fr); gap: clamp(28px, 4.5vw, 76px); align-items: center; align-content: center; max-width: 1360px; min-height: calc(100dvh - 200px); margin: 0 auto; padding-block: 16px; }
+  @media (min-width: 861px) { html { scroll-snap-type: y proximity; } .step { scroll-snap-align: start; } }
+  .copy { max-width: 35rem; min-width: 0; }
+
+  h1, h2 { font-family: var(--display); font-weight: 600; margin: 0; text-wrap: balance; }
+  h1 { font-size: clamp(84px, 11.5vw, 190px); line-height: 1; letter-spacing: -.01em; }
+  h2 { font-size: clamp(36px, 3.9vw, 58px); line-height: 1.03; }
+  .lead { font: 600 clamp(26px, 2.8vw, 38px)/1.12 var(--display); margin: 14px 0 10px; }
+  .hint { color: var(--haze); margin: 12px 0 0; max-width: 60ch; }
+
+  figure { margin: 0; min-width: 0; }
+  figure svg { display: block; width: 100%; height: auto; max-height: min(58dvh, 560px); overflow: visible; }
+  figcaption { color: var(--haze); margin-top: 8px; min-height: 3em; max-width: 56ch; }
+
+  /* Things that play once, the first time a section scrolls into view */
+  .ch { display: inline-block; animation: letter .8s var(--spring) calc(var(--i, 0) * 65ms) backwards; }
+  .nb { white-space: nowrap; }
+  @keyframes letter { from { transform: translateY(-1.15em) rotate(-14deg); opacity: 0; } }
+  .w { display: inline-block; overflow: hidden; vertical-align: bottom; padding: .08em 0; margin: -.08em 0; }
+  .w > span { display: inline-block; animation: word .62s cubic-bezier(.2, .9, .3, 1) calc(var(--i, 0) * 38ms) backwards; }
+  @keyframes word { from { transform: translateY(112%); } }
+  .rise { animation: rise .6s var(--ease) calc(.25s + var(--i, 0) * 60ms) backwards; }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+  .step:not(.live) :is(.ch, .w > span, .rise, .tag, .draw, .pop, .fade, .run) { animation-play-state: paused; }
+
+  /* Shipping tags: the punched hole is the radio, and a pick wipes kraft across the tag */
+  fieldset { border: 0; padding: 0; margin: 22px 0 0; min-width: 0; }
+  .tag {
+    position: relative; display: flex; align-items: center; gap: 14px; margin-top: 8px; padding: 12px 18px 12px 16px; min-height: 52px; cursor: pointer; font-weight: 500; line-height: 1.25;
+    background: linear-gradient(var(--kraft), var(--kraft)) no-repeat 0 0 / 0 100% var(--deep);
+    clip-path: polygon(16px 0, 100% 0, 100% 100%, 16px 100%, 0 calc(100% - 16px), 0 16px);
+    transition: background-size .38s var(--ease), background-color .18s, color .22s, transform .22s var(--ease);
+    animation: hang .6s var(--spring) calc(.3s + var(--i, 0) * 80ms) backwards;
+  }
+  @keyframes hang { from { opacity: 0; transform: translateX(-42px); } }
+  @media (hover: hover) { .tag:hover { background-color: var(--deep-2); transform: translateX(8px); } }
+  .tag input { position: absolute; opacity: 0; }
+  .hole { flex: none; width: 16px; height: 16px; border-radius: 50%; background: var(--ground); box-shadow: inset 0 0 0 2px var(--line); transition: background .18s, box-shadow .18s; }
+  .tag:has(input:checked), .tag:has(input:checked):hover { background-size: 100% 100%; color: var(--ink); transform: translateX(8px); }
+  .tag:has(input:checked) .hole { background: var(--ink); box-shadow: none; animation: punch .42s var(--spring); }
+  @keyframes punch { from { transform: scale(.2); } }
+  .tag:has(input:focus-visible) { box-shadow: inset 0 0 0 2px var(--paper); }
+  .tag:has(input:checked:focus-visible) { box-shadow: inset 0 0 0 2px var(--ink); }
+
+  .tools { display: flex; flex-wrap: wrap; gap: 6px 22px; margin-top: 14px; }
+  .tool { font: 500 17px/1.3 var(--body); color: var(--paper); background: none; border: 0; padding: 6px 0; cursor: pointer; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 5px; text-decoration-thickness: 2px; transition: text-decoration-color .18s, color .18s; }
+  .tool:hover { text-decoration-color: var(--kraft); }
+  .tool:has(input:focus-visible) { outline: 2px solid var(--paper); outline-offset: 3px; }
+  .tool.nudge { text-decoration-color: var(--kraft); color: var(--kraft); animation: nudge .7s var(--ease) .5s 2; }
+  @keyframes nudge { 50% { transform: translateY(-3px); } }
+  textarea { display: block; width: 100%; min-height: 84px; margin-top: 10px; padding: 11px 14px; border: 0; border-radius: 2px; resize: vertical; background: var(--paper); color: var(--ink); font: 400 17px/1.45 var(--body); }
+  .copy > textarea:not([name="other"]) { animation: unroll .34s var(--ease); transform-origin: top; }
+  @keyframes unroll { from { opacity: 0; transform: scaleY(.6); } }
+  textarea::placeholder { color: #51608f; }
+  textarea:focus-visible { outline-color: var(--kraft); }
+  .chips { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }
+  .chips:empty { display: none; }
+  .chips li { display: flex; align-items: center; gap: 10px; background: var(--kraft); color: var(--ink); padding: 6px 8px 6px 12px; font-weight: 500; font-size: 16px; min-width: 0; animation: hang .45s var(--spring) backwards; }
+  .chips .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+  .chips .size { flex: none; }
+  .chips:not(:empty)::after { content: "Files go only to me. They can't be opened from this site."; color: var(--haze); font-size: 16px; }
+  .chips button { flex: none; border: 0; background: none; color: inherit; font: 500 15px var(--body); padding: 4px 6px; cursor: pointer; text-decoration: underline; }
+  .chips button:focus-visible { outline-color: var(--ink); }
+  .msg { color: var(--paper); background: var(--deep-2); padding: 8px 12px; margin: 10px 0 0; font-size: 16px; }
+
+  /* Manifest on the review step */
+  .manifest { list-style: none; margin: 0; padding: 0; counter-reset: q; }
+  .manifest li { counter-increment: q; animation: hang .5s var(--spring) calc(var(--i, 0) * 55ms) backwards; }
+  .manifest button { width: 100%; display: grid; grid-template-columns: 26px minmax(0, 9.5em) minmax(0, 1fr); gap: 12px; align-items: baseline; padding: 10px 6px; border: 0; border-bottom: 1px solid var(--line); background: none; color: var(--paper); font: 400 17px/1.3 var(--body); text-align: left; cursor: pointer; transition: background .18s; }
+  .manifest button:hover { background: var(--deep); }
+  .manifest button::before { content: counter(q); font-weight: 600; color: var(--kraft); }
+  .manifest .k { font-weight: 600; }
+  .manifest .a { color: var(--haze); overflow-wrap: anywhere; }
+  .manifest .blank { color: var(--line); }
+
+  /* Dock: truck, road and buttons. Wheels and road follow the scroll position. */
+  .dock { position: fixed; inset: auto 0 0; z-index: 4; display: grid; grid-template-columns: 1fr minmax(0, 620px) 1fr; align-items: end; padding-top: 30px; pointer-events: none; background: linear-gradient(transparent, var(--ground) 30px); }
+  .dock > * { pointer-events: auto; }
+  .rig { position: relative; padding: 4px 8px 7px; min-width: 0; }
+  .road { position: absolute; inset: auto 0 0; height: 3px; pointer-events: none; background: linear-gradient(90deg, var(--line) 22px, transparent 22px) calc(var(--y, 0) * -1px) 100% / 42px 3px repeat-x; }
+  .road.moving { animation: roll .3s linear infinite; }
+  @keyframes roll { to { background-position-x: -42px; } }
+  .truck { position: relative; animation: arrive 1.3s cubic-bezier(.15, .7, .2, 1) both; }
+  .body { position: relative; transform: rotate(calc(var(--v, 0) * -.3deg)); transform-origin: 16% 100%; transition: transform .28s var(--ease); }
+  .body svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .slots { position: absolute; left: 2.5%; width: 43.5%; top: 11%; height: 60%; display: grid; grid-template-columns: repeat(7, 1fr); gap: 0 2px; }
+  .slot { position: relative; padding: 0; border: 0; background: none; color: var(--ink); font: 600 15px/1 var(--body); cursor: pointer; }
+  .slot i { position: absolute; inset: auto 0 0; height: 74%; border: 1.5px dashed var(--line); opacity: .75; }
+  .slot b { position: absolute; inset: auto 0 0; height: 74%; display: grid; place-items: center; font-weight: 600; background: var(--kraft); box-shadow: inset 0 -5px 0 rgb(185 138 80 / .6); opacity: 0; transform: scale(.5); transition: transform .3s var(--spring), opacity .08s; }
+  .slot.on b { opacity: 1; transform: none; }
+  .slot.here i { border-style: solid; border-color: var(--paper); opacity: 1; }
+  .slot.here.on b { box-shadow: inset 0 -5px 0 rgb(185 138 80 / .6), 0 0 0 2px var(--paper); }
+  .wheel { transform-box: fill-box; transform-origin: center; transform: rotate(calc(var(--y, 0) * 1deg)); }
+  .moving .wheel { animation: spin .4s linear infinite; }
+  .hub { fill: var(--paper); }
+  .beam { opacity: 0; transition: opacity .5s; }
+  .full .beam { opacity: .55; animation: lights .9s steps(2) 1; }
+  @keyframes lights { 0% { opacity: 0; } 40% { opacity: .55; } 60% { opacity: .1; } }
+  .limit-line { transition: stroke-width .3s; }
+  .full .limit-line { stroke-width: 4; }
+  .gone .truck { animation: leave 1.5s cubic-bezier(.6, 0, .9, .5) forwards; }
+  .gone .wheel { animation: spin .3s linear infinite; }
+  @keyframes arrive { from { transform: translateX(-110vw); } }
+  @keyframes leave { to { transform: translateX(125vw); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .fly { position: fixed; left: 0; top: 0; z-index: 5; background: var(--kraft); box-shadow: inset 0 -5px 0 rgb(185 138 80 / .6); pointer-events: none; }
+  .puff { position: fixed; left: 0; top: 0; z-index: 5; border-radius: 50%; background: var(--haze); pointer-events: none; }
+
+  .btn { font: 600 19px/1 var(--body); padding: 16px 28px; border: 0; cursor: pointer; transition: background .18s, color .18s, transform .18s var(--ease); }
+  .btn:active { transform: scale(.96); }
+  #back, #next { margin: 0 clamp(16px, 4vw, 48px) 22px; min-width: 112px; }
+  #back { justify-self: start; background: none; color: var(--paper); box-shadow: inset 0 0 0 2px var(--line); }
+  #back:hover { box-shadow: inset 0 0 0 2px var(--paper); }
+  #next { justify-self: end; background: var(--paper); color: var(--ink); }
+  #next:hover { background: var(--kraft); }
+  #next:disabled { background: var(--line); cursor: progress; }
+
+  /* Drawings. Base lines plot in when a section is reached; .v groups play when an answer is picked or hovered. */
+  .scene text { fill: var(--paper); font: 500 15px var(--body); }
+  .scene text.soft { fill: var(--haze); font-weight: 400; }
+  .scene text.big { font: 600 34px var(--display); }
+  .scene text.mid { font: 600 22px var(--display); }
+  .scene text.on-kraft { fill: var(--ink); font-weight: 600; }
+  .draw { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; }
+  .thin { stroke-width: 1.25; color: var(--line); }
+  .kr { color: var(--kraft); }
+  .ring { fill: none; stroke: var(--line); stroke-width: 2; stroke-dasharray: 7 7; }
+  .stop { fill: var(--ground); stroke: var(--paper); stroke-width: 2; }
+  .stop.full { fill: var(--kraft); stroke: var(--kraft); }
+  .fill-k { fill: var(--kraft); }
+  .fill-p { fill: var(--paper); }
+  .fill-d { fill: var(--deep); }
+  .fill-dd { fill: var(--deep-2); }
+  .bay { fill: none; stroke: var(--paper); stroke-width: 2; }
+  .cab { fill: var(--paper); }
+  .whl { fill: var(--deep-2); stroke: var(--paper); stroke-width: 2; }
+  .out { fill: none; stroke: var(--line); stroke-width: 1.75; stroke-dasharray: 5 5; }
+  .outline path { fill: none; stroke: var(--line); stroke-width: 1.75; stroke-dasharray: 5 5; }
+  .box path:nth-child(1) { fill: #f3d3a4; }
+  .box path:nth-child(2) { fill: var(--kraft); }
+  .box path:nth-child(3) { fill: var(--kraft-dark); }
+
+  .base .draw { animation: plot .85s var(--ease) calc(var(--i, 0) * 70ms) both; }
+  .base .pop { animation: pop .42s cubic-bezier(.2, 1.7, .4, 1) calc(var(--i, 0) * 60ms) both; transform-box: fill-box; transform-origin: center; }
+  .base .fade { animation: fade .5s ease-out calc(var(--i, 0) * 70ms) both; }
+  .base .run { animation: run 3.4s var(--ease) calc(var(--i, 0) * 70ms) infinite both; }
+  .par { transform: translate(calc(var(--mx, 0) * var(--d)), calc(var(--my, 0) * var(--d))); transition: transform .6s cubic-bezier(.2, .8, .3, 1); }
+  @keyframes plot { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+  @keyframes pop { from { transform: scale(0); opacity: 0; } }
+  @keyframes fade { from { opacity: 0; } }
+  @keyframes run { 0% { transform: none; opacity: 0; } 6% { opacity: 1; } 42% { transform: translate(var(--dx), var(--dy)); opacity: 1; } 52%, 100% { transform: translate(var(--dx), var(--dy)); opacity: 0; } }
+
+  .v { opacity: 0; transition: opacity .2s; }
+  .v .draw { stroke-dashoffset: 1; transition: stroke-dashoffset .6s var(--ease) calc(var(--i, 0) * 60ms); }
+  .v.on { opacity: 1; }
+  .v.on .draw { stroke-dashoffset: 0; }
+  /* an SVG arrowhead ignores the dash offset, so hold the whole arrow back until its line starts */
+  .v .draw[marker-end] { opacity: 0; }
+  .v.on .draw[marker-end] { animation: show .12s calc(var(--i, 0) * 60ms + .12s) both; }
+  .v .grow { transform: scaleX(0); transform-box: fill-box; transform-origin: left; transition: transform var(--t, .7s) var(--ease); }
+  .v.on .grow { transform: none; }
+  .late { opacity: 0; }
+  .v.on .late { animation: show .4s ease-out calc(var(--i, 0) * 100ms) both; }
+  @keyframes show { to { opacity: 1; } }
+  .drop { opacity: 0; }
+  .v.on .drop { animation: drop .55s var(--spring) calc(var(--i, 0) * 100ms) both; }
+  @keyframes drop { from { transform: translateY(-74px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .ping { transform: scale(0); transform-box: fill-box; transform-origin: center; }
+  .v.on .ping { animation: ping .6s cubic-bezier(.2, 1.9, .4, 1) calc(var(--d, 0) * 1ms) both; }
+  @keyframes ping { from { transform: scale(0); } to { transform: none; } }
+  .sweep { fill: var(--paper); opacity: 0; transform-origin: 335px 215px; }
+  .v.on .sweep { animation: sweep 1.5s linear both; }
+  @keyframes sweep { 0% { transform: none; opacity: .24; } 88% { opacity: .24; } 100% { transform: rotate(360deg); opacity: 0; } }
+  .mover { opacity: 0; offset-rotate: 0deg; }
+  .mover.turn { offset-rotate: auto; }
+  .v.on .mover { animation: travel var(--t, 2s) cubic-bezier(.45, .05, .4, 1) calc(var(--i, 0) * 120ms) both; }
+  .v.on .mover.steady { animation-timing-function: linear; }
+  @keyframes travel { from { offset-distance: 0%; opacity: 0; } 5% { opacity: 1; } to { offset-distance: 100%; opacity: 1; } }
+  .merge { transition: transform .7s var(--ease) .2s; }
+  .v.on .merge { transform: translate(var(--dx), var(--dy)); }
+  .flash { fill: var(--paper); opacity: 0; }
+  .v.on .flash { animation: flash .55s ease-out calc(.85s + var(--i, 0) * 85ms) both; }
+  @keyframes flash { 30% { opacity: .95; } 100% { opacity: 0; } }
+  .caret { fill: var(--kraft); }
+  .v.on .caret { animation: caret 1s steps(2) infinite; }
+  @keyframes caret { 50% { opacity: 0; } }
+
+  .done { grid-template-columns: minmax(0, 1fr); justify-items: start; }
+  .done h1 { font-size: clamp(72px, 12vw, 176px); }
+
+  @media (max-width: 860px) {
+    html { scroll-padding-top: calc(21vw + 18px); }
+    .top { display: none; }
+    main { padding-top: calc(21vw + 16px); padding-bottom: 96px; }
+    .step { grid-template-columns: minmax(0, 1fr); gap: 14px; min-height: 0; align-content: start; padding-block: 22px; }
+    .step figure { order: -1; }
+    .step[data-step="intro"] figure { order: 0; }
+    .dock { grid-template-columns: 1fr 1fr; gap: 12px; padding: 24px 16px 12px; }
+    .rig { position: fixed; inset: 0 0 auto; padding: 8px 12px 4px; background: var(--ground); }
+    .slot { font-size: 12px; }
+    #back, #next { margin: 0; min-width: 0; padding: 16px 10px; }
+    #next { grid-column: 2; grid-row: 1; justify-self: stretch; }
+    #back { grid-row: 1; justify-self: stretch; }
+    figure svg { max-height: 34dvh; }
+    figcaption { min-height: 0; font-size: 16px; }
+    h1 { font-size: clamp(84px, 27vw, 150px); }
+    h2 { font-size: clamp(32px, 9vw, 44px); }
+    fieldset { margin-top: 12px; }
+    .scene text { font-size: 19px; }
+    .scene text.soft { font-size: 18px; }
+    .manifest button { grid-template-columns: 22px minmax(0, 1fr); }
+    .manifest .a { grid-column: 2; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    html { scroll-snap-type: none; }
+    .late, .drop, .v .draw[marker-end] { opacity: 1; }
+    .ping { transform: none; }
+    .sweep, .flash { display: none; }
+    .gone .truck { opacity: 0; }
+  }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <marker id="head" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1 9 5 1 9z" fill="#f4f7ff"/></marker>
+  <marker id="head-k" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1 9 5 1 9z" fill="#e8be84"/></marker>
+  <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="#0f2b8a"/><rect width="3" height="8" fill="#e8be84"/></pattern>
+  <linearGradient id="beam"><stop offset="0" stop-color="#f3d3a4"/><stop offset="1" stop-color="#f3d3a4" stop-opacity="0"/></linearGradient>
+</defs></svg>
+
+<header class="top"><span>Delivery data questions</span><span id="count" aria-live="polite"></span></header>
+<main><form id="f" autocomplete="off" novalidate><div id="steps"></div></form></main>
+
+<div class="dock" id="dock">
+  <button type="button" class="btn" id="back">Back</button>
+  <div class="rig" id="rig" role="group" aria-label="Questions answered so far">
+    <div class="truck" id="truck"><div class="body" id="body">
+      <svg viewBox="0 0 600 124" aria-hidden="true">
+        <path class="beam" fill="url(#beam)" d="M556 62 660 40V96L556 78z"/>
+        <path class="fill-dd" d="M8 12h440v76H8z" opacity=".55"/>
+        <path d="M8 12h440v76H8z" fill="none" stroke="#f4f7ff" stroke-width="2.5"/>
+        <path class="limit-line" d="M272 4v92" stroke="#e8be84" stroke-width="2" stroke-dasharray="5 5"/>
+        <text id="limit" x="280" y="27" fill="#e8be84" font-family="Barlow" font-weight="500" font-size="17">60 % limit</text>
+        <path class="fill-p" d="M452 88V30q0-5 5-5h58q5 0 8 4l32 36q4 4 4 9v14q0 4-4 4H456q-4 0-4-4z"/>
+        <path fill="#1437a6" d="M500 36h15q4 0 7 3l21 24H500z"/>
+        <path d="M448 94h112" stroke="#f4f7ff" stroke-width="5"/>
+        <path d="M8 94h440" stroke="#f4f7ff" stroke-width="5"/>
+        <g class="wheel"><circle cx="86" cy="102" r="15" class="whl"/><circle class="hub" cx="86" cy="102" r="4"/><rect class="hub" x="84.5" y="90" width="3" height="7"/></g>
+        <g class="wheel"><circle cx="372" cy="102" r="15" class="whl"/><circle class="hub" cx="372" cy="102" r="4"/><rect class="hub" x="370.5" y="90" width="3" height="7"/></g>
+        <g class="wheel"><circle cx="512" cy="102" r="15" class="whl"/><circle class="hub" cx="512" cy="102" r="4"/><rect class="hub" x="510.5" y="90" width="3" height="7"/></g>
+      </svg>
+      <div class="slots" id="slots"></div>
+    </div></div>
+  </div>
+  <button type="button" class="btn" id="next">Start</button>
+  <div class="road" id="road"></div>
+</div>
+
+<script>
+/* ---------- drawing helpers ---------- */
+const pen = (d, c = "", i = 0) => `<path class="draw ${c}" pathLength="1" d="${d}" style="--i:${i}"/>`;
+const arrow = (d, c = "", i = 0) => pen(d, c, i).replace("class=", `marker-end="url(#head${c.includes("kr") ? "-k" : ""})" class=`);
+const T = (x, y, s, c = "", a = "start") => `<text x="${x}" y="${y}" class="${c}" text-anchor="${a}">${s}</text>`;
+const N = (n, ...args) => T(...args).replace("<text ", `<text data-n="${n}" `); // counts up when the section is reached
+const dot = (x, y, c = "", i = 0, r = 9) => `<circle class="stop pop ${c}" cx="${x}" cy="${y}" r="${r}" style="--i:${i}"/>`;
+const v = (on, s) => `<g class="v" data-on="${on}">${s}</g>`;
+const base = s => `<g class="base">${s}</g>`;
+const svg = (label, s, h = 480) => `<svg viewBox="0 0 640 ${h}" role="img" aria-label="${label}">${s}</svg>`;
+const late = (i, s) => `<g class="late" style="--i:${i}">${s}</g>`;
+const mover = (path, inner, t = 2, i = 0, c = "") => `<g class="mover ${c}" style="offset-path:path('${path}');--t:${t}s;--i:${i}">${inner}</g>`;
+const mini = (fill = "fill-k") => `<rect class="${fill}" x="-24" y="-20" width="32" height="20"/><path class="cab" d="M10 0V-15h8l7 10V0z"/><circle class="whl" cx="-14" cy="2" r="4"/><circle class="whl" cx="16" cy="2" r="4"/>`;
+const parcel = `<rect class="fill-k" x="-8" y="-8" width="16" height="16"/>`;
+const truck = (x, y, len, h = 44) => {
+  const cx = x + len + 3, k = h / 44;
+  return `<rect class="bay" x="${x}" y="${y}" width="${len}" height="${h}"/>
+    <path class="cab" d="M${cx} ${y + h}V${y + 8 * k}q0-3 3-3h12q3 0 5 3l10 ${16 * k}q2 3 2 5V${y + h}z"/>
+    <path fill="#1437a6" d="M${cx + 12} ${y + 11 * k}h4l8 ${12 * k}h-12z"/>
+    <circle class="whl" cx="${x + len * .22}" cy="${y + h + 6}" r="7"/><circle class="whl" cx="${cx + 16}" cy="${y + h + 6}" r="7"/>`;
+};
+const iso = (x, y, s, c) => {
+  const a = s * .87, b = s * .5, h = s * .8, t = y + 2 * b;
+  return `<g class="${c}"><path d="M${x} ${y}l${a} ${b}l${-a} ${b}l${-a} ${-b}z"/><path d="M${x - a} ${y + b}L${x} ${t}v${h}L${x - a} ${y + b + h}z"/><path d="M${x + a} ${y + b}L${x} ${t}v${h}L${x + a} ${y + b + h}z"/></g>`;
+};
+const doc = (x, y, w = 66, h = 84) => `<rect class="fill-p" x="${x}" y="${y}" width="${w}" height="${h}"/><path d="M${x + w * .18} ${y + h * .26}h${w * .64}M${x + w * .18} ${y + h * .45}h${w * .64}M${x + w * .18} ${y + h * .64}h${w * .45}" stroke="#1437a6" stroke-width="3"/>`;
+
+/* ---------- the opening picture ---------- */
+const groups = [[[132, 112], [196, 86], [214, 170], [146, 196]], [[414, 58], [480, 92], [392, 132], [462, 170], [522, 150]], [[510, 330], [566, 372], [490, 404]], [[168, 330], [238, 306], [262, 384], [176, 408], [116, 384]]];
+const rings = [[172, 142, 92], [458, 118, 100], [522, 366, 76], [190, 358, 104]];
+const depot = [350, 250];
+const edges = rings.map(([x, y, r]) => { const t = 1 - r / Math.hypot(x - depot[0], y - depot[1]); return [depot[0] + (x - depot[0]) * t, depot[1] + (y - depot[1]) * t]; });
+let stopNo = 3;
+const heroScene = `<svg viewBox="0 -24 640 524" role="img" aria-label="Stops around a depot grouped into four clusters, each served by one truck. A cluster has at most 5 stops, fits in a 50 km radius and loads at most 60 percent of the truck.">` + base(
+  groups.map((g, n) => `<g class="par" style="--d:${8 + n * 5}px">${g.map(([x, y]) => dot(x, y, "", stopNo++)).join("")}</g>`).join("") +
+  rings.map(([x, y, r], i) => `<circle class="draw kr" pathLength="1" cx="${x}" cy="${y}" r="${r}" style="--i:${22 + i * 3}"/>`).join("") +
+  edges.map(([x, y], i) => pen(`M${depot} L${x} ${y}`, "", 34 + i * 2)).join("") +
+  edges.map(([x, y], i) => `<rect class="fill-k run" x="${depot[0] - 8}" y="${depot[1] - 8}" width="16" height="16" style="--i:${44 + i * 9};--dx:${x - depot[0]}px;--dy:${y - depot[1]}px"/>`).join("") +
+  `<rect class="fill-p pop" x="330" y="230" width="40" height="40" style="--i:1"/>` +
+  `<g class="fade" style="--i:1">${T(350, 292, "Depot", "", "middle")}</g>` +
+  `<g class="fade" style="--i:48">${T(172, 36, "One cluster, one truck", "", "middle")}${T(458, 4, "5 stops at most", "", "middle")}${T(190, 488, "Inside a 50 km radius", "", "middle")}${T(522, 470, "60 % of the truck", "", "middle")}</g>`) + `</svg>`;
+
+/* ---------- one drawing per question ---------- */
+const inner = [[250, 170], [300, 295], [385, 135], [425, 270], [335, 215]];
+const [cx, cy, R] = [335, 215, 130];
+const swept = ([x, y]) => Math.round(((Math.atan2(y - cy, x - cx) + 2 * Math.PI) % (2 * Math.PI)) / (2 * Math.PI) * 1320);
+const sceneCoords = svg("Stops on a plan with a 50 kilometre radius drawn around five of them. The depot sits at the lower left, one stop lies outside the circle.", base(
+  `<rect class="fill-p pop" x="60" y="372" width="44" height="44"/>` +
+  `<g class="fade" style="--i:2">${T(82, 438, "Depot", "", "middle")}</g>` +
+  pen("M104 384C170 360 214 340 300 295", "thin", 3) +
+  inner.map(([x, y], i) => dot(x, y, "", 4 + i)).join("") + dot(548, 100, "", 10)) +
+  v("n", `<circle class="ring" cx="${cx}" cy="${cy}" r="${R}"/>` + T(cx, 372, "50 km radius", "", "middle")) +
+  v("0", [160, 320, 480].map((x, i) => pen(`M${x} 30V440`, "thin", i)).join("") + [120, 240, 360].map((y, i) => pen(`M40 ${y}H620`, "thin", i + 2)).join("") +
+    T(40, 112, "lat", "soft") + T(330, 438, "lng", "soft") +
+    `<circle class="draw kr" pathLength="1" cx="${cx}" cy="${cy}" r="${R}" style="--i:3"/>` +
+    `<path class="sweep" d="M${cx} ${cy}L${cx + R} ${cy}A${R} ${R} 0 0 0 ${cx + R * Math.cos(.8)} ${cy - R * Math.sin(.8)}z"/>` +
+    pen(`M${cx} ${cy}H${cx + R}`, "kr", 6) + T(400, 206, "50 km", "", "middle") +
+    inner.map(p => `<circle class="stop full ping" cx="${p[0]}" cy="${p[1]}" r="9" style="--d:${swept(p)}"/>`).join("") +
+    late(15, `<circle class="stop full" cx="548" cy="100" r="9"/>` + T(548, 74, "Outside this cluster", "soft", "middle"))) +
+  v("1", pen("M250 170L385 135", "kr", 0) + pen("M250 170L300 295", "kr", 5) + pen("M300 295L425 270", "kr", 10) + pen("M385 135L425 270", "kr", 15) + pen("M385 135L548 100", "kr", 20) +
+    late(4, T(312, 140, "18 km", "", "middle")) + late(8, T(250, 244, "31 km", "", "end")) + late(12, T(364, 305, "27 km", "", "middle")) + late(16, T(416, 196, "24 km")) + late(20, T(468, 106, "62 km", "", "middle")) +
+    T(cx, 372, "Example distances", "soft", "middle") + inner.map(([x, y]) => `<circle class="stop full" cx="${x}" cy="${y}" r="9"/>`).join("") + `<circle class="stop full" cx="548" cy="100" r="9"/>`) +
+  v("2", `<circle class="ring" cx="${cx}" cy="${cy}" r="${R}"/>` + T(cx, 372, "I'll find another way", "", "middle")));
+
+const W = 500, X = 40, yours = W * 6395 / 6974;
+const sceneStops = svg("Two bars drawn to scale: my count of 6,974 stops and your count of 6,395 stops, a difference of 579 stops.", base(
+  T(X, 34, "My count") + N(6974, X + W, 34, "6,974", "mid", "end") + `<rect class="fill-p pop" x="${X}" y="46" width="${W}" height="26" style="--i:1;transform-origin:left"/>` +
+  T(X, 118, "Your count") + N(6395, X + yours, 118, "6,395", "mid", "end") +
+  `<rect class="fill-k pop" x="${X}" y="130" width="${yours}" height="26" style="--i:6;transform-origin:left"/>` +
+  `<rect fill="url(#hatch)" class="fade" x="${X + yours}" y="130" width="${W - yours}" height="26" style="--i:14"/>` +
+  `<g class="fade" style="--i:16">${N(579, X + yours + (W - yours) / 2, 186, "579 stops", "", "middle")}${T(X, 228, "One stop = one address in one job", "soft")}</g>`) +
+  v("n", `<circle class="ring" cx="320" cy="340" r="62"/>` + T(320, 350, "?", "big", "middle")) +
+  v("0", pen("M60 340H560", "", 0) + pen("M240 340C300 340 320 420 400 420H560", "kr", 2) +
+    mover("M60 330H500", mini("fill-p"), 1.8, 0) + mover("M60 330H240C300 330 320 410 400 410H500", mini(), 2.2, 3, "turn") +
+    late(16, T(560, 292, "Normal dispatch", "", "end")) + late(20, T(560, 464, "Hired truck or direct delivery", "soft", "end"))) +
+  v("1", `<rect class="bay" x="92" y="300" width="118" height="96"/>` +
+    [[120, 332], [182, 332], [151, 368]].map(([x, y]) => `<circle class="stop full merge" cx="${x}" cy="${y}" r="8" style="--dx:${151 - x}px;--dy:${349 - y}px"/>`).join("") +
+    late(7, T(150, 424, "3 addresses", "soft", "middle") + T(316, 336, "same building", "soft", "middle")) +
+    pen("M240 349H392", "", 12).replace("class=", `marker-end="url(#head)" class=`) + late(14, `<circle class="stop full" cx="452" cy="349" r="15"/>` + T(452, 402, "1 stop", "", "middle"))) +
+  v("2", doc(150, 276) + arrow("M240 318H392", "", 2) + mover("M183 318H452", `<g transform="scale(.28) translate(-33 -42)">${doc(0, 0)}</g>`, 1, 3) +
+    late(15, `<circle class="stop full" cx="452" cy="318" r="15"/>` + T(452, 368, "Same stops", "", "middle")) + T(316, 304, "your list", "soft", "middle") + T(183, 388, "Attach it here", "", "middle")));
+
+const rowsY = [216, 254, 292, 330, 368, 406], ids = [1, 1, 1, 2, 2, 3];
+const column = rowsY.map((y, i) => `<rect class="flash" x="292" y="${y + 8}" width="56" height="26" style="--i:${i}"/>`).join("");
+const sceneCluster = svg("A source box for your framework and one for the dispatch as driven. An arrow from the chosen source fills the cluster ID column of the delivery file.", base(
+  `<rect class="fill-d pop" x="40" y="30" width="240" height="84"/>` + `<rect class="fill-d pop" x="360" y="30" width="240" height="84" style="--i:1"/>` +
+  `<g class="fade" style="--i:2">${T(160, 80, "Your framework", "mid", "middle")}${T(480, 80, "Dispatch as driven", "mid", "middle")}</g>` +
+  `<rect class="fill-dd pop" x="150" y="176" width="340" height="266" style="--i:3"/>` +
+  `<g class="fade" style="--i:5">${T(202, 204, "Job", "soft", "middle")}${T(320, 204, "순번", "", "middle")}${T(436, 204, "Stop", "soft", "middle")}</g>` +
+  pen("M150 216H490", "thin", 6) +
+  rowsY.map((y, i) => `<g class="fade" style="--i:${7 + i}">${T(202, y + 26, "12", "soft", "middle")}<rect class="fill-k" x="292" y="${y + 8}" width="56" height="26"/>${T(320, y + 27, ids[i], "on-kraft", "middle")}<rect class="fill-d" x="396" y="${y + 13}" width="80" height="14"/></g>`).join("")) +
+  v("n 2", `<path class="out" d="M160 114C160 150 300 140 312 170"/><path class="out" d="M480 114C480 150 340 140 328 170"/>` + T(320, 150, "?", "mid", "middle")) +
+  v("0", arrow("M160 114C160 152 300 138 314 172", "kr") + mover("M160 114C160 152 300 138 314 172", `<circle class="fill-p" r="6"/>`, .9) + column + T(40, 150, "wrote this column")) +
+  v("1", arrow("M480 114C480 152 340 138 326 172", "kr") + mover("M480 114C480 152 340 138 326 172", `<circle class="fill-p" r="6"/>`, .9) + column + T(600, 150, "was recorded here", "", "end")));
+
+const sceneBound = (() => {
+  const w = 480, lb = w / 1.115, x = 40;
+  const load = (fx, fy) => [[0, 1], [1, 1], [2, 1], [0, 0], [1, 0], [2, 0]].map(([c, r], i) => `<rect class="fill-k drop" x="${fx + 4 + c * 33}" y="${fy + 4 + r * 34}" width="30" height="31" style="--i:${i}"/>`).join("");
+  const fTruck = (fx, fy) => truck(fx, fy, 170, 74) + load(fx, fy) + late(7, `<path d="M${fx + 102} ${fy - 8}v90" stroke="#f4f7ff" stroke-dasharray="4 4" stroke-width="1.5"/>` + T(fx + 108, fy + 18, "60 %"));
+  const fDots = (fx, fy) => [0, 1, 2].map(g => `<circle class="draw kr" pathLength="1" cx="${fx + 56 + g * 112}" cy="${fy + 40}" r="48" style="--i:${g}"/>` + [[-22, -14], [18, -22], [24, 16], [-12, 24], [0, -2]].map(([a, b], i) => `<circle class="fill-k drop" cx="${fx + 56 + g * 112 + a}" cy="${fy + 40 + b}" r="7" style="--i:${g * 4 + i}"/>`).join("")).join("");
+  return svg("Two bars: the lower bound and your clusters, which are 11.5 percent above it. Below, the formula for the chosen option.", base(
+    T(x, 30, "Lower bound") + `<rect class="fill-p pop" x="${x}" y="42" width="${lb}" height="24" style="--i:1;transform-origin:left"/>` +
+    T(x, 98, "Your clusters") + `<rect class="fill-k pop" x="${x}" y="110" width="${lb}" height="24" style="--i:3;transform-origin:left"/>` +
+    `<rect fill="url(#hatch)" class="fade" x="${x + lb}" y="110" width="${w - lb}" height="24" style="--i:9"/>` +
+    `<g class="fade" style="--i:11">${N(11.5, x + w + 8, 129, "+11.5 %", "mid")}</g>` + pen("M40 170H600", "thin", 8)) +
+  v("n", T(320, 300, "Lower bound = ?", "big", "middle")) +
+  v("0", T(40, 216, "Total volume ÷ (60 % of truck volume)", "mid") + fTruck(40, 262) + late(9, T(310, 306, "Each truck counts as 60 % full", "soft"))) +
+  v("1", T(40, 216, "Number of stops ÷ max stops per cluster", "mid") + fDots(40, 256) + late(14, T(392, 400, "Each cluster counts as full", "soft"))) +
+  v("2", T(40, 216, "The bigger of the two", "mid") + T(600, 216, "Example", "soft", "end") +
+    T(40, 262, "Total volume ÷ (60 % of truck volume)") + `<rect class="fill-k grow" x="40" y="274" width="420" height="24" style="--t:1.2s"/>` +
+    T(40, 340, "Number of stops ÷ max stops per cluster") + `<rect class="fill-d grow" x="40" y="352" width="300" height="24" style="--t:.9s"/>` +
+    pen("M470 286H520", "kr", 20).replace("class=", `marker-end="url(#head-k)" class=`) + late(15, T(530, 292, "Lower bound"))) +
+  v("3", T(310, 300, "Your formula", "big", "middle") + `<rect class="caret" x="402" y="272" width="3" height="36"/>` + T(320, 340, "A rough version is fine", "soft", "middle")));
+})();
+
+const sceneTruck = svg("A pile of boxes at the depot and three truck sizes, with the chosen rule for picking between them.", base(
+  `<g class="fade">${iso(84, 168, 26, "box") + iso(60, 208, 26, "box") + iso(108, 208, 26, "box")}</g>` + `<g class="fade" style="--i:2">${T(84, 294, "One cluster's load", "soft", "middle")}</g>` +
+  `<g class="fade" style="--i:3">${truck(250, 70, 78)}${T(250, 56, "1-ton")}</g>` +
+  `<g class="fade" style="--i:5">${truck(250, 200, 136, 54)}${T(250, 186, "2.5-ton")}</g>` +
+  `<g class="fade" style="--i:7">${truck(250, 342, 214, 64)}${T(250, 328, "5-ton")}</g>`) +
+  v("0", arrow("M150 220C190 220 200 92 240 92", "kr", 0) + arrow("M150 226H240", "kr", 2) + arrow("M150 232C190 232 200 372 240 372", "kr", 4) +
+    mover("M150 220C190 220 200 92 289 92", parcel, 1.1, 0) + mover("M150 226H318", parcel, 1.1, 3) + mover("M150 232C190 232 200 372 357 372", parcel, 1.1, 6) +
+    late(11, T(372, 98, "as needed")) + late(13, T(430, 232, "as needed")) + late(15, T(508, 380, "as needed"))) +
+  v("1", late(0, T(372, 104, "× 3", "big")) + late(3, T(430, 240, "× 2", "big")) + late(6, T(508, 386, "× 1", "big")) + T(620, 56, "Example", "soft", "end")) +
+  v("2", arrow("M150 220C190 220 200 92 240 92", "kr", 0) +
+    arrow("M380 124C432 150 432 186 408 206", "", 10) + arrow("M470 262C520 290 516 320 490 346", "", 18) +
+    mover("M150 220C190 220 200 92 289 92C400 92 450 150 318 227C440 240 520 300 357 374", parcel, 3.2) +
+    T(372, 88, "First choice") + late(10, T(444, 172, "if it doesn't fit")) + late(18, T(504, 312, "if it doesn't fit"))));
+
+const ringPts = (n, r = 150) => Array.from({ length: n }, (_, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI / n; return [Math.round(320 + r * Math.cos(a)), Math.round(228 + r * Math.sin(a))]; });
+const lap = (stops, ms) => { // the route out of the depot and back, with the moment the truck reaches each stop
+  const seq = [[320, 228], ...stops, [320, 228]]; let d = 0;
+  const at = seq.slice(1).map(([x, y], i) => d += Math.hypot(x - seq[i][0], y - seq[i][1]));
+  return { path: `M${seq.map(p => p.join(" ")).join("L")}`, hit: at.map(m => Math.round(m / d * ms)) };
+};
+const lap5 = lap(ringPts(5), 3200), lap12 = lap(ringPts(12, 170), 4400);
+const sceneMax = svg("A truck's loop from the depot through the stops of one cluster and back.", base(
+  `<rect class="fill-p pop" x="298" y="206" width="44" height="44"/>` + `<g class="fade" style="--i:2">${T(320, 272, "Depot", "", "middle")}</g>`) +
+  v("n 1", ringPts(5).map(([x, y]) => `<circle class="ring" cx="${x}" cy="${y}" r="14" style="stroke-dasharray:4 4"/>`).join("") + T(320, 150, "?", "big", "middle")) +
+  v("0", pen(lap5.path, "thin") + ringPts(5).map(([x, y], i) => `<g class="ping" style="--d:${lap5.hit[i]}"><circle class="stop full" cx="${x}" cy="${y}" r="15"/>${T(x, y + 6, i + 1, "on-kraft", "middle")}</g>`).join("") + mover(lap5.path, mini(), 3.2, 0, "steady")) +
+  v("2", pen(lap12.path, "thin") + ringPts(12, 170).map(([x, y], i) => `<circle class="stop full ping" cx="${x}" cy="${y}" r="10" style="--d:${lap12.hit[i]}"/>`).join("") + mover(lap12.path, mini(), 4.4, 0, "steady")));
+
+const needed = [["WCF-30G", 130, 92, 0], ["WCF-24G", 320, 92, 0], ["WPC-2000C", 510, 92, 0], ["WIC-55P", 130, 224, 0], ["WPC-5900PD", 320, 224, 0], ["Exhaust duct", 510, 224, 1], ["Chamber", 130, 356, 1], ["Tarpaulin", 320, 356, 1], ["Flexible hose", 510, 356, 1]];
+const filled = list => list.map(([, x, y], i) => `<g class="drop" style="--i:${i}">${iso(x, y, 26, "box")}</g>`).join("");
+const sceneSizes = svg("A bar shows 84 percent of order lines already have a box size. Below, nine items that still need one: WCF-30G, WCF-24G, WPC-2000C, WIC-55P, WPC-5900PD, exhaust duct, chamber, tarpaulin and flexible hose.", base(
+  `<rect class="fill-d" x="60" y="26" width="520" height="16"/><rect class="fill-k pop" x="60" y="26" width="${520 * .84}" height="16" style="transform-origin:left"/>` +
+  `<g class="fade" style="--i:3">${N(84, 60, 66, "84 % of order lines have a size", "soft")}</g>` +
+  needed.map(([n, x, y], i) => `<g class="fade" style="--i:${3 + i}">${iso(x, y, 26, "outline")}${T(x, y + 82, n, "", "middle")}</g>`).join("")) +
+  v("0", filled(needed) + `<rect class="fill-k grow" x="${60 + 520 * .84}" y="26" width="${520 * .16}" height="16" style="--t:1.1s"/>`) +
+  v("1", filled(needed.filter(n => !n[3]))));
+
+const QS = [
+  { id: "coords", short: "Stop locations", q: "Can you send a location for each stop?",
+    hint: "Stop ID with lat/lng is enough. Please leave out names and phone numbers.",
+    why: "I need the locations to check the 50 km radius.", scene: sceneCoords,
+    opts: [["Yes, I'll send lat/lng", "Great. Attach it here, or send it the way you did last time.", "attach"],
+      ["I can send distances between stops instead", "That works. I can check the radius from distances.", "attach"],
+      ["Neither is possible", "That's fine, I'll find another way."]] },
+  { id: "stops", short: "Stop count", q: "I get 6,974 stops and you have 6,395. What's the difference?",
+    hint: "I counted one address in one job as one stop.",
+    why: "I'd like to use the same stops as you.", scene: sceneStops,
+    opts: [["Hired-truck or direct deliveries", "I tried removing those and got 6,953, so there may be something else too."],
+      ["Same building counted once", "Got it. One building counts as one stop."],
+      ["Not sure, I'll send my stop list", "Thanks. I'll use your list as it is.", "attach"]] },
+  { id: "cluster_id", short: "순번", q: "What is 순번 (cluster ID) in the file?",
+    why: "This tells me what to compare against.", scene: sceneCluster,
+    opts: [["Output of my framework", "Got it. I'll treat it as your framework's result."],
+      ["The dispatch that was actually driven", "Got it. I'll treat it as the real dispatch."],
+      ["Something else", "Please tell me what it is in the box.", "own"]] },
+  { id: "lower_bound", short: "Lower bound", q: "How do you calculate the lower bound behind the 11.5 %?",
+    why: "I'll use the same formula so my numbers match yours.", scene: sceneBound,
+    opts: [["Total volume ÷ (60 % of truck volume)", "This assumes every truck is filled to the 60 % limit."],
+      ["Number of stops ÷ max stops per cluster", "This assumes every cluster has the most stops allowed."],
+      ["Whichever of those two is bigger", "The bigger of the two is the lower bound."],
+      ["Something else", "Please write it in the box. A rough formula is fine.", "own"]] },
+  { id: "truck", short: "Truck choice", q: "How is the truck picked for each cluster?",
+    why: "This decides how much each cluster can carry.", scene: sceneTruck,
+    opts: [["Any size, as many as needed", "Any cluster can use any size."],
+      ["A fixed number of each size per day", "The bigger trucks are limited each day."],
+      ["1-ton, and a bigger one only if it doesn't fit", "1-ton is the default, and bigger trucks are only for loads that don't fit."]] },
+  { id: "max_stops", short: "Stop limit", q: "What's the most stops one cluster can have?",
+    why: "I've been using 5. Please check that's right.", scene: sceneMax,
+    opts: [["5", "Thanks, I'll keep 5."],
+      ["Another number", "Please write the number in the box.", "own"],
+      ["No fixed limit", "Then only the radius and the load limit apply."]] },
+  { id: "sizes", short: "Box sizes", q: "Can you send box sizes for these items?",
+    why: "Items without a size can't be counted in the truck load.", scene: sceneSizes,
+    opts: [["I'll send all of them", "Thanks. All nine go into the load.", "attach"],
+      ["Ignore the accessories, I'll send the rest", "Thanks. I'll count the five products and leave out the accessories.", "attach"],
+      ["I don't have them", "That's fine, I'll use the sizes I have."]] },
+];
+
+/* ---------- build the page ---------- */
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const root = document.documentElement, form = $("#f"), rig = $("#rig"), body = $("#body");
+const calm = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const files = Object.fromEntries([...QS.map(q => q.id), "other"].map(k => [k, []]));
+const words = s => s.split(" ").map((w, i) => `<span class="w"><span style="--i:${i}">${w}</span></span>`).join(" ");
+let letterNo = 0;
+const letters = s => s.split(" ").map(w => `<span class="nb">${[...w].map(c => `<span class="ch" style="--i:${letterNo++}">${c}</span>`).join("")}</span>`).join(" ");
+
+$("#steps").innerHTML = `
+  <section class="step" data-step="intro">
+    <div class="copy">
+      <h1 tabindex="-1" aria-label="Hi Ryry."><span aria-hidden="true">${letters("Hi Ryry.")}</span></h1>
+      <p class="lead rise">Seven short questions about the delivery data.</p>
+      <p class="hint rise" style="--i:2">About two minutes. Each answer loads a box on the truck. Pick one, write your own, or attach a file. Nothing is sent until the last step.</p>
+    </div>
+    <figure class="scene">${heroScene}<figcaption class="rise" style="--i:4">Stops go into clusters, one truck per cluster, with as few clusters as possible. This is only a sketch, not your data.</figcaption></figure>
+  </section>` + QS.map((q, i) => `
+  <section class="step" data-step="${i}">
+    <div class="copy">
+      <h2 tabindex="-1" id="h-${q.id}">${words(q.q)}</h2>
+      ${q.hint ? `<p class="hint rise">${q.hint}</p>` : ""}
+      <fieldset aria-labelledby="h-${q.id}">
+        ${q.opts.map(([label], n) => `<label class="tag" style="--i:${n}"><input type="radio" name="${q.id}" value="${label.replace(/"/g, "&quot;")}" data-n="${n}"><span class="hole"></span><span>${label}</span></label>`).join("")}
+      </fieldset>
+      <div class="tools rise" style="--i:7">
+        <button type="button" class="tool" data-own="${q.id}" aria-expanded="false">Write my own answer</button>
+        <label class="tool" data-attach="${q.id}"><input class="sr" type="file" multiple data-for="${q.id}">Attach a file</label>
+      </div>
+      <textarea name="${q.id}_note" aria-label="Your own answer: ${q.short}" placeholder="Type your answer here" hidden></textarea>
+      <ul class="chips" data-chips="${q.id}"></ul>
+      <p class="msg" data-msg="${q.id}" role="alert" hidden></p>
+    </div>
+    <figure class="scene" data-q="${i}">${q.scene}<figcaption aria-live="polite">${q.why}</figcaption></figure>
+  </section>`).join("") + `
+  <section class="step" data-step="review">
+    <div class="copy">
+      <h2 tabindex="-1">${words("Anything else I should know?")}</h2>
+      <p class="hint rise">Check your answers, then send. Pick a row to change it.</p>
+      <textarea class="rise" style="--i:2" name="other" aria-label="Anything else I should know?" placeholder="Optional"></textarea>
+      <div class="tools rise" style="--i:4"><label class="tool" data-attach="other"><input class="sr" type="file" multiple data-for="other">Attach a file</label></div>
+      <ul class="chips" data-chips="other"></ul>
+      <p class="msg" data-msg="other" role="alert" hidden></p>
+    </div>
+    <div><ol class="manifest" id="manifest"></ol><p class="msg" id="status" role="status" hidden></p></div>
+  </section>
+  <section class="step done" data-step="done" hidden>
+    <h1 tabindex="-1" aria-label="Sent. Thanks, Ryry."><span aria-hidden="true">${(letterNo = 0, letters("Sent. Thanks, Ryry."))}</span></h1>
+    <p class="lead rise" style="--i:18">I'll get back to you once I've run this on your data.</p>
+    <p class="hint rise" style="--i:22">Remembered something? Open this link again and add it.</p>
+  </section>`;
+
+$("#slots").innerHTML = QS.map((q, i) => `<button type="button" class="slot" data-go="${i + 1}" aria-label="Question ${i + 1}: ${q.short}"><i></i><b>${i + 1}</b></button>`).join("");
+
+/* ---------- state ---------- */
+const STEPS = ["intro", ...QS.map((_, i) => String(i)), "review"];
+const steps = Object.fromEntries($$(".step").map(s => [s.dataset.step, s]));
+let at = 0;
+const answered = q => Boolean(form[q.id].value || form[`${q.id}_note`].value.trim() || files[q.id].length);
+
+function syncScene(q, i, preview) {
+  const fig = $(`figure[data-q="${i}"]`), picked = form[q.id].value ? $(`input[name="${q.id}"]:checked`).dataset.n : "n", n = preview ?? picked;
+  $$(".v", fig).forEach(g => g.classList.toggle("on", g.dataset.on.split(" ").includes(n)));
+  $("figcaption", fig).textContent = q.opts[n]?.[1] ?? q.why;
+  $(`[data-attach="${q.id}"]`).classList.toggle("nudge", q.opts[picked]?.[2] === "attach" && !files[q.id].length);
+}
+
+function syncSlots(from) {
+  QS.forEach((q, i) => {
+    const s = $(`.slot[data-go="${i + 1}"]`), now = answered(q);
+    if (now && !s.classList.contains("on") && !s.dataset.flying) { if (from && !calm) fly(from, s); else s.classList.add("on"); }
+    if (!now) { s.classList.remove("on"); delete s.dataset.flying; }
+    s.classList.toggle("here", at === i + 1);
+    s.setAttribute("aria-label", `Question ${i + 1}: ${q.short}, ${now ? "answered" : "not answered"}`);
+  });
+  const full = QS.every(answered);
+  rig.classList.toggle("full", full);
+  $("#limit").textContent = full ? "Loaded" : "60 % limit";
+}
+
+function syncNav() {
+  const k = STEPS[at], next = $("#next");
+  if (next.disabled) return;
+  $("#back").style.visibility = at ? "visible" : "hidden";
+  if (k === "intro") next.textContent = "Start";
+  else if (k === "review") next.textContent = "Send answers";
+  else next.textContent = at === QS.length ? "Review answers" : answered(QS[at - 1]) ? "Next" : "Skip";
+  $("#count").textContent = k === "intro" ? "" : k === "review" ? "Review" : `Question ${at} of ${QS.length}`;
+}
+
+function go(i) {
+  at = i;
+  const s = steps[STEPS[i]];
+  s.scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "start" });
+  $("h1, h2", s).focus({ preventScroll: true });
+  syncSlots(); syncNav();
+}
+
+function fillManifest() {
+  const list = $("#manifest");
+  list.innerHTML = "";
+  QS.forEach((q, i) => {
+    const li = document.createElement("li"), b = document.createElement("button"), k = document.createElement("span"), a = document.createElement("span");
+    const parts = [form[q.id].value, form[`${q.id}_note`].value.trim(), ...files[q.id].map(e => e.file.name)].filter(Boolean);
+    k.className = "k"; k.textContent = q.short;
+    a.className = parts.length ? "a" : "a blank"; a.textContent = parts.join(", ") || "Not answered";
+    b.type = "button"; b.dataset.go = i + 1; b.append(k, a); li.style.setProperty("--i", i); li.append(b); list.append(li);
+  });
+}
+
+/* ---------- scroll triggers ---------- */
+function countUp(section) {
+  if (calm) return;
+  $$("[data-n]", section).forEach(el => {
+    const end = Number(el.dataset.n), places = (el.dataset.n.split(".")[1] ?? "").length, t0 = performance.now();
+    const show = n => { el.textContent = el.textContent.replace(/[\d,.]+/, n.toLocaleString("en-US", { minimumFractionDigits: places, maximumFractionDigits: places })); };
+    show(0);
+    requestAnimationFrame(function tick(t) { const p = Math.min(1, (t - t0) / 1200); show(end * (1 - (1 - p) ** 3)); if (p < 1) requestAnimationFrame(tick); });
+  });
+}
+const reached = new IntersectionObserver(list => list.forEach(e => {
+  if (!e.isIntersecting) return;
+  e.target.classList.add("live"); countUp(e.target); reached.unobserve(e.target);
+}), { threshold: .22 });
+const centre = new IntersectionObserver(list => list.forEach(e => {
+  if (!e.isIntersecting) return;
+  at = STEPS.indexOf(e.target.dataset.step);
+  if (STEPS[at] === "review") fillManifest();
+  syncSlots(); syncNav();
+}), { rootMargin: "-46% 0px -46% 0px" });
+STEPS.forEach(k => { reached.observe(steps[k]); centre.observe(steps[k]); });
+
+// The road and wheels follow the page, and the truck leans into fast scrolling
+let lastY = scrollY, frame = 0, settle = 0;
+addEventListener("scroll", () => {
+  frame ||= requestAnimationFrame(() => {
+    frame = 0;
+    const lean = Math.max(-12, Math.min(12, (scrollY - lastY) / 3));
+    lastY = scrollY;
+    root.style.setProperty("--y", Math.round(scrollY));
+    root.style.setProperty("--v", lean.toFixed(1));
+    clearTimeout(settle);
+    settle = setTimeout(() => root.style.setProperty("--v", 0), 110);
+  });
+}, { passive: true });
+
+steps.intro.addEventListener("pointermove", e => {
+  steps.intro.style.setProperty("--mx", (e.clientX / innerWidth - .5).toFixed(3) * 2);
+  steps.intro.style.setProperty("--my", (e.clientY / innerHeight - .5).toFixed(3) * 2);
+});
+
+const drive = ms => {
+  if (calm) return;
+  const parts = [$("#truck"), $("#road")];
+  parts.forEach(p => p.classList.add("moving"));
+  setTimeout(() => parts.forEach(p => p.classList.remove("moving")), ms);
+};
+
+/* ---------- answer triggers ---------- */
+// A picked answer throws a box from the tag into its slot on the truck
+function fly(from, slot) {
+  slot.dataset.flying = 1;
+  const a = from.getBoundingClientRect(), b = slot.getBoundingClientRect(), size = Math.min(b.width, 44);
+  const x0 = a.left + 18, y0 = a.top + a.height / 2 - size / 2, x1 = b.left + (b.width - size) / 2, y1 = b.bottom - size;
+  const box = document.createElement("div");
+  box.className = "fly"; box.style.cssText = `width:${size}px;height:${size}px`;
+  document.body.append(box);
+  const apex = Math.min(y0, y1) - 90;
+  box.animate([
+    { transform: `translate(${x0}px,${y0}px) rotate(-30deg) scale(.5)`, opacity: 0, offset: 0 },
+    { transform: `translate(${x0 + (x1 - x0) * .08}px,${y0 - 34}px) rotate(20deg) scale(1.5)`, opacity: 1, offset: .16 },
+    { transform: `translate(${(x0 + x1) / 2}px,${apex}px) rotate(220deg) scale(1.25)`, offset: .56 },
+    { transform: `translate(${x1}px,${y1}px) rotate(360deg) scale(1)`, offset: 1 },
+  ], { duration: 760, easing: "cubic-bezier(.35,.1,.55,1)" }).onfinish = () => {
+    box.remove(); delete slot.dataset.flying;
+    if (!slot.parentNode.matches(".slots") || !answered(QS[slot.dataset.go - 1])) return;
+    slot.classList.add("on");
+    body.animate([{ transform: "none" }, { transform: "translateY(4px) scaleY(.97)", offset: .4 }, { transform: "translateY(-2px)", offset: .7 }, { transform: "none" }], { duration: 340 });
+    dust(b.left + b.width / 2, b.bottom);
+  };
+}
+function dust(x, y) {
+  [-1, 1].forEach(dir => {
+    const p = document.createElement("div");
+    p.className = "puff"; p.style.cssText = "width:12px;height:12px";
+    document.body.append(p);
+    p.animate([{ transform: `translate(${x}px,${y}px) scale(.4)`, opacity: .8 }, { transform: `translate(${x + dir * 34}px,${y - 12}px) scale(1.6)`, opacity: 0 }], { duration: 420, easing: "ease-out" }).onfinish = () => p.remove();
+  });
+}
+
+form.addEventListener("change", e => {
+  const t = e.target;
+  if (t.type === "file") return addFiles(t);
+  if (t.type !== "radio") return;
+  const i = QS.findIndex(q => q.id === t.name), q = QS[i];
+  if (q.opts[t.dataset.n][2] === "own") openOwn(q.id);
+  syncScene(q, i); syncSlots(t.closest(".tag")); syncNav();
+});
+form.addEventListener("input", e => { if (e.target.tagName === "TEXTAREA") { syncSlots(e.target); syncNav(); } });
+form.addEventListener("submit", e => e.preventDefault());
+
+// Hovering an answer plays its animation, so the options can be compared before picking one
+const hovered = e => { const t = e.pointerType === "mouse" && e.target.closest(".tag"); if (!t) return; const inp = $("input", t); return [QS.findIndex(q => q.id === inp.name), inp.dataset.n]; };
+form.addEventListener("pointerover", e => { const h = hovered(e); if (h) syncScene(QS[h[0]], h[0], h[1]); });
+form.addEventListener("pointerout", e => { const h = hovered(e); if (h) syncScene(QS[h[0]], h[0]); });
+
+function openOwn(id) {
+  const box = form[`${id}_note`], btn = $(`[data-own="${id}"]`);
+  box.hidden = false; btn.setAttribute("aria-expanded", "true"); box.focus({ preventScroll: true });
+}
+
+document.addEventListener("click", e => {
+  const own = e.target.closest("[data-own]"), jump = e.target.closest("[data-go]"), drop = e.target.closest("[data-drop]");
+  if (own) openOwn(own.dataset.own);
+  if (jump) go(Number(jump.dataset.go));
+  if (drop) { const [id, n] = drop.dataset.drop.split("/"); files[id].splice(n, 1); drawChips(id); refreshAfterFiles(id); }
+});
+
+const MAX_FILE = 25e6;
+const mb = n => n < 1e6 ? `${Math.max(1, Math.round(n / 1e3))} KB` : `${(n / 1e6).toFixed(1)} MB`;
+function addFiles(input) {
+  const id = input.dataset.for, msg = $(`[data-msg="${id}"]`), big = [...input.files].filter(f => f.size > MAX_FILE);
+  files[id].push(...[...input.files].filter(f => f.size <= MAX_FILE && f.size > 0).map(file => ({ file })));
+  msg.hidden = !big.length;
+  msg.textContent = big.length ? `${big[0].name} is over 25 MB. Split it, or send it the way you did last time.` : "";
+  input.value = "";
+  drawChips(id); refreshAfterFiles(id, input.closest(".tool"));
+}
+function drawChips(id) {
+  const ul = $(`[data-chips="${id}"]`);
+  ul.innerHTML = "";
+  files[id].forEach((e, n) => {
+    const li = document.createElement("li"), name = document.createElement("span"), size = document.createElement("span"), x = document.createElement("button");
+    name.className = "name"; name.textContent = e.file.name; size.className = "size"; size.textContent = mb(e.file.size);
+    x.type = "button"; x.textContent = "Remove"; x.dataset.drop = `${id}/${n}`; x.setAttribute("aria-label", `Remove ${e.file.name}`);
+    li.append(name, size, x); ul.append(li);
+  });
+}
+function refreshAfterFiles(id, from) {
+  const i = QS.findIndex(q => q.id === id);
+  if (i >= 0) syncScene(QS[i], i);
+  if (STEPS[at] === "review") fillManifest();
+  syncSlots(from); syncNav();
+}
+
+/* ---------- sending ---------- */
+const put = (file, onPct) => new Promise((ok, bad) => {
+  const x = new XMLHttpRequest();
+  x.open("PUT", "/api/file");
+  x.upload.onprogress = e => e.lengthComputable && onPct(Math.round(100 * e.loaded / e.total));
+  x.onload = () => x.status === 200 ? ok(x.responseText) : bad(new Error(x.status));
+  x.onerror = () => bad(new Error("network"));
+  x.send(file);
+});
+
+async function send() {
+  const status = $("#status"), next = $("#next"), say = t => { status.hidden = !t; status.textContent = t; };
+  const all = Object.entries(files).flatMap(([question, list]) => list.map(entry => ({ question, entry })));
+  if (!QS.some(answered) && !form.other.value.trim() && !all.length) return say("Nothing to send yet. Please answer at least one question.");
+  next.disabled = true; next.textContent = "Sending"; say("");
+  try {
+    for (const [i, { entry }] of all.entries()) entry.key ??= await put(entry.file, p => { next.textContent = `File ${i + 1} of ${all.length}: ${p} %`; });
+    const data = { ...Object.fromEntries(new FormData(form)), files: all.map(({ question, entry: e }) => ({ question, name: e.file.name, size: e.file.size, key: e.key })) };
+    const r = await fetch("/api/answer", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(data) });
+    if (!r.ok) throw new Error(r.status);
+    finish();
+  } catch {
+    say("Your answers didn't send. They're still here, so check your connection and press Send answers again.");
+    next.disabled = false; next.textContent = "Send answers";
+  }
+}
+
+// Boxes burst out behind the truck as it leaves
+function burst() {
+  const w = innerWidth, h = innerHeight;
+  for (let i = 0; i < 34; i++) {
+    const p = document.createElement("div"), size = 10 + Math.random() * 16, x = w * (.1 + Math.random() * .8);
+    p.className = "fly"; p.style.cssText = `width:${size}px;height:${size}px`;
+    document.body.append(p);
+    p.animate([
+      { transform: `translate(${w / 2}px,${h}px) rotate(0)`, opacity: 1 },
+      { transform: `translate(${(w / 2 + x) / 2}px,${h * (.08 + Math.random() * .4)}px) rotate(${Math.random() * 360}deg)`, opacity: 1, offset: .45 },
+      { transform: `translate(${x}px,${h + 40}px) rotate(${Math.random() * 900}deg)`, opacity: .9 },
+    ], { duration: 1500 + Math.random() * 900, delay: Math.random() * 180, easing: "cubic-bezier(.2,.6,.5,1)", fill: "backwards" }).onfinish = () => p.remove();
+  }
+}
+
+function finish() {
+  $("#back").hidden = $("#next").hidden = true;
+  $("#count").textContent = "";
+  if (!calm) body.animate([0, 2, -2, 2, -1, 0].map(y => ({ transform: `translateY(${y}px)` })), { duration: 420 });
+  rig.classList.add("gone");
+  drive(1500);
+  setTimeout(() => {
+    STEPS.forEach(k => { steps[k].hidden = true; });
+    steps.done.hidden = false;
+    steps.done.classList.add("live");
+    scrollTo({ top: 0 });
+    $("h1", steps.done).focus({ preventScroll: true });
+    if (!calm) burst();
+  }, calm ? 0 : 900);
+}
+
+$("#next").addEventListener("click", () => STEPS[at] === "review" ? send() : go(at + 1));
+$("#back").addEventListener("click", () => go(at - 1));
+
+QS.forEach((q, i) => syncScene(q, i));
+syncNav(); syncSlots();
+drive(1300);
+</script>
+</body>
+</html>

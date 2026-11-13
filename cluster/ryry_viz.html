@@ -1,0 +1,1431 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delivery planning results</title>
+<script>if (location.hash === "#v3") document.documentElement.dataset.view = "v3";</script>
+<style>
+@font-face { font-family: Barlow; font-weight: 400; font-display: swap; src: url(fonts/barlow-400.woff2) format("woff2"); }
+@font-face { font-family: Barlow; font-weight: 500; font-display: swap; src: url(fonts/barlow-500.woff2) format("woff2"); }
+@font-face { font-family: Barlow; font-weight: 600; font-display: swap; src: url(fonts/barlow-600.woff2) format("woff2"); }
+@font-face { font-family: "Barlow Condensed"; font-weight: 600; font-display: swap; src: url(fonts/barlow-condensed-600.woff2) format("woff2"); }
+:root {
+  color-scheme: light;
+  --band: #1437a6; --band-deep: #0f2b8a; --kraft: #e8be84; --kraft-dark: #b98a50;
+  --page-main: #f4f6fb; --page-v3: #2b2e33; --page: var(--page-main); --surface: #ffffff; --ink: #101a33; --ink2: #4a5470; --muted: #858ca0;
+  --grid: #e3e7f0; --axis: #c5cbd8; --ring: rgba(16,26,51,.10); --land: #eaedf5; --coast: #cdd3e1;
+  --t1: #2a78d6; --t14: #eb6834; --tbig: #1baf7a; --tq: #858ca0; --accent: #1437a6; --scan: #b98a50; --on-accent: #fff;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --page-main: #0b1020; --surface: #131a2e; --ink: #eef1f8; --ink2: #b6bdd0; --muted: #8a92a8;
+    --grid: #232c45; --axis: #34405f; --ring: rgba(255,255,255,.10); --land: #1a2238; --coast: #2c3654;
+    --t1: #3987e5; --t14: #d95926; --tbig: #199e70; --accent: #7d97f5; --scan: #e8be84;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page-main: #0b1020; --surface: #131a2e; --ink: #eef1f8; --ink2: #b6bdd0; --muted: #8a92a8;
+  --grid: #232c45; --axis: #34405f; --ring: rgba(255,255,255,.10); --land: #1a2238; --coast: #2c3654;
+  --t1: #3987e5; --t14: #d95926; --tbig: #199e70; --accent: #7d97f5; --scan: #e8be84;
+}
+/* Version 3 has its own theme, the same in light and dark: a steel-grey truck floor, boxes in kraft */
+:root[data-view="v3"] {
+  color-scheme: dark;
+  --page: var(--page-v3); --surface: #363a40; --ink: #f5f5f3; --ink2: #c9ccd1; --muted: #9da1a9;
+  --grid: #484c53; --axis: #868c96; --ring: rgba(255,255,255,.12); --land: #41454c; --coast: #6d727b;
+  --t1: #7fbfff; --t14: #ff9a5c; --tbig: #56dfa9; --tq: #a8acb3; --accent: #e8be84; --scan: #e8be84; --on-accent: #26282c; --on-truck: #1d1f23;
+}
+:root[data-view="v3"] body { background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px); background-size: 32px 32px; }
+:root[data-view="v3"] tr.sel td { color: var(--accent); }
+.only-v3 { display: none; }
+:root[data-view="v3"] .only-v3 { display: block; }
+:root[data-view="v3"] .only-main { display: none; }
+/* the change of view: a veil in the coming page's colour grows out of the pressed button, then lifts (setView) */
+.veil { position: fixed; inset: 0; z-index: 100; pointer-events: none; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body { margin: 0; background: var(--page); color: var(--ink); font: 16px/1.55 Barlow, system-ui, -apple-system, "Segoe UI", sans-serif; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+h1, h2, .num { font-family: "Barlow Condensed", Barlow, system-ui, sans-serif; font-weight: 600; letter-spacing: .005em; }
+h1 { font-size: clamp(38px, 5.4vw, 64px); line-height: 1.02; margin: 0; }
+h2 { font-size: 30px; line-height: 1.1; margin: 0 0 6px; }
+h3 { font-size: 17px; margin: 0 0 4px; font-weight: 600; }
+.sub { color: var(--ink2); margin: 0; max-width: 70ch; }
+.note { color: var(--ink2); font-size: 14px; margin: 0; max-width: 78ch; }
+
+/* header band */
+header { background: var(--band); color: #fff; position: relative; overflow: hidden; }
+header .wrap { padding-top: 56px; padding-bottom: 64px; }
+header p { color: rgba(255,255,255,.82); font-size: 19px; max-width: 60ch; margin: 16px 0 0; }
+header .result { display: flex; flex-wrap: wrap; gap: 12px 32px; margin-top: 32px; }
+header .result div { min-width: 140px; }
+header .result .num { font-size: 52px; line-height: 1; display: block; }
+header .result span:last-child { color: rgba(255,255,255,.75); font-size: 14px; }
+header::after { content: ""; position: absolute; left: 0; right: 0; bottom: 18px; height: 4px;
+  background: repeating-linear-gradient(90deg, var(--kraft) 0 28px, transparent 28px 52px); opacity: .9; }
+@media (prefers-reduced-motion: no-preference) { header::after { animation: road 2.6s linear infinite; } }
+@keyframes road { to { background-position: -52px 0; } }
+
+section.block { padding: 64px 0 8px; scroll-margin-top: 56px; }
+
+/* version bar */
+.vbar { position: sticky; top: 0; z-index: 30; background: var(--surface); border-bottom: 1px solid var(--ring); }
+.vbar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 52px; }
+.vname { font-family: "Barlow Condensed", Barlow, system-ui, sans-serif; font-weight: 600; font-size: 20px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vswitch { display: inline-flex; gap: 4px; padding: 3px; border-radius: 999px; background: var(--land); flex: none; }
+.vswitch button { border: 0; background: transparent; border-radius: 999px; padding: 5px 14px; font-weight: 600; display: inline-flex; gap: 6px; align-items: center; }
+.vswitch button:hover { background: var(--surface); }
+.vswitch button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+.vswitch .tag { font-size: 12px; padding: 0 7px; border-radius: 999px; background: var(--kraft); color: #3a2a12; }
+.vswitch button[aria-pressed="true"] .tag { background: var(--on-accent); color: var(--accent); }
+
+/* version 3 view */
+.v3hero { padding: 56px 0 8px; }
+.v3hero-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 48px; align-items: center; }
+.v3hero .lede { color: var(--ink2); font-size: 19px; max-width: 56ch; margin: 16px 0 0; }
+.v3hero .result { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px 28px; margin-top: 32px; }
+.v3hero .result .num { font-size: 48px; line-height: 1; display: block; color: var(--accent); }
+.v3hero .result span:last-child { color: var(--ink2); font-size: 14px; }
+.floorfig { margin: 0; }
+#floor { width: 100%; display: block; overflow: visible; }
+#floor text { fill: var(--ink2); font: 500 9px Barlow, system-ui, sans-serif; }
+#floor text.n { fill: var(--on-accent); font-weight: 600; font-size: 12px; }
+#floor .bx { transform-box: fill-box; transform-origin: center; }
+.floorfig figcaption { color: var(--ink2); font-size: 14px; margin-top: 12px; max-width: 62ch; }
+.cards3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.plain { margin: 10px 0 0; padding-left: 18px; color: var(--ink2); font-size: 15px; }
+.plain li { margin-bottom: 10px; }
+.plain li:last-child { margin-bottom: 0; }
+.plain b { color: var(--ink); font-weight: 600; }
+.tall { max-height: 560px; overflow: auto; }
+.tall thead th { position: sticky; top: 0; background: var(--surface); box-shadow: 0 1px 0 var(--grid); }
+#v3jobstable tbody tr { cursor: pointer; }
+#v3jobstable tbody tr:hover td, #v3jobstable tbody tr:focus-visible td { background: var(--land); }
+.card { background: var(--surface); border: 1px solid var(--ring); border-radius: 14px; padding: 22px; }
+.mt { margin-top: 16px; }
+header .v2link { font-size: 16px; margin-top: 24px; }
+header .v2link a { color: #fff; text-underline-offset: 3px; }
+header .v2link a:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+
+/* story */
+.story { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.5fr); gap: 40px; margin-top: 28px; }
+.steps { padding-bottom: 30vh; }
+.step { min-height: 76vh; display: flex; align-items: center; }
+.step .inner { max-width: 44ch; opacity: .28; transform: translateY(8px); transition: opacity .45s, transform .45s; }
+.step.on .inner { opacity: 1; transform: none; }
+.step .k { font-family: "Barlow Condensed", sans-serif; font-weight: 600; color: var(--accent); font-size: 18px; }
+.step h3 { font-family: "Barlow Condensed", sans-serif; font-size: 30px; line-height: 1.1; margin: 2px 0 10px; font-weight: 600; }
+.step p { margin: 0; color: var(--ink2); font-size: 17px; }
+.step p b { color: var(--ink); font-weight: 600; }
+.stagecol { position: relative; }
+.stage { position: sticky; top: max(8vh, 68px); height: 84vh; background: var(--surface); border: 1px solid var(--ring); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; }
+.hud { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--grid); }
+.hud div { padding: 12px 16px; border-right: 1px solid var(--grid); }
+.hud div:last-child { border-right: 0; }
+.hud .num { font-size: 30px; line-height: 1; display: block; font-variant-numeric: tabular-nums; }
+.hud span:last-child { font-size: 13px; color: var(--ink2); }
+#stage { flex: 1; width: 100%; min-height: 0; display: block; }
+#stage circle.st { transition: fill .6s ease, opacity .4s ease; transform-box: fill-box; transform-origin: center; }
+#stage .grow { transform-box: fill-box; transform-origin: center; }
+.overlay { position: absolute; bottom: 16px; background: var(--surface); border: 1px solid var(--ring); border-radius: 12px; padding: 14px 16px; box-shadow: 0 6px 24px rgba(10,20,50,.12);
+  opacity: 0; transform: translateY(10px); transition: opacity .4s, transform .4s; pointer-events: none; font-size: 14px; }
+.overlay.show { opacity: 1; transform: none; }
+#gauge { left: 16px; width: min(300px, 70%); }
+#compare { right: 16px; top: 100px; bottom: auto; width: min(340px, 80%); }
+.box { position: relative; height: 26px; border-radius: 6px; background: var(--land); margin: 8px 0 6px; overflow: hidden; }
+.box i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 6px 0 0 6px; transition: width 1.2s cubic-bezier(.2,.8,.2,1); }
+.box b { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--ink); }
+.pips { display: inline-flex; gap: 4px; vertical-align: middle; margin-right: 6px; }
+.pips i { width: 12px; height: 12px; border-radius: 3px; background: var(--land); border: 1px solid var(--axis); }
+.pips i.f { background: var(--ink2); border-color: var(--ink2); }
+.cmp { display: grid; grid-template-columns: 96px 1fr 44px; gap: 8px; align-items: center; margin-top: 8px; }
+.cmp .bar { height: 14px; border-radius: 0 4px 4px 0; width: 0; transition: width 1.2s cubic-bezier(.2,.8,.2,1); }
+.cmp span:last-child { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.stagenote { position: absolute; top: 74px; right: 14px; font-size: 12px; color: var(--muted); }
+
+/* results */
+.tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 24px; }
+.tile .num { font-size: 40px; line-height: 1.05; display: block; }
+.tile span:last-child { color: var(--ink2); font-size: 14px; }
+.grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.stack { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-content: start; }
+.grid2.rules { grid-template-columns: minmax(0, .8fr) minmax(0, 1.25fr); align-items: start; }
+.chart { width: 100%; display: block; overflow: visible; margin-top: 8px; }
+.chart text { fill: var(--ink2); font-size: 12px; font-family: Barlow, system-ui, sans-serif; }
+.chart .lab { fill: var(--ink); font-size: 14px; }
+.chart .val { fill: var(--ink); font-size: 13px; font-variant-numeric: tabular-nums; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin: 14px 0; }
+select, button { font: inherit; font-size: 15px; color: var(--ink); background: var(--surface); border: 1px solid var(--axis); border-radius: 8px; padding: 6px 10px; }
+button { cursor: pointer; }
+button:hover { background: var(--land); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--axis); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; border-radius: 0; border-right: 1px solid var(--axis); }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+label.chk { display: inline-flex; gap: 6px; align-items: center; color: var(--ink2); font-size: 15px; }
+.explore { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 16px; }
+.mapwrap { position: relative; border-radius: 12px; overflow: hidden; background: var(--page); border: 1px solid var(--ring); height: min(72vh, 760px); touch-action: none; }
+#map { width: 100%; height: 100%; display: block; cursor: grab; }
+#map.drag { cursor: grabbing; }
+.zoom { position: absolute; right: 10px; top: 10px; display: flex; flex-direction: column; gap: 4px; }
+.zoom button { width: 34px; height: 34px; padding: 0; font-size: 17px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; color: var(--ink2); font-size: 14px; margin-top: 10px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 10px; height: 10px; border-radius: 50%; display: inline-block; box-shadow: 0 0 0 2px var(--surface); }
+.ln { width: 18px; height: 2px; display: inline-block; border-radius: 1px; }
+.panel { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: right; padding: 7px 8px; border-bottom: 1px solid var(--grid); font-variant-numeric: tabular-nums; white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--ink2); font-weight: 500; }
+tr.sel td { font-weight: 600; }
+table.words th, table.words td { white-space: normal; }
+#headstable th, #headstable td, #v3teststable th, #v3teststable td { text-align: left; vertical-align: top; }
+.clist { max-height: 46vh; overflow: auto; border-top: 1px solid var(--grid); }
+.clist div { display: grid; grid-template-columns: 14px 1fr auto; gap: 8px; align-items: center; padding: 6px 4px; border-bottom: 1px solid var(--grid); font-size: 14px; }
+.clist div:hover, .clist div.hot { background: var(--land); }
+.clist .m { color: var(--ink2); font-variant-numeric: tabular-nums; }
+.clist div { cursor: pointer; }
+.clist div[aria-pressed="true"] { box-shadow: inset 3px 0 0 var(--accent); }
+.routebox { background: var(--land); border-radius: 10px; padding: 12px 14px; font-size: 14px; line-height: 1.45; }
+.it-h { font-weight: 600; margin-bottom: 8px; }
+.it { list-style: none; margin: 0; padding: 0; }
+.it li { display: grid; grid-template-columns: 24px 1fr; gap: 10px; position: relative; padding-bottom: 10px; }
+.it li:not(:last-child)::before { content: ""; position: absolute; left: 11px; top: 24px; bottom: 2px; width: 2px; background: var(--axis); }
+.it i { width: 24px; height: 24px; border-radius: 50%; color: var(--on-truck, #fff); font: 600 12px/24px Barlow, system-ui, sans-serif; text-align: center; font-style: normal; }
+.it b { display: block; font-weight: 600; }
+.it small { color: var(--ink2); font-size: 13px; }
+.it-f { color: var(--ink2); font-size: 13px; border-top: 1px solid var(--axis); padding-top: 6px; }
+.tstep { display: flex; gap: 6px; align-items: center; }
+.tstep span { flex: 1; text-align: center; font-weight: 600; }
+#trace { right: 16px; top: 100px; bottom: auto; width: min(290px, 70%); }
+.tableview { overflow-x: auto; }
+#tip { position: fixed; pointer-events: none; z-index: 10; background: var(--surface); color: var(--ink); border: 1px solid var(--ring); border-radius: 8px; padding: 8px 10px; font-size: 14px; box-shadow: 0 4px 16px rgba(0,0,0,.14); max-width: 300px; display: none; }
+#tip b { font-size: 16px; }
+#tip .k { color: var(--ink2); }
+.mapnote { position: absolute; left: 10px; bottom: 8px; font-size: 12px; color: var(--muted); }
+footer { padding: 40px 0 64px; }
+@media (max-width: 900px) {
+  .story { grid-template-columns: 1fr; gap: 0; }
+  .stagecol { order: -1; position: sticky; top: 52px; z-index: 2; height: 48vh; }
+  .stage { position: relative; top: 0; height: 48vh; border-radius: 0 0 14px 14px; }
+  .step { min-height: 88vh; align-items: flex-end; padding-bottom: 6vh; }
+  .step .inner { background: var(--surface); border: 1px solid var(--ring); border-radius: 12px; padding: 16px; opacity: .55; }
+  .step h3 { font-size: 24px; }
+  .step p { font-size: 16px; }
+  .hud .num { font-size: 22px; }
+  .hud div { padding: 8px 10px; }
+  .hud span:last-child { font-size: 11px; line-height: 1.2; display: block; }
+  .stagenote { display: none; }
+  .tiles { grid-template-columns: 1fr 1fr; }
+  .grid2, .grid2.rules, .explore, .cards3, .v3hero-grid { grid-template-columns: minmax(0, 1fr); }
+  .v3hero { padding-top: 32px; }
+  .v3hero .result .num { font-size: 40px; }
+  .v3hero .result { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #gauge, #compare, #trace { left: 10px; right: 10px; width: auto; top: auto; bottom: 10px; }
+}
+</style>
+</head>
+<body>
+<nav class="vbar" aria-label="Version">
+  <div class="wrap">
+    <span class="vname">Delivery planning results</span>
+    <div class="vswitch" role="group" aria-label="Version shown">
+      <button data-v="main" aria-pressed="true" title="Versions 1 and 2">V1 and V2</button>
+      <button data-v="v3" aria-pressed="false" id="v3btn" title="Version 3, the best plan" hidden>V3 <span class="tag">best</span></button>
+    </div>
+  </div>
+</nav>
+<header class="only-main">
+  <div class="wrap">
+    <h1>Planning Ryry's bulky deliveries</h1>
+    <p id="lede">Loading the results…</p>
+    <div class="result" id="hres"></div>
+    <p class="v2link"><a href="#v2">New in version 2: the cost in won, the price of each rule, and two checks on the results</a><br><a href="#v3" id="v3link" hidden>New in version 3: loads that really fit, and one model with four jobs</a></p>
+  </div>
+</header>
+
+<main>
+  <section class="block wrap only-main" id="how">
+    <h2>How a day gets planned</h2>
+    <p class="sub" id="storysub">Scroll through one real dispatch job, step by step.</p>
+    <div class="story">
+      <div class="steps">
+        <div class="step" data-k="0"><div class="inner"><div class="k">Step 1</div><h3>The orders</h3>
+          <p>One dispatch job: <b id="s-n">–</b> stops spread across Korea, <b id="s-vol">–</b> of bulky products in total. Every truck leaves from the depot in Changwon, marked with a star.</p></div></div>
+        <div class="step" data-k="1"><div class="inner"><div class="k">Step 2</div><h3>The rules</h3>
+          <p>A truck takes <b>1 to 5 addresses</b> and is loaded to at most <b>60 % of its box</b>, leaving room for safe packing with no stacking. Every stop must sit within <b>50 km of its group's centre</b>. Groups ride a 1-ton truck, or a 1.4-ton when needed (at most 10 per job); bigger trucks carry one address.</p></div></div>
+        <div class="step" data-k="2"><div class="inner"><div class="k">Step 3</div><h3>The GNN scores every pair</h3>
+          <p>A graph neural network looks at each stop together with its nearest neighbours and scores how likely each pair is to share a truck. It learned this from plans on other dates, never from this one. <b>Darker lines mean more likely.</b></p></div></div>
+        <div class="step" data-k="3"><div class="inner"><div class="k">Step 4</div><h3>A short list of options</h3>
+          <p>For each stop, only groups made from its <b>8 best-scored partners</b> are kept. That leaves <b id="s-cols">–</b> candidate groups to choose from, instead of <b id="s-cols0">–</b> when every nearby combination is tried.</p></div></div>
+        <div class="step" data-k="4"><div class="inner"><div class="k">Step 5</div><h3>The optimizer picks the plan</h3>
+          <p>An exact solver chooses the candidates that cover every stop exactly once with <b>the fewest trucks</b>, then the least driving. Every group is checked against the rules, so the plan can't break one. Colour shows the truck size.</p></div></div>
+        <div class="step" data-k="5"><div class="inner"><div class="k">Step 6</div><h3>Routes on real roads</h3>
+          <p>Every truck <b>starts at the depot</b> (★), drives to its first stop, visits the rest in the order that is shortest on real Korean roads, and <b>ends at its last stop</b> without driving back. One truck is traced with its stops numbered. This job needs <b id="s-k">–</b> trucks and <b id="s-km">–</b> of driving.</p></div></div>
+        <div class="step" data-k="6"><div class="inner"><div class="k">Step 7</div><h3>Compared with the real dispatch</h3>
+          <p>The same stops were driven with <b id="s-real">–</b> trucks. Across all 97 jobs the plan uses <b id="s-all">–</b>.<span id="s-proof"></span></p></div></div>
+      </div>
+      <div class="stagecol">
+        <div class="stage">
+          <div class="hud">
+            <div><span class="num" id="h-stops">–</span><span>stops</span></div>
+            <div><span class="num" id="h-cols">–</span><span>candidate groups</span></div>
+            <div><span class="num" id="h-trucks">–</span><span>trucks</span></div>
+            <div><span class="num" id="h-km">–</span><span>road km</span></div>
+          </div>
+          <svg id="stage" role="img" aria-label="Animated map of the example job"></svg>
+          <div class="stagenote" id="stagenote"></div>
+          <div class="overlay" id="gauge" aria-live="polite">
+            <div><b id="g-title">One truck from this plan</b></div>
+            <div class="box"><i id="g-fill"></i><b style="left:60%"></b></div>
+            <div class="note" id="g-load"></div>
+            <div class="note" style="margin-top:6px"><span class="pips" id="g-pips"></span><span id="g-addr"></span></div>
+            <div class="note" id="g-rad" style="margin-top:4px"></div>
+          </div>
+          <div class="overlay routebox" id="trace" aria-live="polite"></div>
+          <div class="overlay" id="compare">
+            <div><b>Trucks for this job</b></div>
+            <div class="cmp"><span>Real dispatch</span><i class="bar" id="c-real" style="background:var(--axis)"></i><span id="c-realv"></span></div>
+            <div class="cmp"><span>This plan</span><i class="bar" id="c-plan" style="background:var(--accent)"></i><span id="c-planv"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block wrap only-main" id="results">
+    <h2>Results across all 97 jobs</h2>
+    <p class="sub" id="ressub"></p>
+    <div class="tiles">
+      <div class="card tile"><span class="num" id="t-saved">–</span><span id="t-saved-l">fewer trucks than the real dispatch</span></div>
+      <div class="card tile"><span class="num" id="t-bound">–</span><span id="t-bound-l">above the lower bound, the fewest trucks any plan could use</span></div>
+      <div class="card tile"><span class="num" id="t-km">–</span><span>road km compared with the real dispatch</span></div>
+      <div class="card tile"><span class="num" id="t-breaks">0</span><span>rule breaks in any model plan</span></div>
+    </div>
+    <div class="grid2 mt">
+      <div class="card"><h3>Trucks used</h3><p class="note" id="c-trucks-n">Fewer is better. The line marks the lower bound.</p><svg class="chart" id="c-trucks" role="img"></svg></div>
+      <div class="card"><h3>Road km driven</h3><p class="note">One-way from the Changwon depot, best stop order on real roads.</p><svg class="chart" id="c-km" role="img"></svg></div>
+    </div>
+    <div class="card mt">
+      <h3>Trucks saved per job, compared with the real dispatch</h3>
+      <p class="note">One column per job, in date order. Select a column to open that job below.</p>
+      <svg class="chart" id="c-jobs" role="img"></svg>
+    </div>
+  </section>
+
+  <section class="block wrap only-main" id="v2">
+    <h2>Version 2: what it costs, and what each rule costs</h2>
+    <p class="sub">Added on 11 November 2026. Version 1 counted trucks. Version 2 prices every plan in won, measures what each company rule costs, and checks two things that could have undermined the results: the depot location and days the model has never seen.</p>
+    <div class="tiles" id="v2tiles"></div>
+    <div class="grid2 mt">
+      <div class="card"><h3>What does each plan cost?</h3><p class="note" id="costintro"></p><svg class="chart" id="c-cost" role="img"></svg><p class="note mt" id="costnote"></p></div>
+      <div class="stack">
+        <div class="card"><h3>Does the depot location matter?</h3>
+          <p class="note">Every route starts from the depot in Myeongseo-dong, Changwon. Its position on the map is the district's centre, not the exact lot, so here every plan is also re-routed from four other sites, each 10 km away.</p>
+          <div class="tableview mt"><table id="depottable"><thead><tr><th>Depot site</th><th>Road km, best plan</th><th>Change</th><th>Saving vs real</th></tr></thead><tbody></tbody></table></div>
+          <p class="note mt" id="depotnote"></p></div>
+        <div class="card"><h3>Does it work on days it has never seen?</h3>
+          <p class="note">A stricter test than version 1: the model learns only from earlier months, then plans later ones.</p>
+          <div class="tableview mt"><table id="fwdtable"><thead><tr><th>Method, on the July and August jobs</th><th>Trucks</th></tr></thead><tbody></tbody></table></div>
+          <p class="note mt" id="fwdnote"></p></div>
+      </div>
+    </div>
+    <div class="card mt"><h3>What does each company rule cost?</h3>
+      <p class="note">Each bar re-plans all 97 jobs with one rule loosened and nothing else changed. Loosening a rule can only keep the plan or save trucks, so the bar is what that rule costs.</p>
+      <p class="sub mt" id="rulesfinding"></p>
+      <div class="grid2 rules mt">
+        <svg class="chart" id="c-rules" role="img"></svg>
+        <div class="tableview"><table id="rulestable"><thead><tr><th>Rule loosened</th><th>Trucks</th><th>Saved</th><th>Proven minimum</th><th>Minimum drops by</th><th>Jobs improved</th></tr></thead><tbody></tbody></table></div>
+      </div>
+      <p class="note mt" id="rulesnote"></p></div>
+    <div class="grid2 mt">
+      <div class="card"><h3>Where this stands as research</h3>
+        <p class="note">A literature check found cost-of-rule studies for other rules, such as driver consistency, workload fairness and loading order. It found none that measures, with proven minimums, what these four dispatch rules cost on real bulky-delivery data. Using a neural network to shortlist options for an exact solver is established work, so the GNN is not presented as new. The check read abstracts and listings, not full papers, so it is a first pass, not a full review.</p></div>
+      <div class="card"><h3>Also new since the first version</h3>
+        <p class="note">Two more methods in the comparison: agglomerative clustering, and the optimizer with each stop's 8 nearest stops. A longer search, and a proven minimum for every job. Routes shown one truck at a time, with the depot, the stop order and the end marked. Still to come: planning directly on cost, and larger simulated days. The check of the 60 % load rule against real box sizes is in version 3 below.</p></div>
+    </div>
+  </section>
+
+  <div id="v3" class="only-v3">
+  <section class="v3hero">
+    <div class="wrap v3hero-grid">
+      <div>
+        <h1>Version 3: plans whose loads really fit the truck</h1>
+        <p class="lede">Versions 1 and 2 limit a load by volume. Version 3 also lays every load out on its truck floor, box by box, and plans with that check built in. One model then learns the slow parts of planning.</p>
+        <div class="result" id="v3res"></div>
+      </div>
+      <figure class="floorfig">
+        <svg id="floor" role="img"></svg>
+        <figcaption id="floorcap"></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="block wrap" id="v3compare">
+    <h2>How good is it?</h2>
+    <p class="sub">Every plan for the same 97 jobs, on the same real roads. "Made to fit" means the plan after the floor check split off every stop that did not fit.</p>
+    <div class="card mt">
+      <svg class="chart" id="c-v3cmp" role="img"></svg>
+      <p class="note" id="v3cmpline"></p>
+      <div class="tableview mt"><table id="v3cmptable" class="words"><thead><tr><th>Plan</th><th>Trucks</th><th>vs real dispatch</th><th>Road km</th><th>Driving hours</th><th>Hire cost, won</th><th>Loads with a floor layout</th><th>Stops split off</th><th>Seconds per job</th></tr></thead><tbody></tbody></table></div>
+      <p class="note mt" id="v3cmpnote"></p>
+    </div>
+  </section>
+
+  <section class="block wrap" id="v3new">
+    <h2>What is new, and why it matters</h2>
+    <div class="cards3 mt">
+      <div class="card"><h3>What is new</h3><ul class="plain" id="v3novel"></ul></div>
+      <div class="card"><h3>Why it matters</h3><ul class="plain" id="v3why"></ul></div>
+      <div class="card"><h3>What is not claimed</h3><ul class="plain" id="v3not"></ul></div>
+    </div>
+  </section>
+
+  <section class="block wrap" id="v3detail">
+    <h2>The evidence: the loading check and the model</h2>
+    <p class="sub">Version 2 showed the load limit is the costliest rule. Here that rule is checked against the real box and truck sizes, and one model is trained to pair stops, check the load, measure roads and count trucks.</p>
+    <div class="tiles" id="v3tiles"></div>
+    <div class="card mt"><h3>Does the 60 % rule match what fits on the truck floor?</h3>
+      <p class="note">Every stop's boxes were rebuilt from the order lines and the box-size list. A load fits if all its boxes can stand on the truck floor, none stacked, with a set clearance between neighbours. An exact solver settles the cases a quick layout search can't.</p>
+      <p class="sub mt" id="loadfinding"></p>
+      <div class="tableview mt"><table id="loadtable"><thead><tr><th>Loads</th><th>Floor covered, typical</th><th>Fit, no clearance</th><th>Fit, 5 cm clearance</th><th>Proved not to fit, 5 cm</th><th>Fit, 10 cm clearance</th></tr></thead><tbody></tbody></table></div>
+      <p class="note mt" id="loadnote"></p></div>
+    <div class="grid2 mt">
+      <div class="card"><h3>One model, four jobs</h3>
+        <p class="note" id="headsintro"></p>
+        <div class="tableview mt"><table id="headstable" class="words"><thead><tr><th>Job</th><th>Stands in for</th><th>Model</th><th>Simple rule</th></tr></thead><tbody></tbody></table></div>
+        <p class="note mt" id="headsnote"></p></div>
+      <div class="card"><h3>Planning with the model only</h3>
+        <p class="note">Here the planner never calls the map server or the packing check. The model supplies the groups to consider, whether each load fits, and the road distances. Every finished plan is then checked with the real packer and scored on real roads; a load that doesn't truly fit is split.</p>
+        <svg class="chart" id="c-e2e" role="img"></svg>
+        <div class="tableview mt"><table id="e2etable" class="words"><thead><tr><th>Plan</th><th>Trucks</th><th>Road km</th><th>Stops split off</th><th>Seconds per job</th></tr></thead><tbody></tbody></table></div>
+        <p class="note mt" id="e2enote"></p></div>
+    </div>
+    <div class="card mt" id="sizescard"><h3>Does a bigger model do better?</h3>
+      <p class="note">The same design at three sizes, each trained and tested the same way.</p>
+      <div class="tableview mt"><table id="sizestable" class="words"><thead><tr><th>Size</th><th>Parameters</th><th>Pairing, AUC</th><th>Load fit, right</th><th>Road km, typical error</th><th>Truck count, average miss</th><th>Trucks, model only</th></tr></thead><tbody></tbody></table></div>
+      <p class="note mt" id="sizesnote"></p></div>
+    <div class="card mt" id="rivalscard"><h3>The graph network against two other AI models, in the same test</h3>
+      <p class="note" id="rivalsintro"></p>
+      <div class="tableview mt"><table id="rivalstable" class="words"><thead><tr><th>AI model</th><th>Parameters</th><th>Pairing, AUC</th><th>Road km, typical error</th><th>Depot km, typical error</th><th>Truck count, average miss</th><th>Trucks, model alone</th><th>Trucks, model + solver</th></tr></thead><tbody></tbody></table></div>
+      <p class="note mt" id="rivalsnote"></p></div>
+  </section>
+
+  <section class="block wrap" id="v3tests">
+    <h2>How it was tested</h2>
+    <div class="card mt tableview"><table id="v3teststable" class="words"><thead><tr><th>Check</th><th>What was done</th><th>Result</th></tr></thead><tbody></tbody></table></div>
+  </section>
+
+  <section class="block wrap" id="v3jobs">
+    <h2>Every job</h2>
+    <p class="sub">Trucks per job for every plan that can be loaded, next to the real dispatch. Select a row to open that job's routes below.</p>
+    <div class="card mt tableview tall"><table id="v3jobstable"><thead><tr><th>Date</th><th>Stops</th><th>Real dispatch</th><th>Rule-based, made to fit</th><th>Version 1, made to fit</th><th>Simple rules</th><th>V3 model</th><th>V3 planner</th><th>Version 1 proven minimum</th></tr></thead><tbody></tbody></table></div>
+  </section>
+  </div>
+
+  <section class="block wrap" id="explore">
+    <h2>Explore every job</h2>
+    <p class="sub">Every truck starts at the one depot in Changwon (★), visits its stops in the numbered order and ends at its last stop; it doesn't drive back. Point at a truck in the list or a stop on the map, or select it to keep it shown.</p>
+    <div class="card mt">
+      <div class="controls">
+        <button id="prev" aria-label="Previous job">‹</button>
+        <select id="job" aria-label="Job"></select>
+        <button id="next" aria-label="Next job">›</button>
+        <div class="seg" id="meth" role="group" aria-label="Plan"></div>
+        <label class="chk"><input type="checkbox" id="depot" checked> Drive from depot</label>
+        <label class="chk"><input type="checkbox" id="edges"> GNN pair scores</label>
+      </div>
+      <div class="explore">
+        <div>
+          <div class="mapwrap">
+            <svg id="map" role="img" aria-label="Map of the selected job"></svg>
+            <div class="zoom"><button id="zin" aria-label="Zoom in">+</button><button id="zout" aria-label="Zoom out">−</button><button id="zfit" aria-label="Fit job">⤢</button></div>
+            <div class="mapnote">Drag to pan, scroll to zoom. No map tiles are loaded, so no stop location leaves this machine.</div>
+          </div>
+          <div class="legend">
+            <span><i class="sw" style="background:var(--t1)"></i>1-ton</span>
+            <span><i class="sw" style="background:var(--t14)"></i>1.4-ton</span>
+            <span><i class="sw" style="background:var(--tbig)"></i>2.5-ton and up, one address</span>
+            <span><i class="ln" style="background:var(--muted)"></i>drive from depot</span>
+            <span><i class="ln" style="background:var(--ink)"></i>GNN pair score</span>
+            <span>★ start: the depot in Changwon</span>
+            <span><i class="sw" style="background:var(--ink2)"></i>1, 2, 3: visit order, the last stop is the end</span>
+          </div>
+        </div>
+        <div class="panel">
+          <table id="jobtable"><thead><tr><th>Plan</th><th>Trucks</th><th>Road km</th></tr></thead><tbody></tbody></table>
+          <div class="note" id="jobnote"></div>
+          <div class="tstep"><button id="tprev" aria-label="Previous truck">‹</button><span id="tlabel"></span><button id="tnext" aria-label="Next truck">›</button><button id="tall">All trucks</button></div>
+          <div class="routebox" id="route" aria-live="polite"></div>
+          <div class="clist" id="clist" aria-label="Trucks in this plan"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block wrap only-main">
+    <h2>All numbers</h2>
+    <div class="card mt tableview">
+      <table id="alltable"><thead><tr><th>Plan</th><th>Trucks</th><th id="th-lb">vs lower bound</th><th>vs real dispatch</th><th id="th-at">Jobs at the bound</th><th>1.4-ton used</th><th>Road km</th><th>Driving h</th><th>Rule breaks</th><th>Slowest job, s</th></tr></thead><tbody></tbody></table>
+    </div>
+    <div class="grid2 mt">
+      <div class="card"><h3>The methods</h3>
+        <p class="note"><b>Real dispatch</b>: the groups that were actually driven, measured on the same roads. <b>Rule-based</b>: the approach in Ryry's paper, biggest order first, then its nearest stops. <b>k-means</b>: plain geographic clustering, split wherever a rule breaks. <b>Agglomerative</b>: merges the closest pair by road first while the rules hold. <b>GNN alone</b>: joins the highest-scored pairs while the rules hold. <b>Optimizer</b>: an exact set-partitioning solver over every nearby combination, 60 s per job. <b>Optimizer, 8 nearest</b>: the same solver over each stop's 8 nearest stops, the same list size as the GNN's, to test what the GNN adds. <b>GNN + optimizer</b>: the same solver over the GNN's short list. <b>Long run</b>: lists every load a truck may carry and solves the job exactly; where a job has too many loads to list, it searches the top 12 partners plus each stop's 15 nearest for 4 minutes.</p></div>
+      <div class="card"><h3>What the GNN adds</h3>
+        <p class="note"><span id="gnntxt"></span> GNN rows are out-of-fold: each job is planned by a model trained only on other dates.<span id="knn8txt"></span></p></div>
+    </div>
+    <div class="card mt" id="proofcard" hidden><h3>How close to the best possible?</h3><p class="note" id="prooftext"></p></div>
+    <p class="note mt">Rules: 1–5 addresses per truck; load at most 60 % of the box; every stop within 50 km of its group's centre; several addresses only on a 1-ton, or a 1.4-ton (at most 10 per job); 2.5-ton and up carry one address; unlimited trucks. The real dispatch also handled things this model doesn't see, such as time windows and driver availability; its rule breaks count groups wider than 50 km, over 5 stops, or over a 1.4-ton's 60 %. Depot: Myeongseo-dong, Uichang-gu, Changwon (placed at the district's centre).</p>
+  </section>
+</main>
+<footer class="wrap"><p class="note">Built from the frozen spatial set (6,395 stops, 97 jobs). Served from this machine only.</p></footer>
+<div id="tip" role="tooltip"></div>
+<script>
+const NAMES = { real: "Real dispatch", rule: "Rule-based (Ryry's paper)", kmeans: "k-means", gnn: "GNN alone", opt: "Optimizer", gnn_opt: "GNN + optimizer", long: "GNN + optimizer, long run", agg: "Agglomerative", knn8: "Optimizer, 8 nearest", v3: "Version 3 planner" };
+let ORDER = ["real", "rule", "kmeans", "agg", "gnn", "opt", "knn8", "gnn_opt", "long"];
+const SM = "gnn_opt";  // the walkthrough shows the fast model, so its steps match its numbers
+const LB = () => S.proven ? S.lb_proven : S.lb_valid, LBN = () => S.proven ? "Proven minimum" : "Lower bound";
+const NS = "http://www.w3.org/2000/svg";
+const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const $ = id => document.getElementById(id);
+const fmt = n => Math.round(n).toLocaleString("en-US");
+const pct = x => (x >= 0 ? "+" : "−") + Math.abs(x * 100).toFixed(1) + " %";
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+let S, best;
+const cache = {};
+
+function el(tag, attrs = {}, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function text(parent, x, y, s, cls, anchor = "start") {
+  const t = el("text", { x, y, "text-anchor": anchor, class: cls || "" }, parent);
+  t.textContent = s;
+  return t;
+}
+const tip = $("tip");
+function showTip(ev, rows) {
+  tip.replaceChildren();
+  rows.forEach(([v, k], i) => {
+    const d = document.createElement("div");
+    const b = document.createElement(i === 0 ? "b" : "span");
+    b.textContent = v;
+    d.appendChild(b);
+    if (k) { const s = document.createElement("span"); s.className = "k"; s.textContent = " " + k; d.appendChild(s); }
+    tip.appendChild(d);
+  });
+  tip.style.display = "block";
+  const r = tip.getBoundingClientRect();
+  tip.style.left = Math.min(ev.clientX + 14, innerWidth - r.width - 8) + "px";
+  tip.style.top = Math.min(ev.clientY + 14, innerHeight - r.height - 8) + "px";
+}
+const hideTip = () => { tip.style.display = "none"; };
+function countTo(node, from, to, ms, f = fmt) {
+  if (RM || !ms) { node.textContent = f(to); return; }
+  const t0 = performance.now();
+  const step = t => { const q = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - q, 3); node.textContent = f(from + (to - from) * e); if (q < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+function draw(p, ms, delay) {  // reveal a path along its length
+  if (RM) return;
+  p.setAttribute("pathLength", 1);
+  p.style.strokeDasharray = "1";
+  p.animate([{ strokeDashoffset: "1" }, { strokeDashoffset: "0" }], { duration: ms, delay, easing: "cubic-bezier(.45,.05,.3,1)", fill: "backwards" });
+}
+
+// ---------- geography ----------
+function decode(str) {
+  const pts = []; let i = 0, lat = 0, lng = 0;
+  while (i < str.length) {
+    for (const k of [0, 1]) {
+      let b, sh = 0, r = 0;
+      do { b = str.charCodeAt(i++) - 63; r |= (b & 31) << sh; sh += 5; } while (b >= 32);
+      const d = r & 1 ? ~(r >> 1) : r >> 1;
+      if (k === 0) lat += d; else lng += d;
+    }
+    pts.push([lat / 1e5, lng / 1e5]);
+  }
+  return pts;
+}
+function drawDepot(g, s) {  // the one warehouse every route starts from
+  g.replaceChildren();
+  const [x, y] = P(S.depot);
+  el("circle", { cx: x, cy: y, r: 11 * s, fill: css("--ink"), stroke: css("--surface"), "stroke-width": 2 * s }, g);
+  el("text", { x, y, "text-anchor": "middle", "dominant-baseline": "central", fill: css("--surface"), "font-size": 13 * s }, g).textContent = "★";
+  el("text", { x: x + 15 * s, y, "dominant-baseline": "central", fill: css("--ink"), "font-size": 13 * s, "font-weight": 600, stroke: css("--surface"), "stroke-width": 3 * s, "paint-order": "stroke" }, g).textContent = "Start: depot";
+}
+function itinerary(box, job, c, k, n) {  // one truck as a timeline: depot, stops in order, the end
+  box.replaceChildren();
+  const add = (tag, cls, text, parent) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; parent.appendChild(e); return e; };
+  add("div", "it-h", `Truck ${k + 1} of ${n}: ${truckName(c.t)}` + (c.fill != null ? `, ${Math.round(c.fill * 100)}\u00a0% full (limit 60\u00a0%)` : ""), box);
+  const ol = add("ol", "it", null, box);
+  const row = (badge, bg, main, sub) => {
+    const li = add("li", "", null, ol), b = add("i", "", badge, li), t = add("span", "", null, li);
+    b.style.background = bg;
+    if (bg === css("--tbig")) b.style.color = "#0b0b0b";
+    add("b", "", main, t); add("small", "", sub, t);
+  };
+  row("★", css("--ink"), "Depot, Changwon", "Start");
+  c.s.forEach((i, q) => row(String(q + 1), truckColor(c.t), job.stops[i][3] || `Stop ${q + 1}`,
+    (q === 0 ? `${fmt(c.lk ? c.lk[0] : 0)} km from the depot` : `${fmt(c.lk ? c.lk[q] : 0)} km further`) + (q === c.s.length - 1 ? ". Ends here." : "")));
+  add("div", "it-f", `${fmt(c.km)} km and ${c.h.toFixed(1)} h of driving in total. No return trip to the depot.`, box);
+}
+function routeOverlay(g, job, c, s) {  // one truck end to end: solid route, dashes flowing in the driving direction, numbered stops
+  const col = truckColor(c.t);
+  const encs = [job.first[c.s[0]], ...c.s.slice(1).map((b, q) => job.legs[`${c.s[q]}-${b}`])];
+  for (const e of encs) {
+    const d = path(decode(e || ""));
+    el("path", { d, fill: "none", stroke: col, "stroke-width": 4.5 * s, "stroke-linecap": "round", "stroke-linejoin": "round" }, g);
+    const f = el("path", { d, fill: "none", stroke: css("--surface"), "stroke-width": 1.8 * s, "stroke-linecap": "round", "stroke-dasharray": `${5 * s} ${9 * s}` }, g);
+    if (!RM) f.animate([{ strokeDashoffset: "0" }, { strokeDashoffset: String(-14 * s) }], { duration: 700, iterations: Infinity });
+  }
+  c.s.forEach((i, q) => {
+    const [x, y] = P(job.stops[i]);
+    el("circle", { cx: x, cy: y, r: 9 * s, fill: col, stroke: css("--surface"), "stroke-width": 2 * s }, g);
+    el("text", { x, y, "text-anchor": "middle", "dominant-baseline": "central", fill: css("--on-truck") || (c.t === "1.4t" || c.t === "1t" ? "#fff" : "#0b0b0b"), "font-size": 11 * s, "font-weight": 600 }, g).textContent = q + 1;
+    if (q === c.s.length - 1) el("text", { x: x + 13 * s, y, "dominant-baseline": "central", fill: css("--ink"), "font-size": 12 * s, "font-weight": 600, stroke: css("--surface"), "stroke-width": 3 * s, "paint-order": "stroke" }, g).textContent = "End";
+  });
+}
+const KX = Math.cos(36 * Math.PI / 180);
+const P = ([lat, lng]) => [lng * KX, -lat];
+const path = pts => pts.length ? "M" + pts.map(p => P(p).map(v => v.toFixed(4)).join(",")).join("L") : "";
+let korea = null;
+const truckColor = t => t === "1t" ? css("--t1") : t === "1.4t" ? css("--t14") : t === "?" ? css("--tq") : css("--tbig");
+const truckName = t => t === "1t" ? "1-ton" : t === "1.4t" ? "1.4-ton" : t === "?" ? "unknown truck" : t.replaceAll("t", "-ton").replaceAll("+", " + ");
+function land(svg) {
+  const g = el("g", { fill: css("--land"), stroke: css("--coast"), "stroke-width": 1, "vector-effect": "non-scaling-stroke" }, svg);
+  if (korea) for (const f of korea.features) {
+    const polys = f.geometry.type === "Polygon" ? [f.geometry.coordinates] : f.geometry.coordinates;
+    let d = "";
+    for (const poly of polys) for (const ring of poly) d += path(ring.map(([lng, lat]) => [lat, lng])) + "Z";
+    el("path", { d, "vector-effect": "non-scaling-stroke" }, g);
+  }
+  return g;
+}
+function fitView(svg, pts, pad) {
+  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+  let x0 = Math.min(...xs) - pad, x1 = Math.max(...xs) + pad, y0 = Math.min(...ys) - pad, y1 = Math.max(...ys) + pad;
+  const ar = (svg.clientWidth || 800) / (svg.clientHeight || 600);
+  if ((x1 - x0) / (y1 - y0) < ar) { const w = (y1 - y0) * ar, c = (x0 + x1) / 2; x0 = c - w / 2; x1 = c + w / 2; }
+  else { const h = (x1 - x0) / ar, c = (y0 + y1) / 2; y0 = c - h / 2; y1 = c + h / 2; }
+  return [x0, y0, x1 - x0, y1 - y0];
+}
+async function getJob(i) {
+  if (!cache[i]) cache[i] = await (await fetch(`jobs/${i}.json`)).json();
+  return cache[i];
+}
+
+// ---------- the walkthrough ----------
+const ST = { k: -1, job: null, idx: 0, scale: 1, scan: null };
+function storySetup() {
+  const svg = $("stage"), job = ST.job;
+  svg.replaceChildren();
+  const pts = job.stops.map(P).concat([P(S.depot)]);
+  const v = fitView(svg, pts, 0.3);
+  svg.setAttribute("viewBox", v.join(" "));
+  ST.scale = v[2] / (svg.clientWidth || 800);
+  land(svg);
+  ST.L = {};
+  for (const k of ["edges", "groups", "routes", "fx", "stops", "top"]) ST.L[k] = el("g", {}, svg);
+  const s = ST.scale, plan = job.methods[SM];
+  ST.truckOf = []; ST.clusterOf = [];
+  plan.clusters.forEach((c, ci) => c.s.forEach(i => { ST.truckOf[i] = c.t; ST.clusterOf[i] = ci; }));
+  const [dlat, dlng] = S.depot;
+  const dist = job.stops.map(([a, b]) => Math.hypot(a - dlat, (b - dlng) * KX));
+  const rank = dist.map((d, i) => [d, i]).sort((a, b) => a[0] - b[0]);
+  ST.order = []; rank.forEach(([, i], r) => { ST.order[i] = r; });
+  ST.dots = job.stops.map(st => { const [x, y] = P(st); return el("circle", { cx: x, cy: y, r: 5 * s, class: "st", fill: css("--ink2"), stroke: css("--surface"), "stroke-width": 1.6 * s, opacity: 0 }, ST.L.stops); });
+  drawDepot(el("g", { "pointer-events": "none" }, svg), s);
+  // partners for the short-list scan: each stop's 8 best-scored neighbours
+  ST.top = job.stops.map(() => []);
+  for (const [a, b, p] of job.edges || []) { ST.top[a].push([p, b]); ST.top[b].push([p, a]); }
+  ST.top = ST.top.map(l => l.sort((x, y) => y[0] - x[0]).slice(0, 8).map(x => x[1]));
+  const lngOrder = job.stops.map((st, i) => [st[1] + st[0] * 0.3, i]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
+  ST.scanSeq = Array.from({ length: 16 }, (_, q) => lngOrder[Math.floor((q + 0.5) * lngOrder.length / 16)]).filter(i => ST.top[i].length);
+  // the truck shown in step 2: a full group of 3+ stops, load nearest the 60 % limit
+  const cands = plan.clusters.map((c, ci) => [c, ci]).filter(([c]) => c.s.length >= 3 && c.fill != null);
+  ST.sample = (cands.sort((a, b) => Math.abs(.6 - a[0].fill) - Math.abs(.6 - b[0].fill))[0] || [plan.clusters[0], 0])[1];
+  // the truck traced in step 6: 3+ stops spread far enough apart that their numbers don't overlap
+  const gap = c => Math.min(...c.s.slice(1).map((b, q) => { const [x1, y1] = P(job.stops[c.s[q]]), [x2, y2] = P(job.stops[b]); return Math.hypot(x2 - x1, y2 - y1); }));
+  const multi = plan.clusters.map((c, ci) => [c, ci]).filter(([c]) => c.s.length >= 3);
+  const clear = multi.filter(([c]) => gap(c) / ST.scale >= 24);  // numbers at least 24 px apart; then the longest drive out
+  ST.trace = clear.length ? clear.sort((a, b) => b[0].lk[0] - a[0].lk[0])[0][1] : multi.length ? multi.sort((a, b) => gap(b[0]) - gap(a[0]))[0][1] : ST.sample;
+}
+function setHud(k, prev) {
+  const job = ST.job, plan = job.methods[SM], fwd = k > prev;
+  $("h-stops").textContent = k >= 0 ? fmt(job.n) : "–";
+  if (k === 3 && fwd) countTo($("h-cols"), job.cols.opt || 0, job.cols.gnn || 0, 1800);
+  else $("h-cols").textContent = k >= 3 ? fmt(job.cols.gnn || 0) : "–";
+  if (k === 4 && fwd) countTo($("h-trucks"), job.n, plan.trucks, 1600);
+  else $("h-trucks").textContent = k >= 4 ? fmt(plan.trucks) : "–";
+  if (k === 5 && fwd) countTo($("h-km"), 0, plan.km, 2200);
+  else $("h-km").textContent = k >= 5 ? fmt(plan.km) : "–";
+}
+function storyStep(k, still = false) {  // still: redraw without animation (after a resize)
+  if ((k === ST.k && !still) || !ST.job) return;
+  const prev = still ? k : ST.k, A = k > prev && !RM;
+  ST.k = k;
+  document.querySelectorAll(".step").forEach(d => d.classList.toggle("on", +d.dataset.k === k));
+  clearInterval(ST.scan);
+  const { L, job, scale: s } = ST, plan = job.methods[SM];
+  for (const g of [L.edges, L.groups, L.routes, L.fx, L.top]) g.replaceChildren();
+  const sample = plan.clusters[ST.sample];
+  ST.dots.forEach((c, i) => {
+    c.setAttribute("fill", k >= 4 ? truckColor(ST.truckOf[i]) : css("--ink2"));
+    c.setAttribute("opacity", k === 1 && ST.clusterOf[i] !== ST.sample ? 0.3 : 1);
+  });
+  if (k === 0 && A) ST.dots.forEach((c, i) => c.animate([{ transform: "scale(0)", opacity: 0 }, { transform: "scale(1)", opacity: 1 }],
+    { duration: 520, delay: 150 + ST.order[i] * (1400 / job.n), easing: "cubic-bezier(.3,1.5,.5,1)", fill: "backwards" }));
+  if (k === 1) {  // rules: one real truck from the plan, its 50 km circle and its load
+    const pts = sample.s.map(i => job.stops[i]);
+    const [cx, cy] = P([pts.reduce((a, p) => a + p[0], 0) / pts.length, pts.reduce((a, p) => a + p[1], 0) / pts.length]);
+    const ring = el("ellipse", { cx, cy, rx: 50 / 111, ry: 50 / 111, class: "grow", fill: css("--accent"), "fill-opacity": .07, stroke: css("--accent"), "stroke-width": 1.5 * s }, L.fx);
+    if (A) ring.animate([{ transform: "scale(0)" }, { transform: "scale(1)" }], { duration: 900, easing: "cubic-bezier(.2,.8,.2,1)", fill: "backwards" });
+    const lbl = text(L.fx, cx, cy - 50 / 111 - 6 * s, "50 km", "", "middle");
+    lbl.setAttribute("font-size", 13 * s); lbl.setAttribute("fill", css("--accent"));
+    sample.s.forEach(i => { const [x, y] = P(job.stops[i]); el("circle", { cx: x, cy: y, r: 9 * s, fill: "none", stroke: css("--ink"), "stroke-width": 1.5 * s }, L.fx); });
+    $("g-title").textContent = `One truck from this plan: ${truckName(sample.t)}`;
+    $("g-fill").style.background = truckColor(sample.t);
+    $("g-fill").style.width = "0";
+    requestAnimationFrame(() => requestAnimationFrame(() => { $("g-fill").style.width = Math.round(sample.fill * 100) + "%"; }));
+    $("g-load").textContent = `Load ${Math.round(sample.fill * 100)} % of the box. The line marks the 60 % limit.`;
+    const pips = $("g-pips"); pips.replaceChildren();
+    for (let q = 0; q < 5; q++) { const i = document.createElement("i"); if (q < sample.s.length) i.className = "f"; pips.appendChild(i); }
+    $("g-addr").textContent = `${sample.s.length} of 5 addresses`;
+    $("g-rad").textContent = `Farthest stop ${sample.r.toFixed(0)} km from the centre, limit 50 km`;
+  }
+  $("gauge").classList.toggle("show", k === 1);
+  if (k === 2 || k === 3) for (const [a, b, p] of job.edges || []) {
+    const [x1, y1] = P(job.stops[a]), [x2, y2] = P(job.stops[b]);
+    const ln = el("path", { d: `M${x1},${y1}L${x2},${y2}`, stroke: css("--ink"), "stroke-opacity": ((k === 3 ? .3 : .85) * p).toFixed(2), "stroke-width": (0.5 + 2.5 * p) * s, "stroke-linecap": "round", fill: "none" }, L.edges);
+    if (k === 2 && A) draw(ln, 650, 120 + Math.min(ST.order[a], ST.order[b]) * (1500 / job.n));
+  }
+  if (k === 3 && ST.scanSeq.length) {  // the short list: each stop keeps only its 8 best partners
+    let q = 0;
+    const tick = () => {
+      L.fx.replaceChildren();
+      const a = ST.scanSeq[q++ % ST.scanSeq.length], [x1, y1] = P(job.stops[a]);
+      for (const b of ST.top[a]) {
+        const [x2, y2] = P(job.stops[b]);
+        const ln = el("path", { d: `M${x1},${y1}L${x2},${y2}`, stroke: css("--scan"), "stroke-width": 3 * s, "stroke-linecap": "round", fill: "none" }, L.fx);
+        draw(ln, 380, 0);
+      }
+      el("circle", { cx: x1, cy: y1, r: 10 * s, fill: "none", stroke: css("--scan"), "stroke-width": 2.5 * s }, L.fx);
+    };
+    tick();
+    if (!RM) ST.scan = setInterval(tick, 900);
+  }
+  const byDepot = plan.clusters.map((c, ci) => [ST.order[c.s[0]], ci]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
+  const when = []; byDepot.forEach((ci, r) => { when[ci] = r; });
+  if (k === 4) plan.clusters.forEach((c, ci) => {  // chosen groups snap together
+    if (c.s.length < 2) return;
+    const ln = el("path", { d: "M" + c.s.map(i => P(job.stops[i]).join(",")).join("L"), stroke: truckColor(c.t), "stroke-width": 2.6 * s, "stroke-linejoin": "round", "stroke-linecap": "round", fill: "none" }, L.groups);
+    if (A) draw(ln, 500, 250 + when[ci] * (1500 / plan.clusters.length));
+  });
+  if (k >= 5) plan.clusters.forEach((c, ci) => {  // real roads: the drive out from Changwon, then the stops in order
+    const dep = el("path", { d: path(decode(job.first[c.s[0]] || "")), stroke: css("--muted"), "stroke-opacity": .6, "stroke-width": 1.1 * s, fill: "none", "stroke-linejoin": "round" }, L.routes);
+    const t0 = when[ci] * (1600 / plan.clusters.length);
+    if (k === 5 && A) draw(dep, 900, t0);
+    for (let q = 0; q + 1 < c.s.length; q++) {
+      const leg = el("path", { d: path(decode(job.legs[`${c.s[q]}-${c.s[q + 1]}`] || "")), stroke: truckColor(c.t), "stroke-width": 2.6 * s, "stroke-linejoin": "round", "stroke-linecap": "round", fill: "none" }, L.routes);
+      if (k === 5 && A) draw(leg, 500, t0 + 800 + q * 350);
+    }
+  });
+  if (k >= 5) {  // one truck end to end: the depot, its stops in order, the end
+    const g = el("g", {}, L.top);
+    routeOverlay(g, job, plan.clusters[ST.trace], s);
+    if (A) g.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 600, delay: 2600, fill: "backwards" });
+  }
+  if (k === 5) itinerary($("trace"), job, plan.clusters[ST.trace], ST.trace, plan.clusters.length);
+  $("trace").classList.toggle("show", k === 5);
+  if (k === 6) {
+    const real = job.methods.real.trucks, mine = plan.trucks, mx = Math.max(real, mine);
+    $("c-realv").textContent = real; $("c-planv").textContent = mine;
+    $("c-real").style.width = "0"; $("c-plan").style.width = "0";
+    requestAnimationFrame(() => requestAnimationFrame(() => { $("c-real").style.width = (100 * real / mx) + "%"; $("c-plan").style.width = (100 * mine / mx) + "%"; }));
+  }
+  $("compare").classList.toggle("show", k === 6);
+  setHud(k, prev);
+}
+async function storyInit() {
+  // a mid-sized job where the plan clearly differs from the real dispatch
+  const pick = S.jobs.filter(j => j.n >= 45 && j.n <= 90).sort((a, b) => (b.trucks.real - b.trucks[SM]) - (a.trucks.real - a.trucks[SM]) || b.n - a.n)[0] || S.jobs[0];
+  ST.idx = pick.i;
+  ST.job = await getJob(pick.i);
+  const job = ST.job, plan = job.methods[SM];
+  $("storysub").textContent = `Scroll through one real dispatch job from ${job.date}, planned by ${NAMES[SM]}.`;
+  $("s-n").textContent = fmt(job.n);
+  $("s-vol").textContent = job.stops.reduce((a, s) => a + s[2], 0).toFixed(0) + " m³";
+  $("s-cols").textContent = fmt(job.cols.gnn || 0);
+  $("s-cols0").textContent = fmt(job.cols.opt || 0);
+  $("s-k").textContent = fmt(plan.trucks);
+  $("s-km").textContent = fmt(plan.km) + " km";
+  $("s-real").textContent = fmt(job.methods.real.trucks);
+  $("s-all").textContent = `${fmt(S.methods[SM].trucks)} trucks instead of ${fmt(S.methods.real.trucks)} (${pct(S.methods[SM].trucks / S.methods.real.trucks - 1)})`;
+  $("s-proof").textContent = S.proven ? ` No plan can use fewer than ${fmt(LB())}: this plan is within ${(100 * (S.methods[SM].trucks / LB() - 1)).toFixed(1)}\u00a0% of the proven minimum${best !== SM ? `, and a longer search gets to ${fmt(S.methods[best].trucks)}` : ""}.` : "";
+  $("stagenote").textContent = job.date;
+  storySetup();
+  // the trigger line sits mid-screen, or mid-way below the sticky map on a phone
+  const narrow = matchMedia("(max-width: 900px)").matches;
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) storyStep(+e.target.dataset.k); }),
+    { rootMargin: narrow ? "-74% 0px -24% 0px" : "-45% 0px -45% 0px" });
+  document.querySelectorAll(".step").forEach(d => io.observe(d));
+}
+
+// ---------- results charts ----------
+function hbar(g, x, y, w, h, fill) {
+  const r = Math.min(4, w / 2, h / 2);
+  return el("path", { d: `M${x},${y}h${w - r}a${r},${r} 0 0 1 ${r},${r}v${h - 2 * r}a${r},${r} 0 0 1 -${r},${r}h-${w - r}z`, fill }, g);
+}
+function bars(svg, rows, { ref = 0, refLabel = "" } = {}) {  // rows: [{label, short, v, text, hi, tip}]
+  svg.replaceChildren();
+  const W = svg.clientWidth || 560, narrow = W < 460, L = narrow ? 150 : 190, R = 92, row = 36, bh = 18, top = 8;
+  const max = Math.max(...rows.map(r => r.v), ref, 1e-9) * 1.02;
+  const H = top + rows.length * row + (ref ? 26 : 6);
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.setAttribute("height", H);
+  svg.setAttribute("aria-label", rows.map(r => `${r.label} ${r.text}`).join(", "));
+  const x = v => L + (W - L - R) * v / max;
+  el("line", { x1: L, x2: L, y1: top - 4, y2: top + rows.length * row, stroke: css("--axis") }, svg);
+  rows.forEach((r, i) => {
+    const y = top + i * row + (row - bh) / 2;
+    text(svg, L - 10, y + bh / 2 + 5, narrow && r.short ? r.short : r.label, "lab", "end");
+    const bar = r.v > 0 ? hbar(svg, L, y, Math.max(2, x(r.v) - L), bh, r.hi ? css("--accent") : css("--axis")) : null;
+    if (bar) {
+      if (!RM) bar.animate([{ transform: "scaleX(0)" }, { transform: "scaleX(1)" }], { duration: 900, delay: i * 70, easing: "cubic-bezier(.2,.8,.2,1)", fill: "backwards" });
+      bar.style.transformOrigin = `${L}px 0`;
+    }
+    text(svg, x(Math.max(r.v, 0)) + 6, y + bh / 2 + 5, r.text, "val");
+    if (!r.tip) return;
+    const hit = el("rect", { x: 0, y: top + i * row, width: W, height: row, fill: "transparent", tabindex: 0 }, svg);
+    const on = ev => { if (bar) bar.setAttribute("opacity", .8); showTip(ev, r.tip); };
+    hit.addEventListener("pointermove", on);
+    hit.addEventListener("focus", () => { const b = hit.getBoundingClientRect(); on({ clientX: b.left + L, clientY: b.top }); });
+    const off = () => { if (bar) bar.setAttribute("opacity", 1); hideTip(); };
+    hit.addEventListener("pointerleave", off);
+    hit.addEventListener("blur", off);
+  });
+  if (ref) {
+    el("line", { x1: x(ref), x2: x(ref), y1: top - 4, y2: top + rows.length * row, stroke: css("--ink"), "stroke-width": 1 }, svg);
+    text(svg, x(ref), top + rows.length * row + 18, refLabel, "", "middle");
+  }
+}
+const noPaper = n => n.replace(" (Ryry's paper)", "");
+function barChart(svg, key, refVal, refLabel, unit) {
+  bars(svg, ORDER.map(m => ({ label: NAMES[m], short: noPaper(NAMES[m]), v: S.methods[m][key], text: fmt(S.methods[m][key]), hi: m === best,
+    tip: [[fmt(S.methods[m][key]) + " " + unit, NAMES[m]], [pct(S.methods[m][key] / S.methods.real[key] - 1), "vs real dispatch"]] })),
+    { ref: refVal, refLabel: refVal ? `${refLabel} ${fmt(refVal)}` : "" });
+}
+
+// ---------- version 2: cost, the price of each rule, the depot check, the forward test ----------
+const RULES = { radius75: ["Radius 75 km (was 50)", "Radius 75 km", "widening the radius from 50 km to 75 km"],
+  stops6: ["6 addresses (was 5)", "6 addresses", "allowing 6 addresses per truck, up from 5"],
+  fill70: ["Load limit 70 % (was 60)", "Load limit 70 %", "raising the load limit from 60 % to 70 %"],
+  no14limit: ["No 1.4-ton limit (was 10)", "No 1.4-ton limit", "lifting the limit of ten 1.4-ton trucks per job"] };
+const mwon = x => fmt(x / 1e6) + " M";
+function fillTable(id, rows) {
+  const tb = $(id).tBodies[0];
+  tb.replaceChildren();
+  rows.forEach(r => { const tr = tb.insertRow(); if (r.sel) tr.className = "sel"; r.cells.forEach(c => { tr.insertCell().textContent = c; }); });
+}
+function v2charts() {
+  const V = S.v2, C = V.cost && V.cost.methods;
+  if (C) {
+    const ms = ORDER.filter(m => C[m]), cheap = ms.filter(m => m !== "real").sort((a, b) => C[a].S1 - C[b].S1)[0];
+    bars($("c-cost"), ms.map(m => ({ label: NAMES[m], short: noPaper(NAMES[m]), v: C[m].S1 / 1e6, text: mwon(C[m].S1), hi: m === cheap,
+      tip: [[fmt(C[m].S1 / 1e6) + " million won", NAMES[m]], [pct(C[m].S1 / C.real.S1 - 1), "vs real dispatch"],
+            [fmt(C[m].S2 / 1e6) + " million won", "with the second price source"], [fmt(C[m].trucks) + " trucks", fmt(C[m].km) + " km"]] })));
+  }
+  const rs = V.rules.filter(r => r.name !== "control");
+  if (rs.length) {
+    const top = Math.max(0, ...rs.filter(r => r.done).map(r => r.saved));
+    bars($("c-rules"), rs.map(r => ({ label: RULES[r.name][0], short: RULES[r.name][1], v: r.done ? r.saved : 0, hi: r.done && r.saved === top && top > 0,
+      text: r.done ? `${fmt(r.saved)} trucks` : "still running",
+      tip: r.done ? [[`${fmt(r.saved)} fewer trucks`, r.label], [fmt(r.trucks), "trucks with this rule loosened"], [fmt(r.bound), "proven minimum"], [`${r.improved} of ${S.jobs.length}`, "jobs improve"], [fmt(r.km) + " km", "road distance"]] : null })));
+  }
+}
+function renderV2() {
+  const V = S.v2;
+  if (!V) { $("v2").hidden = true; return; }
+  const tiles = [], C = V.cost && V.cost.methods, tile = (v, l) => tiles.push([v, l]);
+  if (C) {
+    const cheap = ORDER.filter(m => C[m] && m !== "real").sort((a, b) => C[a].S1 - C[b].S1)[0];
+    tile(pct(C[cheap].S1 / C.real.S1 - 1), `estimated truck-hire cost against the real dispatch (${NAMES[cheap]})`);
+    tile(mwon(C.real.S1 - C[cheap].S1) + " won", "saved over the four months, at public list prices");
+    const [b0, perKm] = V.cost.rate_1t;
+    $("costintro").textContent = `A hired truck is paid mostly by distance: a 1-ton costs about ${fmt(b0)} won plus ${fmt(perKm)} won per km, plus a fee for each extra address. These are brokers' public list prices, not the company's contract rates, so read the percentages more than the totals.`;
+    const a = C.gnn_opt, b = C.long;
+    $("costnote").textContent = (a && b && b.trucks < a.trucks && b.S1 > a.S1
+      ? `Fewest trucks is not the cheapest plan. ${NAMES.long} uses ${fmt(a.trucks - b.trucks)} fewer trucks than ${NAMES.gnn_opt}, yet costs ${((b.S1 - a.S1) / 1e6).toFixed(1)} million won more, because it drives further. Planning directly on cost is the next step. ` : "") +
+      "Not included: waiting, loading help, tolls and night fees. A second price source gives the same percentages to within half a point.";
+  }
+  const rs = V.rules.filter(r => r.name !== "control"), done = rs.filter(r => r.done), ctl = V.rules.find(r => r.name === "control");
+  if (done.length) {
+    const top = done.slice().sort((a, b) => b.saved - a.saved)[0];
+    tile(`${fmt(top.saved)} trucks`, `saved by ${RULES[top.name][2]}, the costliest rule measured${done.length < rs.length ? " so far" : ""}`);
+  } else tile("\u2013", "price of each rule: still running");
+  if (ctl) {
+    fillTable("rulestable", V.rules.map(r => ({ sel: false, cells: r.done
+      ? [r.name === "control" ? "Nothing changed (control)" : RULES[r.name][0], fmt(r.trucks), r.name === "control" ? "\u2013" : fmt(r.saved), fmt(r.bound), r.name === "control" ? "\u2013" : [...new Set(r.bound_drop)].map(fmt).join(" to "), r.name === "control" ? "\u2013" : `${r.improved} of ${S.jobs.length}`]
+      : [RULES[r.name][0], "running", "", "", "", ""] })));
+    $("rulesnote").textContent = `The control repeats the search with no rule changed (${fmt(ctl.trucks)} trucks); every saving is counted against it. "Trucks saved" are plans actually found. The proven minimum is the fewest trucks any plan could use under that rule; a range in the next column means some jobs have too many possible loads to prove.` +
+      (done.length < rs.length ? ` ${rs.length - done.length} of ${rs.length} rules are still being computed, and this section is updated when they finish.` : "");
+    if (done.length === rs.length && rs.length > 1) {  // the finding, in one sentence
+      const by = done.slice().sort((a, b) => b.saved - a.saved), rest = by.slice(1).reduce((a, r) => a + r.saved, 0);
+      $("rulesfinding").textContent = `The costliest rule is the one loosened by ${RULES[by[0].name][2]}: that alone saves ${fmt(by[0].saved)} trucks (${(100 * by[0].saved / ctl.trucks).toFixed(1)}\u00a0%), ` +
+        (by[0].saved > rest ? `more than the other ${by.length - 1} changes together (${fmt(rest)}).` : `against ${fmt(rest)} for the other ${by.length - 1} changes together.`);
+    }
+  } else $("rulesnote").textContent = "This analysis is running. Results appear here when it finishes.";
+  if (V.depot) {
+    const d0 = V.depot[0], shift = Math.max(...V.depot.map(d => Math.abs(d.long / d0.long - 1))), sav = V.depot.map(d => d.long / d.real - 1);
+    tile("\u00b1" + (shift * 100).toFixed(1) + "\u00a0%", "change in total road km when the depot moves 10 km in any direction");
+    fillTable("depottable", V.depot.map((d, i) => ({ sel: i === 0, cells: [i ? d.site.replace("10 km", "10 km to the") : "Central Changwon (used)", fmt(d.long), i ? pct(d.long / d0.long - 1) : "\u2013", pct(d.long / d.real - 1)] })));
+    $("depotnote").textContent = `Truck counts are identical for every site, because no rule involves the depot. Total road km moves by at most ${(shift * 100).toFixed(1)}\u00a0%, and the saving against the real dispatch stays between ${pct(Math.max(...sav))} and ${pct(Math.min(...sav))}. The results don't depend on the exact depot address.`;
+  }
+  if (!V.depot) { $("depottable").hidden = true; $("depotnote").textContent = "This check is running. Results appear here when it finishes."; }
+  const F = V.forward;
+  if (F) {
+    fillTable("fwdtable", [["Real dispatch", F.real], ["Rule-based (Ryry's paper)", F.rule], ["Optimizer, 8 nearest (no GNN)", F.knn8],
+      ["GNN + optimizer, trained on April\u2013June only", F.fwd], ["GNN + optimizer, earlier 5-fold test", F.cv], ["Proven minimum", F.bound]]
+      .map(([n, v], i) => ({ sel: i === 3, cells: [n, fmt(v)] })));
+    $("fwdnote").textContent = `The GNN was retrained on the ${F.train} jobs from April to June, then planned the ${F.test} jobs from July and August, all later than anything it had seen. It needs ${fmt(F.fwd)} trucks there, against ${fmt(F.cv)} in the earlier test and ${fmt(F.knn8)} without the GNN` +
+      (F.fwd <= F.cv + 2 ? ", so it holds up on later days." : ", so it loses some ground on later days.");
+  } else { $("fwdtable").hidden = true; $("fwdnote").textContent = "This test is running: the GNN is retrained on April to June only, then plans July and August. Results appear here when it finishes."; }
+  const box = $("v2tiles");
+  box.replaceChildren();
+  tiles.forEach(([v, l]) => { const d = document.createElement("div"), a = document.createElement("span"), b = document.createElement("span"); d.className = "card tile"; a.className = "num"; a.textContent = v; b.textContent = l; d.append(a, b); box.appendChild(d); });
+  revealOnce($("c-cost"), v2charts);
+}
+function jobsChart() {
+  const svg = $("c-jobs");
+  svg.replaceChildren();
+  const W = svg.clientWidth || 1100, L = 36, R = 8, top = 12, H = 230, B = 30;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.setAttribute("height", H);
+  const d = S.jobs.map(j => j.trucks.real - j.trucks[best]);
+  const lo = Math.min(0, ...d), hi = Math.max(1, ...d);
+  const y = v => top + (H - top - B) * (hi - v) / (hi - lo);
+  const step = hi - lo > 12 ? 5 : hi - lo > 6 ? 2 : 1;
+  for (let t = Math.ceil(lo / step) * step; t <= hi; t += step) {
+    el("line", { x1: L, x2: W - R, y1: y(t), y2: y(t), stroke: t === 0 ? css("--axis") : css("--grid") }, svg);
+    text(svg, L - 8, y(t) + 4, t, "", "end");
+  }
+  const slot = (W - L - R) / d.length, bw = Math.min(24, Math.max(2, slot - 2));
+  svg.setAttribute("aria-label", `Trucks saved per job; total ${fmt(d.reduce((a, b) => a + b, 0))}`);
+  d.forEach((v, i) => {
+    const x = L + i * slot + (slot - bw) / 2, j = S.jobs[i], y0 = y(0), h = Math.abs(y(v) - y0);
+    if (h > 0) {
+      const r = Math.min(4, bw / 2, h);
+      const p = v >= 0 ? `M${x},${y0}v-${h - r}a${r},${r} 0 0 1 ${r},-${r}h${bw - 2 * r}a${r},${r} 0 0 1 ${r},${r}v${h - r}z`
+                       : `M${x},${y0}v${h - r}a${r},${r} 0 0 0 ${r},${r}h${bw - 2 * r}a${r},${r} 0 0 0 ${r},-${r}v-${h - r}z`;
+      const col = el("path", { d: p, fill: css("--accent") }, svg);
+      col.style.transformOrigin = `0 ${y0}px`;
+      if (!RM) col.animate([{ transform: "scaleY(0)" }, { transform: "scaleY(1)" }], { duration: 700, delay: i * 8, easing: "cubic-bezier(.2,.8,.2,1)", fill: "backwards" });
+    }
+    const hit = el("rect", { x: L + i * slot, y: top, width: slot, height: H - top - B, fill: "transparent", tabindex: 0, style: "cursor:pointer" }, svg);
+    const on = ev => showTip(ev, [[`${v >= 0 ? v : "−" + -v} trucks saved`, j.date], [String(j.trucks.real), "real dispatch"], [String(j.trucks[best]), NAMES[best]], [String(j.lb), LBN().toLowerCase()], [String(j.n), "stops"]]);
+    hit.addEventListener("pointermove", on);
+    hit.addEventListener("focus", () => { const b = hit.getBoundingClientRect(); on({ clientX: b.left, clientY: b.top }); });
+    hit.addEventListener("pointerleave", hideTip);
+    hit.addEventListener("blur", hideTip);
+    const open = () => { hideTip(); setJob(i); $("explore").scrollIntoView({ block: "start" }); };
+    hit.addEventListener("click", open);
+    hit.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } });
+  });
+  const months = {};
+  S.jobs.forEach((j, i) => { const m = j.date.slice(0, 7); if (!(m in months)) months[m] = i; });
+  for (const [m, i] of Object.entries(months)) text(svg, L + i * slot, H - 8, new Date(m + "-01T00:00").toLocaleString("en", { month: "short" }), "", "start");
+}
+function allTable() {
+  const tb = $("alltable").tBodies[0];
+  tb.replaceChildren();
+  for (const m of ORDER) {
+    const s = S.methods[m], tr = tb.insertRow();
+    if (m === best) tr.className = "sel";
+    [NAMES[m], fmt(s.trucks), pct(s.trucks / LB() - 1), m === "real" ? "–" : pct(s.trucks / S.methods.real.trucks - 1),
+     `${s.at_bound} of ${S.jobs.length}`, m === "real" ? "–" : fmt(s.t14), fmt(s.km), fmt(s.hours), fmt(s.breaks), m === "real" ? "–" : Math.round(s.solve_max)]
+      .forEach(c => { tr.insertCell().textContent = c; });
+  }
+}
+function revealOnce(node, fn) {  // draw a chart the first time it scrolls into view, so its animation is seen
+  const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); fn(); } }, { threshold: .25 });
+  io.observe(node);
+}
+
+// ---------- version 3: real loading and the multi-task model ----------
+const p1 = x => (100 * x).toFixed(1) + "\u00a0%", p0 = x => Math.round(100 * x) + "\u00a0%";
+function v3rows() {
+  const V = S.v3;
+  return [["60 % plan, as planned", V.base, null], ["60 % plan, made to fit", V.base_true, null],
+    ["Packer and map server", V.ref, V.ref], ["Model only", V.pick.M, V.pick.M], ["Simple rules only", V.simple, V.simple]].filter(r => r[1]);
+}
+function v3chart() {
+  const V = S.v3;
+  bars($("c-e2e"), v3rows().map(([n, r]) => ({ label: n,
+    v: r.trucks, text: fmt(r.trucks), hi: r === V.pick.M, tip: [[fmt(r.trucks) + " trucks", n], [fmt(r.km) + " km", "real road distance"]] })));
+}
+function renderV3() {
+  const V = S.v3;
+  if (!V || !V.model || !V.heads) { $("v3").hidden = true; delete document.documentElement.dataset.view; return; }
+  $("v3link").hidden = $("v3btn").hidden = false;
+  const sizes = [["", "Small"], ["_mid", "Medium"], ["_big", "Large"]].map(([t, n]) => ({ n, H: V["heads" + t], M: V["model" + t] })).filter(x => x.H && x.M);
+  V.pick = sizes.reduce((a, b) => b.M.trucks < a.M.trucks ? b : a);  // shown everywhere below: the size that plans with the fewest trucks
+  const H = V.pick.H, L = V.load, tiles = [], size = k => k < 1024 ? fmt(k) + " KB" : (k / 1024).toFixed(1) + " MB";
+  // the audit
+  const names = { real: "Real dispatch, as driven", long: "Plan at the 60 % limit", rule_fill70: "Plan at a 70 % limit" };
+  const share = (d, g, k) => d.gaps[g][k] / d.loads;
+  fillTable("loadtable", Object.keys(names).filter(k => L[k]).map(k => ({ sel: k === "long", cells: [names[k], p0(L[k].cover_p50), p1(share(L[k], "0", "fit")), p1(share(L[k], "5", "fit")), p1(share(L[k], "5", "no")), p1(share(L[k], "10", "fit"))] })));
+  if (L.long && L.rule_fill70) {
+    const a = L.long, b = L.rule_fill70;
+    $("loadfinding").textContent = `The 60 % rule is about right. At 60 % of the box volume a typical load covers ${p0(a.cover_p50)} of the floor and ${p0(share(a, "5", "fit"))} of loads fit with 5 cm between boxes. At 70 % a typical load covers ${p0(b.cover_p50)} of the floor and only ${p0(share(b, "5", "fit"))} fit; ${p0(share(b, "5", "no"))} are proved not to. So the trucks that a looser load limit seemed to save in version 2 are mostly not there to be saved without stacking.`;
+    const und = k => p1(share(L[k], "5", "undecided"));
+    $("loadnote").textContent = `Not every 60 % load fits either: ${p1(share(a, "5", "no"))} are proved not to fit at 5 cm, which is why version 3 plans with the real fit check as well as the 60 % limit. Still undecided after the exact solver's time limit, at 5 cm: ${und("long")} of the 60 % loads and ${und("rule_fill70")} of the 70 % loads. Some loads in the real dispatch don't fit this floor model either, mostly on 1.4-ton trucks, so drivers stack or the truck beds differ from the size list: the check is a model of loading, not a record of it. Heights are not checked.`;
+  }
+  // the model's four jobs
+  $("headsintro").textContent = `A graph neural network with ${fmt(H.params)} parameters (about ${size(H.kb)}). It sees only coordinates, volumes and box sizes: no road data and no packing solver. Scores are on jobs from dates it was not trained on, next to the simple rule a planner would use otherwise.`;
+  fillTable("headstable", [
+    ["Which stops share a truck", "trying every nearby combination", `ranks pairs with AUC ${H.pair.auc.toFixed(2)}`, `nearest first: ${H.pair.base_auc.toFixed(2)}`],
+    ["Does this load fit the floor?", "the packing check", `right on ${p1(H.fit.acc)} of loads`, `floor-coverage threshold: ${p1(H.fit.base_acc)}`],
+    ["Road km between two stops", "the map server", `typical error ${p1(H.road.err)}`, `straight line \u00d7 a factor: ${p1(H.road.base_err)}`],
+    ["Road km from the depot", "the map server", `typical error ${p1(H.dep.err)}`, `straight line \u00d7 a factor: ${p1(H.dep.base_err)}`],
+    ["How many trucks a job needs", "running the planner", `off by ${H.fleet.mae.toFixed(2)} trucks per job on average`, `total volume \u00f7 truck size \u00d7 a factor: ${H.fleet.base_mae.toFixed(2)}`]].map(c => ({ cells: c })));
+  const wins = [H.pair.auc > H.pair.base_auc + 0.005, H.fit.acc > H.fit.base_acc + 0.002, H.road.err < H.road.base_err * 0.95, H.dep.err < H.dep.base_err * 0.95, H.fleet.mae < H.fleet.base_mae * 0.95];
+  $("headsnote").textContent = `The model beats the simple rule on ${wins.filter(Boolean).length} of these 5 measures. ${fmt(H.fit.n)} loads, ${fmt(H.road.n)} stop pairs and ${fmt(H.dep.n)} depot legs were scored. ${p0(H.fit.share_fit)} of the scored loads fit, so a rule that always says "fits" would already be right that often. The truck-count result is the least certain: it rests on ${fmt(H.fleet.n)} jobs, and by median relative error the model is at ${p1(H.fleet.err)} against ${p1(H.fleet.base_err)} for the simple rule.`;
+  // planning with the model only
+  const rows = v3rows();
+  fillTable("e2etable", rows.map(([n, r, t]) => ({ sel: r === V.pick.M, cells: [n, fmt(r.trucks), fmt(r.km), r.shed != null ? fmt(r.shed) : "\u2013", t && t.s != null ? (t.s < 10 ? t.s.toFixed(1) : fmt(t.s)) : "\u2013"] })));
+  const M = V.pick.M, Rf = V.ref, Si = V.simple;
+  $("e2enote").textContent = `The 60 % plan needs ${fmt(V.base_true.trucks - V.base.trucks)} more trucks once ${fmt(V.base_true.shed)} stops that don't really fit are split off. Planning with the real packer and map server in the loop needs ${fmt(Rf.trucks)}. With the model only, the plan needs ${fmt(M.trucks)} trucks (${pct(M.trucks / Rf.trucks - 1)} against the packer and map server)` +
+    (Si ? `, and simple rules alone need ${fmt(Si.trucks)}` + (M.trucks < Si.trucks ? `, so the model saves ${fmt(Si.trucks - M.trucks)} trucks over them.` : M.trucks === Si.trucks ? `, the same.` : `, ${fmt(M.trucks - Si.trucks)} fewer than the model: on this data the simple rules are enough.`) : ".") +
+    ` Seconds per job are medians; the model's share of its time is ${M.prep.toFixed(2)} s.`;
+  tiles.push([fmt(H.params), `parameters in the whole model, about ${size(H.kb)}, for four jobs`]);
+  tiles.push([pct(M.trucks / Rf.trucks - 1), `trucks when planning with the model only (${fmt(M.trucks)}), against the real packer and map server (${fmt(Rf.trucks)})`]);
+  tiles.push([(M.s < 10 ? M.s.toFixed(1) : fmt(M.s)) + " s", `to plan a job with the model, against ${fmt(Rf.s)} s with the packer and map server`]);
+  tiles.push(["+" + fmt(V.base_true.trucks - V.base.trucks), "trucks needed to make the 60 % plan physically loadable"]);
+  const box = $("v3tiles");
+  box.replaceChildren();
+  tiles.forEach(([v, l]) => { const d = document.createElement("div"), a = document.createElement("span"), b = document.createElement("span"); d.className = "card tile"; a.className = "num"; a.textContent = v; b.textContent = l; d.append(a, b); box.appendChild(d); });
+  $("sizescard").hidden = sizes.length < 2;
+  fillTable("sizestable", sizes.map(x => ({ sel: x === V.pick, cells: [x.n, fmt(x.H.params), x.H.pair.auc.toFixed(3), p1(x.H.fit.acc), p1(x.H.road.err), x.H.fleet.mae.toFixed(2), fmt(x.M.trucks)] })));
+  $("sizesnote").textContent = `The rest of this section shows the ${V.pick.n.toLowerCase()} model, the one that plans with the fewest trucks. It was picked after seeing these results.` + (V.pick !== sizes[0] ? ` The small model, with ${p0(sizes[0].H.params / V.pick.H.params)} of its parameters, needs ${fmt(sizes[0].M.trucks - V.pick.M.trucks)} more trucks (${p1(sizes[0].M.trucks / V.pick.M.trucks - 1)}).` : "");
+  revealOnce($("c-e2e"), v3chart);
+  v3rivals();
+  if (V.x) { v3hero(); v3compare(); v3words(); v3jobs(); } else ["v3compare", "v3new", "v3tests", "v3jobs"].forEach(i => { $(i).hidden = true; });
+}
+function v3rivals() {  // the encoders side by side: ours and the two most-used rival designs, everything else equal
+  const R = S.v3.rivals || {}, G = R._gnn;
+  const rows = [["_gnn", "Graph neural network (ours)", "graph network"], ["_tf", "Transformer (attention model)", "Transformer"], ["_ptr", "Pointer network (LSTM)", "pointer network"]].filter(r => R[r[0]]);
+  $("rivalscard").hidden = !G || rows.length < 2;
+  if ($("rivalscard").hidden) return;
+  $("rivalsintro").textContent = "Two of the most-used AI designs for routing problems were given the same inputs, the same training jobs, the same output parts and the same tests as the graph network. Only the part that reads the stops differs: the graph network passes messages between nearby stops, the Transformer lets every stop look at every other stop of the job, and the pointer network reads the stops as one sequence. All three are about the same size.";
+  const fewest = k => Math.min(...rows.map(r => R[r[0]][k]));
+  fillTable("rivalstable", rows.map(([k, n]) => { const r = R[k]; return { sel: k === "_gnn", cells: [n, fmt(r.params), r.pair.auc.toFixed(3), p1(r.road.err), p1(r.dep.err), r.fleet.mae.toFixed(2), fmt(r.alone) + (r.alone === fewest("alone") ? " (fewest)" : ""), fmt(r.solver) + (r.solver === fewest("solver") ? " (fewest)" : "")] }; }));
+  const rivals = rows.slice(1), part = k => rivals.map(([key, , short]) => { const w = R[key][k]; return `against the ${short}, the graph network uses fewer trucks on ${w.fewer} jobs and more on ${w.more}`; }).join("; ");
+  const lead = k => { const best = rows.filter(r => R[r[0]][k] === fewest(k)); return best.length > 1 ? `the ${best.map(r => r[2]).join(" and the ")} tie on the fewest trucks` : best[0][0] === "_gnn" ? "the graph network needs the fewest trucks" : `the ${best[0][2]} needs the fewest trucks, ${fmt(G[k] - fewest(k))} fewer than the graph network`; };
+  const sign = (a, b) => { let p = 0, c = 1; for (let i = 0; i <= Math.min(a, b); i++) { p += c; c = c * (a + b - i) / (i + 1); } return Math.min(1, p / 2 ** (a + b - 1)); };  // two-sided sign test over the jobs that differ
+  const tests = rivals.flatMap(([key, , short]) => [["vs_gnn_solver", "with the solver"], ["vs_gnn_alone", "with no solver"]].map(([k, how]) => ({ short, how, w: R[key][k], p: sign(R[key][k].fewer, R[key][k].more) })));
+  const clear = tests.filter(x => x.p < 0.05);
+  const verdict = clear.length
+    ? "Clear of chance (sign test over the jobs that differ, p under 0.05): " + clear.map(x => (x.w.fewer > x.w.more ? `the graph network beats the ${x.short}` : `the ${x.short} beats the graph network`) + ` ${x.how} (p ${x.p.toFixed(3)})`).join("; ") + ". The other differences are within the noise of training."
+    : `None of these differences is clear of chance (sign test over the jobs that differ, smallest p ${Math.min(...tests.map(x => x.p)).toFixed(2)}), so the three designs are level, with the solver and without it.`;
+  $("rivalsnote").textContent = `Planning with the solver, ${lead("solver")}: ${part("vs_gnn_solver")}. With no solver at all (stops merged in the order of the model's pair scores), ${lead("alone")}: ${part("vs_gnn_alone")}. Every plan was made true with the real packer and scored on real roads. ${verdict} The load-fit part is the same design in all three, and simple rules alone need ${fmt(S.v3.simple.trucks)} trucks. A design difference that was not measured here: the graph network only looks at nearby stops, so its work grows in step with the number of stops, while the Transformer compares every pair.`;
+}
+const won = x => x == null ? "\u2013" : (x / 1e6).toFixed(1) + "\u00a0M";
+function v3hero() {
+  const V = S.v3, T = V.x.totals, Rl = S.methods.real, Rf = V.ref, M = V.pick.M, C = S.v2 && S.v2.cost && S.v2.cost.methods;
+  const box = $("v3res");
+  box.replaceChildren();
+  [[fmt(Rf.trucks), `trucks, every load with a floor layout (real dispatch: ${fmt(Rl.trucks)})`], [pct(Rf.trucks / Rl.trucks - 1), "trucks against the real dispatch"],
+    [pct(Rf.km / Rl.km - 1), "road km"], ...(C && C.real ? [[pct(T.ref.S1 / C.real.S1 - 1), "hire cost at public list prices"]] : []),
+    [fmt(M.trucks), `trucks when the model plans alone, in ${M.s.toFixed(1)} s a job`]].forEach(([v, l]) => {
+    const d = document.createElement("div"), a = document.createElement("span"), b = document.createElement("span");
+    a.className = "num"; a.textContent = v; b.textContent = l; d.append(a, b); box.appendChild(d);
+  });
+  drawFloor(isV3());
+}
+const SHADES = ["#f7dfb8", "#e8be84", "#d6a468", "#c18c50", "#aa763c"];  // one cardboard shade per stop, first stop lightest
+function drawFloor(animate) {  // one real load on its truck floor, seen from above: the cab on the left, the rear door on the right
+  const X = S.v3.x.example, svg = $("floor");
+  svg.replaceChildren();
+  const m = 34, cab = 46, ox = m + cab, oy = m, ax = css("--axis");
+  svg.setAttribute("viewBox", `0 0 ${cab + X.L + 2 * m} ${X.W + 2 * m}`);
+  const line = (x1, y1, x2, y2) => el("line", { x1, y1, x2, y2, stroke: ax, "stroke-width": 1 }, svg);
+  el("path", { d: `M${ox - 7} ${oy + 12} h${16 - cab} a10 10 0 0 0 -10 10 v${X.W - 44} a10 10 0 0 0 10 10 h${cab - 16}`, fill: "none", stroke: ax, "stroke-width": 1.5 }, svg);
+  el("rect", { x: ox, y: oy, width: X.L, height: X.W, rx: 2, fill: css("--land"), stroke: css("--accent"), "stroke-width": 2 }, svg);
+  text(svg, m + 9, oy + X.W / 2, "cab", "", "middle").setAttribute("transform", `rotate(-90 ${m + 9} ${oy + X.W / 2})`);
+  line(ox, oy + X.W + 13, ox + X.L, oy + X.W + 13); line(ox, oy + X.W + 8, ox, oy + X.W + 18); line(ox + X.L, oy + X.W + 8, ox + X.L, oy + X.W + 18);
+  text(svg, ox + X.L / 2, oy + X.W + 27, `floor length ${X.L} cm`, "", "middle");
+  line(ox + X.L + 13, oy, ox + X.L + 13, oy + X.W); line(ox + X.L + 8, oy, ox + X.L + 18, oy); line(ox + X.L + 8, oy + X.W, ox + X.L + 18, oy + X.W);
+  text(svg, ox + X.L + 26, oy + X.W / 2, `width ${X.W} cm`, "", "middle").setAttribute("transform", `rotate(90 ${ox + X.L + 26} ${oy + X.W / 2})`);
+  [...X.boxes].sort((a, b) => a[1] - b[1] || a[0] - b[0]).forEach(([x, y, w, d, k], i) => {  // deepest box first, as when loading through the rear door
+    const g = el("g", { class: "bx" }, svg);
+    el("rect", { x: ox + y, y: oy + x, width: d, height: w, rx: 2, fill: SHADES[k % SHADES.length], stroke: css("--page"), "stroke-width": 1 }, g);
+    el("text", { x: ox + y + d / 2, y: oy + x + w / 2, "text-anchor": "middle", "dominant-baseline": "central", class: "n" }, g).textContent = k + 1;
+    if (animate && !RM) g.animate([{ opacity: 0, transform: "translateX(60px)" }, { opacity: 1, transform: "none" }], { duration: 560, delay: 520 + i * 120, easing: "cubic-bezier(.2,.8,.2,1)", fill: "backwards" });
+  });
+  const cap = `A real load from the Version 3 plan (job of ${X.date}): ${X.boxes.length} boxes for ${X.stops} addresses on a 1-ton floor. They cover ${p0(X.cover)} of the floor with ${X.gap} cm between them, none stacked, and fill ${p0(X.fill)} of the box volume. Each number and shade is the stop the box goes to.`;
+  $("floorcap").textContent = cap;
+  svg.setAttribute("aria-label", cap);
+}
+function v3cmpRows() {
+  const V = S.v3, T = V.x.totals, M = S.methods, C = (S.v2 && S.v2.cost && S.v2.cost.methods) || {}, L = V.load, P = V.pick.M;
+  const audit = k => L[k] ? p0(L[k].gaps["5"].fit / L[k].loads) + " (audit)" : "\u2013", S1 = k => C[k] ? C[k].S1 : null;
+  return [
+    { n: "Real dispatch, as driven", short: "Real dispatch", t: M.real.trucks, km: M.real.km, h: M.real.hours, won: S1("real"), fit: audit("real") },
+    { n: "Rule-based, as planned", short: "Rule-based", t: M.rule.trucks, km: M.rule.km, h: M.rule.hours, won: S1("rule"), fit: "not checked" },
+    { n: "Rule-based, made to fit", short: "Rule-based, fit", t: T.rule_true.trucks, km: T.rule_true.km, h: T.rule_true.hours, won: T.rule_true.S1, fit: "all", shed: T.rule_true.shed },
+    { n: "Version 1 plan, as planned", short: "V1 as planned", t: V.base.trucks, km: V.base.km, h: M.long ? M.long.hours : null, won: S1("long"), fit: audit("long") },
+    { n: "Version 1 plan, made to fit", short: "V1, made to fit", t: V.base_true.trucks, km: V.base_true.km, h: T.base_true.hours, won: T.base_true.S1, fit: "all", shed: V.base_true.shed },
+    { n: "Simple rules only", short: "Simple rules", t: V.simple.trucks, km: V.simple.km, h: V.simple.hours, fit: "all", shed: V.simple.shed, s: V.simple.s },
+    { n: "Version 3 model only", short: "V3 model only", t: P.trucks, km: P.km, h: P.hours, fit: "all", shed: P.shed, s: P.s },
+    { n: "Version 3 planner", short: "V3 planner", t: V.ref.trucks, km: V.ref.km, h: T.ref.hours, won: T.ref.S1, fit: "all", shed: 0, s: V.ref.s, hi: true }];
+}
+function v3cmpChart() {
+  bars($("c-v3cmp"), v3cmpRows().map(r => ({ label: r.n, short: r.short, v: r.t, text: fmt(r.t), hi: r.hi, tip: [[fmt(r.t) + " trucks", r.n], [fmt(r.km) + " km", "real road distance"]] })),
+    S.proven ? { ref: S.lb_proven, refLabel: "Version 1's proven minimum" } : {});
+}
+function v3compare() {
+  const rows = v3cmpRows(), real = rows[0].t, sec = s => s == null ? "\u2013" : s < 10 ? s.toFixed(1) : fmt(s), num = x => x == null ? "\u2013" : fmt(x);
+  fillTable("v3cmptable", rows.map(r => ({ sel: r.hi, cells: [r.n, fmt(r.t), r === rows[0] ? "\u2013" : pct(r.t / real - 1), fmt(r.km), num(r.h), won(r.won), r.fit, num(r.shed), sec(r.s)] })));
+  const T = S.v3.x.totals, Rf = S.v3.ref, w = S.v3.x.ref_vs_rule_true;
+  $("v3cmpline").textContent = `Held to the same floor check, the rule-based method needs ${fmt(T.rule_true.trucks)} trucks and the Version 1 plan ${fmt(S.v3.base_true.trucks)}. The Version 3 planner needs ${fmt(Rf.trucks)}: fewer than the rule-based plan on ${w.fewer} of ${S.jobs.length} jobs` + (w.more ? `, more on ${w.more}.` : ", more on none.") + (S.proven ? ` The line is the fewest trucks any plan could use under the volume rules alone (${fmt(S.lb_proven)}); with the floor check the true minimum is higher, so Version 3 is at most ${p1(Rf.trucks / S.lb_proven - 1)} above the best possible. With the floor check included, it is proven the fewest possible on ${S.v3.proven} of ${S.jobs.length} jobs.` : "");
+  $("v3cmpnote").textContent = "As planned: the plan as the method wrote it, limited by volume only. Hire cost uses public list prices, not contract rates. The model-only and simple-rule plans were scored but not stored, so they are not priced. The real dispatch was driven, so its loads went onto trucks one way or another; the audit figure is the share that match this floor model at 5 cm clearance. Seconds are medians per job.";
+  revealOnce($("c-v3cmp"), v3cmpChart);
+}
+function v3words() {
+  const V = S.v3, T = V.x.totals, L = V.load, Rl = S.methods.real, Rf = V.ref, P = V.pick, C = S.v2 && S.v2.cost && S.v2.cost.methods, H = P.H, w = V.x.model_vs_simple;
+  const share = (k, f) => p0(L[k].gaps["5"][f] / L[k].loads), rule = S.v2 && S.v2.rules && S.v2.rules.find(r => r.name === "fill70" && r.done);
+  const list = (id, items) => { const ul = $(id); ul.replaceChildren(); items.filter(Boolean).forEach(([lead, rest]) => { const li = document.createElement("li"), b = document.createElement("b"); b.textContent = lead; li.append(b, " " + rest); ul.appendChild(li); }); };
+  list("v3novel", [
+    L.long && L.rule_fill70 && ["A loading rule of thumb, checked against real packing.", `Every load was laid out on its truck floor from the real box and truck sizes. At 60 % of the volume, ${share("long", "fit")} of loads fit with 5 cm between boxes. At 70 % only ${share("rule_fill70", "fit")} do, and ${share("rule_fill70", "no")} are proved impossible.`],
+    rule && ["The costliest rule is the one that cannot be loosened.", `Version 2 priced the 60 % limit at ${fmt(rule.saved)} trucks. The loading check shows most of that saving would need stacking.`],
+    ["The fit check inside the planner, not after it.", `Repairing the volume-only plan afterwards takes ${fmt(V.base_true.trucks)} trucks. Planning with the check built in takes ${fmt(Rf.trucks)}.`],
+    ["One model for the slow parts of planning, verified end to end.", `It pairs stops, judges whether a load fits and estimates road km from coordinates, volumes and box sizes alone. Its plans, checked with the real packer and real roads, need ${fmt(P.M.trucks)} trucks: ${fmt(V.simple.trucks - P.M.trucks)} fewer than simple rules.`]]);
+  list("v3why", [
+    [`${fmt(Rl.trucks - Rf.trucks)} fewer trucks than the real dispatch.`, `That is ${pct(Rf.trucks / Rl.trucks - 1)} over ${S.jobs.length} jobs, about ${((Rl.trucks - Rf.trucks) / S.jobs.length).toFixed(1)} trucks a job, with ${pct(Rf.km / Rl.km - 1)} road km.`],
+    C && C.real && [`About ${p0(1 - T.ref.S1 / C.real.S1)} lower hire cost.`, `${won(T.ref.S1)} won against ${won(C.real.S1)} at public list prices.`],
+    [`${fmt(T.rule_true.trucks - Rf.trucks)} fewer trucks than the rule-based method.`, `Held to the same floor check, the rule-based plan needs ${fmt(T.rule_true.trucks)} trucks (${pct(Rf.trucks / T.rule_true.trucks - 1)} for Version 3).`],
+    ["A plan that can be loaded as written.", "Every load with several addresses has a floor layout with 5 cm between boxes and nothing stacked."],
+    ["It still works with no map service and no packing solver.", `The model alone plans a job in ${P.M.s.toFixed(1)} s, against ${fmt(Rf.s)} s, and costs ${p1(P.M.trucks / Rf.trucks - 1)} more trucks.`]]);
+  list("v3not", [
+    ["A neural network that shortlists options for an exact solver.", "That is established research; it is used here, not claimed."],
+    S.proven && ["A proven optimum for every job.", `Version 3 is proven the fewest possible on ${S.v3.proven} of ${S.jobs.length} jobs. For the rest the only floor is Version 1's ${fmt(S.lb_proven)}-truck total, which ignores the floor check, so overall Version 3 is at most ${p1(Rf.trucks / S.lb_proven - 1)} above the best possible.`],
+    ["A better truck-count estimate.", `That part of the model is off by ${H.fleet.mae.toFixed(2)} trucks a job against ${H.fleet.base_mae.toFixed(2)} for volume \u00f7 truck size: no clear win.`],
+    ["A full literature review.", "The search read abstracts and listings. \u201cNew\u201d here means no such study was found, not that none exists."]]);
+  const sizes = ["", "_mid", "_big"].map(t => V["model" + t]).filter(Boolean).map(m => fmt(m.trucks)).join(", ");
+  fillTable("v3teststable", [
+    ["Company rules", "Every plan passes an automatic check of all rules: addresses per truck, load limit, radius, truck types, the 1.4-ton cap.", "0 rule breaks in every planned result"],
+    ["Loading", "Every load with several addresses is laid out on its truck floor with 5 cm between boxes, nothing stacked.", `All ${fmt(Rf.trucks)} trucks of the Version 3 plan have a layout`],
+    ["Real roads", "Trucks, km and hours are measured on real road distances from a private map server, never on the model's own estimates.", `${fmt(Rf.km)} km for the planner, ${fmt(P.M.km)} km for the model`],
+    ["Unseen dates", "The jobs are cut into 5 date blocks. The model is scored only on blocks it was not trained on.", `${fmt(H.fit.n)} loads, ${fmt(H.road.n)} stop pairs, ${fmt(H.fleet.n)} jobs scored`],
+    ["Against simple rules", "A planner with no learning (8 nearest stops, a floor-coverage threshold, straight line \u00d7 a factor) plans the same jobs and is verified the same way.", `Model: fewer trucks on ${w.fewer} jobs, more on ${w.more}, the same on ${w.same}`],
+    ["Exact packing", "Loads the quick layout search could not settle went to an exact solver, 20 s each.", "Of 955 loads: 119 fit, 290 proved impossible, 546 still undecided"],
+    ["Repeatability", "The saved plans were recomputed from scratch and compared with the stored results.", `Same trucks and km on all ${S.jobs.length} jobs`],
+    ["Model size", "The same model was trained at three sizes and each ran the full planning test.", `${sizes} trucks, small to large`],
+    ["Code", "Unit tests cover routing, truck choice, the packing check, the repair step and the model's wiring.", "All pass"]].map(c => ({ cells: c })));
+}
+function v3jobs() {
+  const tb = $("v3jobstable").tBodies[0], J = S.v3.x.jobs, cols = ["real", "rule_true", "base_true", "simple", "model", "ref", "bound"];
+  tb.replaceChildren();
+  const all = tb.insertRow();
+  all.className = "sel";
+  [`All ${J.length} jobs`, fmt(J.reduce((a, r) => a + r.n, 0)), ...cols.map(c => fmt(J.reduce((a, r) => a + r[c], 0)))].forEach(c => { all.insertCell().textContent = c; });
+  all.style.cursor = "default";
+  J.forEach(r => {
+    const tr = tb.insertRow(), open = () => { setJob(r.i); $("explore").scrollIntoView(); };
+    [r.date, r.n, ...cols.map(c => r[c])].forEach(c => { tr.insertCell().textContent = c; });
+    tr.tabIndex = 0;
+    tr.onclick = open;
+    tr.onkeydown = ev => { if (ev.key === "Enter") open(); };
+  });
+}
+
+// ---------- the two views: versions 1 and 2, and version 3 with its own theme ----------
+const isV3 = () => document.documentElement.dataset.view === "v3";
+let redraw = () => {};
+function setView(v, from) {
+  const root = document.documentElement, now = () => isV3() ? "v3" : "main";
+  if (now() === v || (v === "v3" && $("v3btn").hidden) || setView.busy) return;
+  const apply = () => {
+    if (v === "v3") root.dataset.view = "v3"; else delete root.dataset.view;
+    document.querySelectorAll(".vswitch button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === v));
+    scrollTo({ top: 0, behavior: "instant" });
+    if (S && best) {
+      setMethod(v === "v3" && S.methods.v3 ? "v3" : best);
+      redraw();
+      if (v === "v3" && S.v3.x) drawFloor(true);
+    }
+    // the new page's opening lines rise into place while the veil lifts
+    document.querySelectorAll(v === "v3" ? ".v3hero h1, .v3hero .lede, #v3res > div, .floorfig" : "header h1, #lede, #hres > div, header .v2link").forEach((n, i) =>
+      n.animate([{ opacity: 0, transform: RM ? "none" : "translateY(18px)" }, { opacity: 1, transform: "none" }], { duration: 650, delay: 80 + i * 60, easing: "cubic-bezier(.2,.8,.2,1)", fill: "backwards" }));
+  };
+  const r = (from || document.querySelector(`.vswitch button[data-v="${v}"]`)).getBoundingClientRect(), veil = document.createElement("div");
+  veil.className = "veil";
+  veil.style.background = css(v === "v3" ? "--page-v3" : "--page-main");
+  document.body.appendChild(veil);
+  setView.busy = true;
+  const full = "inset(0px 0px 0px 0px round 0px)", start = `inset(${r.top}px ${innerWidth - r.right}px ${innerHeight - r.bottom}px ${r.left}px round 999px)`;
+  // with reduced motion the veil fades in instead of growing: still smooth, nothing sweeps across the screen
+  veil.animate(RM ? { opacity: [0, 1] } : { clipPath: [start, full] }, { duration: RM ? 260 : 620, easing: "cubic-bezier(.7,0,.2,1)", fill: "forwards" }).finished
+    .then(() => { apply(); return veil.animate({ opacity: [1, 0] }, { duration: 480, easing: "ease-out", fill: "forwards" }).finished; })
+    .catch(apply)
+    .finally(() => {
+      veil.remove();
+      setView.busy = false;
+      const want = location.hash === "#v3" ? "v3" : "main";  // the back button was pressed while the veil was moving
+      if (want !== now()) setView(want);
+    });
+}
+const go = (v, from) => { history.pushState(null, "", v === "v3" ? "#v3" : location.pathname + location.search); setView(v, from); };
+document.querySelectorAll(".vswitch button").forEach(b => { b.onclick = () => go(b.dataset.v, b); });
+$("v3link").onclick = ev => { ev.preventDefault(); go("v3", ev.currentTarget); };
+for (const e of ["popstate", "hashchange"]) addEventListener(e, () => setView(location.hash === "#v3" ? "v3" : "main"));
+
+// ---------- explorer ----------
+let cur = 0, method = null, job = null, view = null, scale = 1, active = -1, pinned = -1, lastScale = 0;
+function fit() {
+  view = fitView($("map"), job.stops.map(P).concat([P(S.depot)]), 0.25);
+  applyView();
+}
+function applyView() {
+  const svg = $("map");
+  svg.setAttribute("viewBox", view.join(" "));
+  scale = view[2] / svg.clientWidth;
+  svg.querySelectorAll("circle.stop").forEach(c => { c.setAttribute("r", 4.5 * scale); c.setAttribute("stroke-width", 2 * scale); });
+  svg.querySelectorAll("circle.hit").forEach(c => c.setAttribute("r", 12 * scale));
+  if (scale !== lastScale && svg._dep) { lastScale = scale; drawDepot(svg._dep, scale); if (active >= 0) hot(active); }
+}
+function drawMap() {
+  const svg = $("map");
+  svg.replaceChildren();
+  land(svg);
+  const plan = job.methods[method], showDepot = $("depot").checked, showEdges = $("edges").checked;
+  const gEdges = el("g", {}, svg), gDepot = el("g", {}, svg), gRoute = el("g", {}, svg), gStops = el("g", {}, svg), gHalo = el("g", { "pointer-events": "none" }, svg);
+  if (showEdges && job.edges) for (const [a, b, p] of job.edges) {
+    const [x1, y1] = P(job.stops[a]), [x2, y2] = P(job.stops[b]);
+    el("line", { x1, y1, x2, y2, stroke: css("--ink"), "stroke-opacity": (p * 0.85).toFixed(2), "stroke-width": 1 + 2 * p, "vector-effect": "non-scaling-stroke", "stroke-linecap": "round" }, gEdges);
+  }
+  const groups = [];
+  plan.clusters.forEach((c, k) => {
+    const col = truckColor(c.t), gD = el("g", {}, gDepot), gR = el("g", {}, gRoute), gS = el("g", {}, gStops);
+    if (showDepot) el("path", { d: path(decode(job.first[c.s[0]] || "")), fill: "none", stroke: css("--muted"), "stroke-width": 1, "stroke-opacity": .55, "vector-effect": "non-scaling-stroke" }, gD);
+    for (let q = 0; q + 1 < c.s.length; q++)
+      el("path", { d: path(decode(job.legs[`${c.s[q]}-${c.s[q + 1]}`] || "")), fill: "none", stroke: col, "stroke-width": 2.5, "stroke-linejoin": "round", "stroke-linecap": "round", "vector-effect": "non-scaling-stroke" }, gR);
+    for (const s of c.s) {
+      const [x, y] = P(job.stops[s]);
+      el("circle", { cx: x, cy: y, r: 4.5 * scale, class: "stop", fill: col, stroke: css("--surface"), "stroke-width": 2 * scale }, gS);
+      const hit = el("circle", { cx: x, cy: y, r: 12 * scale, class: "hit", fill: "transparent" }, gS);
+      hit.addEventListener("pointermove", ev => { if (active !== k) hot(k); showTip(ev, tipRows(c, k)); });
+      hit.addEventListener("pointerleave", () => { hot(pinned); hideTip(); });
+      hit.addEventListener("click", () => pin(k));
+    }
+    groups.push([gD, gR, gS]);
+  });
+  svg._dep = el("g", { "pointer-events": "none" }, svg);
+  drawDepot(svg._dep, scale);
+  svg._groups = groups;
+  svg._halo = gHalo;
+  if (view) applyView();
+}
+function tipRows(c, k) {
+  return [[`${c.s.length} stop${c.s.length > 1 ? "s" : ""}, ${truckName(c.t)}`, `truck ${k + 1}`],
+    [c.fill != null ? Math.round(c.fill * 100) + " % of the box" : c.v + " m³", "load (limit 60 %)"],
+    [fmt(c.km) + " km, " + c.h.toFixed(1) + " h", "route from depot"], [c.r.toFixed(1) + " km", "farthest stop from centre (limit 50)"]];
+}
+function focusTruck(k) {  // zoom to one truck's route (depot + its stops), or back to the whole job
+  const c = k >= 0 && job.methods[method].clusters[k];
+  if (!c) { fit(); return; }
+  view = fitView($("map"), c.s.map(i => P(job.stops[i])).concat([P(S.depot)]), 0.15);
+  applyView();
+}
+function pin(k) { pinned = pinned === k ? -1 : k; focusTruck(pinned); hot(pinned < 0 ? k : pinned); }
+function hot(k) {
+  active = k;
+  const svg = $("map");
+  if (!svg._halo) return;
+  (svg._groups || []).forEach((gs, i) => gs.forEach(g => g.setAttribute("opacity", k < 0 || i === k ? 1 : 0.15)));
+  svg._halo.replaceChildren();
+  document.querySelectorAll("#clist div").forEach((d, i) => { d.classList.toggle("hot", i === k); d.setAttribute("aria-pressed", i === pinned); });
+  const plan = job.methods[method], c0 = k >= 0 && plan.clusters[k];
+  $("tlabel").textContent = pinned >= 0 ? `Truck ${pinned + 1} of ${plan.clusters.length}` : `All ${plan.clusters.length} trucks`;
+  if (c0) itinerary($("route"), job, c0, k, plan.clusters.length);
+  else $("route").textContent = "All trucks are shown. Use the arrows, or point at a stop or a row, to follow one truck from the depot to its last stop.";
+  if (!c0) return;
+  const c = job.methods[method].clusters[k], pts = c.s.map(s => job.stops[s]);
+  const [cx, cy] = P([pts.reduce((a, p) => a + p[0], 0) / pts.length, pts.reduce((a, p) => a + p[1], 0) / pts.length]);
+  el("ellipse", { cx, cy, rx: 50 / 111, ry: 50 / 111, fill: css("--accent"), "fill-opacity": .06, stroke: css("--accent"), "stroke-width": 1, "vector-effect": "non-scaling-stroke" }, svg._halo);
+  routeOverlay(svg._halo, job, c, scale);
+}
+function panel() {
+  const tb = $("jobtable").tBodies[0];
+  tb.replaceChildren();
+  for (const m of [...ORDER, ...(job.methods.v3 ? ["v3"] : [])]) {
+    const tr = tb.insertRow();
+    if (m === method) tr.className = "sel";
+    [NAMES[m], job.methods[m].trucks, fmt(job.methods[m].km)].forEach(v => { tr.insertCell().textContent = v; });
+  }
+  const tr = tb.insertRow();
+  [LBN(), job.lb, ""].forEach(v => { tr.insertCell().textContent = v; });
+  $("jobnote").textContent = `${job.date}, ${job.n} stops. One row per truck in ${NAMES[method]}.`;
+  const list = $("clist");
+  list.replaceChildren();
+  job.methods[method].clusters.forEach((c, k) => {
+    const d = document.createElement("div");
+    const sw = document.createElement("i"); sw.className = "sw"; sw.style.background = truckColor(c.t);
+    const a = document.createElement("span"); a.textContent = `${c.s.length} stop${c.s.length > 1 ? "s" : ""}, ${truckName(c.t)}`;
+    const b = document.createElement("span"); b.className = "m"; b.textContent = `${c.fill != null ? Math.round(c.fill * 100) + " %" : c.v + " m³"}  ${fmt(c.km)} km`;
+    d.append(sw, a, b);
+    d.tabIndex = 0;
+    d.setAttribute("role", "button");
+    d.addEventListener("pointerenter", () => hot(k));
+    d.addEventListener("pointerleave", () => hot(pinned));
+    d.addEventListener("focus", () => hot(k));
+    d.addEventListener("blur", () => hot(pinned));
+    d.addEventListener("click", () => pin(k));
+    d.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pin(k); } });
+    list.appendChild(d);
+  });
+  hot(pinned);
+}
+async function setJob(i) {
+  cur = (i + S.jobs.length) % S.jobs.length;
+  $("job").value = cur;
+  job = await getJob(cur);
+  pinned = 0; active = -1;  // open on truck 1: one route at a time
+  drawMap(); fit(); panel();
+}
+function setMethod(m) {
+  method = m;
+  pinned = 0; active = -1;  // open on truck 1: one route at a time
+  document.querySelectorAll("#meth button").forEach(b => b.setAttribute("aria-pressed", b.dataset.m === m));
+  if (job) { drawMap(); panel(); }
+}
+function zoom(f, cx, cy) {
+  const [x, y, w, h] = view;
+  if (cx === undefined) { cx = x + w / 2; cy = y + h / 2; }
+  view = [cx - (cx - x) * f, cy - (cy - y) * f, w * f, h * f];
+  applyView();
+}
+function mapInput() {
+  const svg = $("map");
+  const toMap = ev => { const b = svg.getBoundingClientRect(); return [view[0] + (ev.clientX - b.left) * scale, view[1] + (ev.clientY - b.top) * scale]; };
+  svg.addEventListener("wheel", ev => { ev.preventDefault(); const [cx, cy] = toMap(ev); zoom(ev.deltaY > 0 ? 1.2 : 1 / 1.2, cx, cy); }, { passive: false });
+  let drag = null;  // capture only after a real move, so a click on a stop still selects it
+  svg.addEventListener("pointerdown", ev => { drag = [ev.clientX, ev.clientY, view[0], view[1], ev.pointerId, false]; });
+  svg.addEventListener("pointermove", ev => {
+    if (!drag) return;
+    const dx = ev.clientX - drag[0], dy = ev.clientY - drag[1];
+    if (!drag[5]) { if (Math.hypot(dx, dy) < 4) return; drag[5] = true; svg.setPointerCapture(drag[4]); svg.classList.add("drag"); }
+    view[0] = drag[2] - dx * scale; view[1] = drag[3] - dy * scale; applyView();
+  });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && pinned >= 0) { pinned = -1; fit(); hot(-1); } });
+  const end = () => { drag = null; svg.classList.remove("drag"); };
+  svg.addEventListener("pointerup", end);
+  svg.addEventListener("pointercancel", end);
+  svg.addEventListener("dblclick", fit);
+  $("zin").onclick = () => zoom(1 / 1.5);
+  $("zout").onclick = () => zoom(1.5);
+  $("zfit").onclick = fit;
+}
+
+// ---------- start ----------
+async function main() {
+  [S, korea] = await Promise.all([fetch("summary.json").then(r => { if (!r.ok) throw 0; return r.json(); }), fetch("korea.json").then(r => r.json()).catch(() => null)]);
+  ORDER = ORDER.filter(m => S.methods[m]);
+  best = ORDER.filter(m => m !== "real").sort((a, b) => S.methods[a].trucks - S.methods[b].trucks || S.methods[a].km - S.methods[b].km)[0];
+  const B = S.methods[best], Rl = S.methods.real;
+  $("lede").textContent = `${fmt(S.stops)} delivery stops from ${S.jobs.length} dispatch jobs, grouped into trucks under the company's rules and routed on real roads from Changwon. A graph neural network narrows the options; an exact solver picks the plan.`;
+  const hres = $("hres");
+  [[fmt(B.trucks), `trucks (real dispatch: ${fmt(Rl.trucks)})`], [pct(B.trucks / Rl.trucks - 1), "trucks"], [pct(B.km / Rl.km - 1), "road km"], ...(S.proven ? [[pct(B.trucks / LB() - 1), "above the proven minimum"]] : []), ...(S.v2 && S.v2.cost ? [[pct(Math.min(...ORDER.filter(m => m !== "real" && S.v2.cost.methods[m]).map(m => S.v2.cost.methods[m].S1)) / S.v2.cost.methods.real.S1 - 1), "estimated hire cost"]] : []), ["0", "rule breaks"]].forEach(([v, l]) => {
+    const d = document.createElement("div"), a = document.createElement("span"), b = document.createElement("span");
+    a.className = "num"; a.textContent = v; b.textContent = l; d.append(a, b); hres.appendChild(d);
+  });
+  $("ressub").textContent = `Every method plans the same ${fmt(S.stops)} stops under the same rules. The best is ${NAMES[best]}.`;
+  $("t-saved").textContent = fmt(Rl.trucks - B.trucks);
+  $("t-saved-l").textContent = `fewer trucks than the real dispatch (${pct(B.trucks / Rl.trucks - 1)})`;
+  $("t-bound").textContent = pct(B.trucks / LB() - 1);
+  if (S.proven) {
+    $("t-bound-l").textContent = `above the proven minimum of ${fmt(LB())} trucks; ${B.at_bound} of ${S.jobs.length} jobs are proven optimal`;
+    $("th-lb").textContent = "vs proven minimum"; $("th-at").textContent = "Jobs proven optimal";
+  }
+  $("t-km").textContent = pct(B.km / Rl.km - 1);
+  $("t-breaks").textContent = fmt(ORDER.filter(m => m !== "real").reduce((a, m) => a + S.methods[m].breaks, 0));
+  const charts = () => { barChart($("c-trucks"), "trucks", LB(), LBN(), "trucks"); barChart($("c-km"), "km", 0, "", "km"); };
+  if (S.proven) $("c-trucks-n").textContent = "Fewer is better. The line marks the proven minimum: no plan under these rules can use fewer.";
+  revealOnce($("c-trucks"), charts);
+  revealOnce($("c-jobs"), jobsChart);
+  allTable();
+  renderV2();
+  renderV3();
+  if (S.gnn) {
+    const g = S.gnn, lim = n => n ? `hits its 60 s limit on ${n} job${n > 1 ? "s" : ""}` : "never hits its 60 s limit";
+    $("gnntxt").textContent = `As a yes/no call the GNN is right on ${p1(g.acc)} of ${fmt(g.pairs)} held-out pairs, against ${p1(g.base_acc)} for always saying "different truck", so it is weak as a classifier. Its ranking is informative (AUC ${g.auc.toFixed(2)}), and the ranking is what it is used for: candidate groups per job drop from a median of ${fmt(g.cols[0])} to ${fmt(g.cols[1])}, the median solve from ${g.s[0].toFixed(0)} s to ${g.s[1].toFixed(0)} s, and the solver ${lim(g.limit[1])} (without the GNN it ${lim(g.limit[0])}).`;
+  }
+  if (S.methods.knn8) {  // the honest test: the GNN's short list against the plain 8 nearest stops, same size
+    const g = S.methods.gnn_opt, k = S.methods.knn8, d = k.trucks - g.trucks;
+    $("knn8txt").textContent = ` Against a plain short list of each stop's 8 nearest stops (the same size, no GNN), the GNN's list ` +
+      (d > 0 ? `needs ${fmt(d)} fewer trucks (${fmt(g.trucks)} vs ${fmt(k.trucks)}).` : d < 0 ? `needs ${fmt(-d)} more trucks (${fmt(g.trucks)} vs ${fmt(k.trucks)}), so most of the gain comes from the optimizer.` : `needs the same number of trucks (${fmt(g.trucks)}), so most of the gain comes from the optimizer.`) +
+      ` Road km: ${fmt(g.km)} vs ${fmt(k.km)}.`;
+  }
+  if (S.proven) {
+    $("proofcard").hidden = false;
+    $("prooftext").textContent = `The company's rules are tight enough that, for most jobs, every load a truck may carry can be listed in full. Pricing all of them at once gives a floor on the trucks and shows which loads could still be part of a better plan; the exact solver then finishes on those few, and its answer is the true optimum` + (S.exact_jobs != null ? ` (${S.exact_jobs} of ${S.jobs.length} jobs)` : "") + `. A job with too many loads to list keeps a safe floor from column generation on slightly relaxed rules. Summed over the ${S.jobs.length} jobs the proven minimum is ${fmt(LB())} trucks. ${NAMES[best]} uses ${fmt(B.trucks)}, ${(100 * (B.trucks / LB() - 1)).toFixed(1)}\u00a0% above it, and is proven optimal on ${B.at_bound} of ${S.jobs.length} jobs. The earlier simple minimum was ${fmt(S.lb_valid)}.`;
+  }
+  const sel = $("job");
+  S.jobs.forEach((j, i) => { const o = document.createElement("option"); o.value = i; o.textContent = `${j.date}, ${j.n} stops, saves ${j.trucks.real - j.trucks[best]}`; sel.appendChild(o); });
+  sel.onchange = () => setJob(+sel.value);
+  $("prev").onclick = () => setJob(cur - 1);
+  $("next").onclick = () => setJob(cur + 1);
+  for (const m of [...ORDER, ...(S.methods.v3 ? ["v3"] : [])]) { const b = document.createElement("button"); b.dataset.m = m; b.textContent = NAMES[m]; b.onclick = () => setMethod(m); $("meth").appendChild(b); }
+  document.querySelectorAll(".vswitch button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === (isV3() ? "v3" : "main")));
+  $("depot").onchange = $("edges").onchange = () => drawMap();
+  mapInput();
+  const stepTruck = d => { const n = job.methods[method].clusters.length; pinned = pinned < 0 ? (d > 0 ? 0 : n - 1) : (pinned + d + n) % n; focusTruck(pinned); hot(pinned); };
+  $("tprev").onclick = () => stepTruck(-1);
+  $("tnext").onclick = () => stepTruck(1);
+  $("tall").onclick = () => { pinned = -1; fit(); hot(-1); };
+  setMethod(isV3() && S.methods.v3 ? "v3" : best);
+  await storyInit();
+  await setJob(ST.idx);
+  let t;
+  const drawn = id => $(id).clientWidth > 0 && $(id).childNodes.length;  // a chart in the hidden view keeps its drawing until it is shown again
+  redraw = () => {
+    if (drawn("c-trucks")) charts();
+    if (drawn("c-jobs")) jobsChart();
+    if (drawn("c-cost") || drawn("c-rules")) v2charts();
+    if (drawn("c-e2e")) v3chart();
+    if (drawn("c-v3cmp")) v3cmpChart();
+    fit();
+    drawMap();
+    if (isV3()) return;
+    storySetup();
+    if (ST.k >= 0) storyStep(ST.k, true);
+  };
+  addEventListener("resize", () => { clearTimeout(t); t = setTimeout(redraw, 200); });
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", redraw);
+}
+main().catch(() => {  // results not built yet: say so, show progress, reload when they land
+  document.querySelectorAll("main section").forEach(s => { s.hidden = true; });
+  delete document.documentElement.dataset.view;
+  const tick = async () => {
+    let st = null;
+    try { st = await (await fetch("status.json", { cache: "no-store" })).json(); } catch {}
+    $("lede").textContent = "Building the results. This page fills itself in when they're ready." +
+      (st ? ` Optimizer: ${st.base} of 97 jobs. GNN: ${st.gnn} of 97 jobs.` : "");
+    try { if ((await fetch("summary.json", { method: "HEAD", cache: "no-store" })).ok) location.reload(); } catch {}
+  };
+  tick();
+  setInterval(tick, 15000);
+});
+</script>
+</body>
+</html>

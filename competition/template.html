@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>$title$</title>
+<meta name="description" content="Competition report of team ANALOG: a graph neural network and an exact optimizer that group bulky deliveries into fewer trucks, tested on 97 real dispatch jobs and a public benchmark.">
+<style>
+/* Hallmark · v2.0.0 · shape: print report, A4, 20 pages · theme: custom, the team poster's navy and blue (by request) · genre: editorial · posture: committed · surface: absolute, white paper for print · hero: full-bleed cover, the map of one real dispatch job · nav: none, a contents block on page 2 · footer: running page footer, team and page count · signature: the cover map, one real job's trucks with their 50 km radius */
+/* Hallmark · waive 7b · body background var(--paper) is #ffffff · a printed report sits on white paper; a tinted page base prints as a grey wash on all twenty pages */
+/* Hallmark · dismissed 46a · 0.7 % is measured by us: 1,933 trucks with the GNN list against 1,920 with the 15-nearest list, both in Table 8 */
+/* Hallmark · dismissed 69 · the 50 km radius is a company rule; a report must state it in the rule table, the figure, the method and the rule check */
+/* Hallmark · critique · a dense academic document: every page is text-led, so the web rules about the fold, nav and words per screen do not apply; colour and type run on tokens, captions and labels are plain sentence case */
+@font-face { font-family: "Plex"; src: url("../fonts/IBMPlexSans-VF.ttf"); font-weight: 100 700; font-style: normal; }
+@font-face { font-family: "Plex"; src: url("../fonts/IBMPlexSans-Italic-VF.ttf"); font-weight: 100 700; font-style: italic; }
+@font-face { font-family: "PlexMono"; src: url("../fonts/IBMPlexMono-Regular.ttf"); font-weight: 400; }
+@font-face { font-family: "PlexMono"; src: url("../fonts/IBMPlexMono-SemiBold.ttf"); font-weight: 600; }
+@font-face { font-family: "Barlow"; src: url("../fonts/Barlow-Medium.ttf"); font-weight: 500; }
+@font-face { font-family: "Barlow"; src: url("../fonts/Barlow-SemiBold.ttf"); font-weight: 600; }
+@font-face { font-family: "Barlow"; src: url("../fonts/Barlow-Bold.ttf"); font-weight: 700; }
+@font-face { font-family: "NotoKR"; src: url("../fonts/NotoSansKR-VF.ttf"); font-weight: 100 900; }
+
+:root {
+  --navy: #1d3f86; --blue: #2f6fdb; --sky: #eef4fb; --sky2: #dce8fb; --ink: #1c2430; --ink-strong: #101828; --muted: #5b6676;
+  --faint: #7a8594; --line: #d3dcea; --orange: #cf7f2e; --paper: #ffffff; --code-bg: #f6f8fc;
+  --code-str: #9a5a1a; --code-fn: #24405f; --code-op: #444444; --on-dark: #f5f8ff; --on-dark-soft: #dce8fb;
+  --font-body: "Plex", "NotoKR", sans-serif; --font-head: "Barlow", sans-serif; --font-mono: "PlexMono", monospace;
+}
+@page { size: A4; margin: 15mm 17mm 16mm 17mm;
+  @bottom-left { content: "Team ANALOG  |  2nd LogisticSolver 2026"; font: 500 7.5pt var(--font-head); color: var(--faint); }
+  @bottom-right { content: counter(page) " / " counter(pages); font: 600 7.5pt var(--font-head); color: var(--faint); } }
+@page :first { margin: 0; @bottom-left { content: none; } @bottom-right { content: none; } }
+
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; overflow-x: clip; }
+body { margin: 0; font: 400 11pt/1.55 var(--font-body); color: var(--ink); background: var(--paper);
+  font-variant-numeric: tabular-nums; hyphens: auto; overflow-x: clip; }
+p, li { text-align: justify; hyphens: auto; }  /* body text flush on both edges; hyphenation keeps the word gaps even */
+p { margin: 0 0 7pt; orphans: 3; widows: 3; }
+.refs p, .contents p, .cover p, figcaption, caption, th, td { text-align: left; }
+strong { font-weight: 600; color: var(--ink-strong); }
+p strong, li strong { color: var(--navy); }  /* run-in heads and key results in the poster navy */
+.hl strong { background: linear-gradient(transparent 56%, var(--sky2) 56%); box-decoration-break: clone; -webkit-box-decoration-break: clone; }  /* soft marker under the headline numbers */
+.why em { font-style: normal; font-weight: 600; color: var(--blue); }
+p:has(> .why:first-child) { background: var(--sky); border-left: 2pt solid var(--blue); padding: 3pt 7pt; break-after: auto; }  /* the "why" notes; one may end a page without pulling the next table along */
+tr.ours td { background: var(--sky); }  /* our planner's row in result tables */
+figcaption .lab { font-weight: 600; color: var(--navy); }
+a { color: var(--blue); text-decoration: none; }
+a:active { color: var(--navy); }
+a:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.pb { break-after: page; height: 0; }
+p:has(+ div.sourceCode), p:has(+ pre), p:has(+ ul), p:has(+ ol), p:has(+ table) { break-after: avoid; }
+h1, h2 { break-after: avoid; text-wrap: balance; }
+
+/* headings */
+h1 { font: 700 17pt/1.15 var(--font-head); color: var(--navy); margin: 13pt 0 6pt; padding-bottom: 3.5pt;
+  border-bottom: 1.6pt solid var(--blue); break-after: avoid; overflow-wrap: break-word; min-width: 0; }
+h2 { font: 600 12.4pt/1.2 var(--font-head); color: var(--navy); margin: 9pt 0 3.5pt; break-after: avoid; }
+h1 + h2 { margin-top: 4pt; }
+
+/* lists */
+ul, ol { margin: 0 0 5.5pt; padding-left: 13pt; }
+li { margin: 0 0 3pt; }
+li::marker { color: var(--blue); }
+
+/* tables */
+table { width: 100%; border-collapse: collapse; margin: 3pt 0 9pt; font-size: 9.1pt; line-height: 1.32; break-inside: avoid; }
+table:has(tbody tr:nth-child(4)) { break-inside: auto; }  /* tables of 4+ rows may split between rows */
+tbody tr:last-child { break-before: avoid; }  /* never one row alone at the top of a page */
+tr { break-inside: avoid; }
+tbody tr:nth-child(-n+2) { break-before: avoid; }  /* never a caption and header alone at a page foot */
+caption { break-after: avoid; caption-side: top; text-align: left; font: 600 9.6pt/1.3 var(--font-head); color: var(--navy); margin-bottom: 3pt; }
+th { font: 600 9pt/1.25 var(--font-head); color: var(--navy); background: var(--sky); text-align: left; padding: 3.2pt 4pt;
+  border-bottom: 1pt solid var(--navy); vertical-align: bottom; }
+td { padding: 3.2pt 4pt; border-bottom: 0.5pt solid var(--line); vertical-align: top; }
+th[style*="right"], td[style*="right"] { text-align: right; }
+tbody tr:last-child td { border-bottom: 1pt solid var(--navy); }
+
+/* figures */
+figure { margin: 4pt 0 8pt; break-inside: avoid; }
+figure img { display: block; width: 100%; height: auto; }
+figcaption { font: 400 8.9pt/1.38 var(--font-body); color: var(--muted); margin-top: 3pt; }
+.figrow { display: grid; grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr); gap: 12pt; align-items: start; margin: 2pt 0 4pt; break-inside: avoid; }
+.figrow figure { margin: 0; }
+.figrow:has(img.map) { grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr); }
+.figrow .side p:first-child { margin-top: 0; }
+
+/* code */
+pre { background: var(--code-bg); border: 0.5pt solid var(--line); border-left: 2.5pt solid var(--blue); border-radius: 2pt;
+  padding: 5pt 7pt; margin: 2pt 0 8pt; font: 400 7.6pt/1.38 var(--font-mono); white-space: pre; overflow: hidden; break-inside: avoid; }
+code { font-family: var(--font-mono); font-size: 0.9em; }
+pre code { font-size: inherit; }
+.sourceCode { background: none; }
+code span.kw, code span.cf { color: var(--navy); font-weight: 600; }
+code span.st, code span.ss { color: var(--code-str); }
+code span.co { color: var(--faint); font-style: italic; }
+code span.dv, code span.fl, code span.bn { color: var(--blue); }
+code span.fu, code span.bu { color: var(--code-fn); }
+code span.op { color: var(--code-op); }
+
+/* math */
+math { font-size: 1.04em; }
+math[display="block"] { margin: 3pt 0 5pt; }
+
+/* summary & contents page */
+.contents { columns: 2; column-gap: 18pt; background: var(--sky); padding: 9pt 13pt 5pt; margin: 0 0 10pt; font-size: 9.8pt; }
+.contents p { font: 700 12pt var(--font-head); color: var(--navy); column-span: all; margin-bottom: 4pt; }
+.contents ol { margin: 0; padding-left: 16pt; }
+.contents li { margin-bottom: 1.6pt; }
+h2#summary { font-size: 13pt; margin-top: 4pt; }
+
+/* references */
+.refs p { font-size: 8.8pt; line-height: 1.32; margin-bottom: 2pt; padding-left: 16pt; text-indent: -16pt; }
+
+/* cover: the full-page map of one real job (figs/cover_bg.png) carries the page; type sits on the open left side */
+.cover { height: 297mm; box-sizing: border-box; position: relative; hyphens: manual; display: flex; flex-direction: column; break-after: page;
+  background: var(--navy) url("../figs/cover_bg.png") center / cover no-repeat; color: var(--on-dark); }
+.cover-top { font: 600 11pt var(--font-head); color: var(--on-dark-soft); padding: 14mm 20mm 0; }
+.cover-top p { margin: 0; }
+.cover-title { padding: 16mm 20mm 0; max-width: 150mm; }
+.cover-title p { font: 700 33pt/1.06 var(--font-head); color: var(--on-dark); margin: 0; overflow-wrap: break-word; min-width: 0; }
+.cover-sub { padding: 7mm 20mm 0; max-width: 98mm; }
+.cover-sub p { font: 400 12pt/1.45 var(--font-body); color: var(--on-dark-soft); margin: 0; }
+.cover-stats { display: flex; flex-direction: column; gap: 6mm; margin: 16mm 20mm 0; width: 72mm; }
+.cover-stats p { margin: 0; display: flex; flex-direction: column; }
+.stat strong { font: 700 25pt/1.05 var(--font-head); color: var(--on-dark); }
+.stat-l { font: 500 10pt/1.3 var(--font-head); color: var(--on-dark-soft); margin-top: 2pt; }
+.cover-art { display: none; }  /* the same picture is the page background; the Word copy shows it as an image */
+.cover-team { margin: auto 20mm 16mm; width: 82mm; font-size: 9.5pt; line-height: 1.5; color: var(--on-dark-soft); }
+.cover-team p { margin: 0 0 6pt; }
+.cover-team p:first-child { font: 700 15pt var(--font-head); color: var(--on-dark); }
+.cover-team p:first-child strong { color: var(--on-dark); }
+</style>
+</head>
+<body>
+$body$
+</body>
+</html>

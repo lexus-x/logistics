@@ -1,0 +1,12 @@
+# Question form for Ryry. Static page + two endpoints that save answers and attached files in KV.
+name = "delivery-qs"
+main = "src/index.mjs"
+compatibility_date = "2025-01-01"
+workers_dev = true
+
+[assets]
+directory = "./public"
+
+[[kv_namespaces]]
+binding = "ANSWERS"
+id = "a6b8181867e64d3580711ca91fafafe9"

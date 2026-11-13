@@ -1,0 +1,34 @@
+// node cluster/site/test.mjs: the password gate, no network. Prints "site ok".
+import assert from "node:assert/strict";
+globalThis.crypto ??= (await import("node:crypto")).webcrypto;
+const { default: worker } = await import("./worker.mjs");
+const env = { PASSWORD: "correct horse 42", ASSETS: { fetch: req => new Response("file " + new URL(req.url).pathname, { headers: { "Cache-Control": "public, max-age=3600" } }) } };
+const U = "https://x.workers.dev";
+const go = (path, init) => worker.fetch(new Request(U + path, init), env);
+const post = pw => go("/login", { method: "POST", body: new URLSearchParams({ password: pw }) });
+
+let r = await go("/");
+assert.equal(r.status, 401); assert.match(await r.text(), /type="password"/);
+assert.equal((await go("/summary.json")).status, 401, "data needs a session");
+assert.equal((await go("/jobs/3.json")).status, 401);
+assert.equal((await go("/fonts/barlow-400.woff2")).status, 200, "fonts are public");
+r = await post("wrong");
+assert.equal(r.status, 401); assert.match(await r.text(), /doesn't match/);
+assert.equal((await post("correct horse 4")).status, 401, "prefix is not enough");
+r = await post("correct horse 42");
+assert.equal(r.status, 303);
+const cookie = r.headers.get("set-cookie").split(";")[0];
+assert.match(r.headers.get("set-cookie"), /HttpOnly; Secure/);
+r = await go("/summary.json", { headers: { cookie } });
+assert.equal(r.status, 200); assert.equal(await r.text(), "file /summary.json");
+assert.equal(r.headers.get("cache-control"), "private, no-store", "no caching of personal data");
+assert.equal(r.headers.get("x-robots-tag"), "noindex, nofollow");
+const [exp, sig] = cookie.slice(8).split(".");
+assert.equal((await go("/summary.json", { headers: { cookie: `session=${exp}.${sig.replace(/^./, c => (c === "a" ? "b" : "a"))}` } })).status, 401, "tampered signature");
+assert.equal((await go("/summary.json", { headers: { cookie: `session=${Number(exp) + 1}.${sig}` } })).status, 401, "changed expiry");
+const { createHmac } = await import("node:crypto");
+const old = Math.floor(Date.now() / 1000) - 10;
+assert.equal((await go("/", { headers: { cookie: `session=${old}.${createHmac("sha256", env.PASSWORD).update(`v1:${old}`).digest("hex")}` } })).status, 401, "expired");
+assert.match((await go("/logout")).headers.get("set-cookie"), /Max-Age=0/);
+assert.equal((await worker.fetch(new Request(U + "/"), { ASSETS: env.ASSETS })).status, 503, "no password set: closed");
+console.log("site ok");

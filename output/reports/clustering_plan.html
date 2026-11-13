@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clustering Plan v2</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f6f5f2; --surface: #fcfcfb; --surface-2: #f0efec; --line: #e2e0da;
+  --ink: #0b0b0b; --ink-2: #52514e; --ink-3: #75736d;
+  --accent: #2a78d6; --accent-soft: #e6effb;
+  --bad: #c43c3b; --bad-soft: #fbeaea; --good: #157a4f; --good-soft: #e5f4ec; --warn: #9a6400; --warn-soft: #fbf1dc;
+  --h0: #cde2fb; --h1: #9ec5f4; --h2: #6da7ec; --h3: #2a78d6; --h4: #1c5cab; --h5: #0d366b;
+  --t0: #0b0b0b; --t1: #0b0b0b; --t2: #0b0b0b; --t3: #fff; --t4: #fff; --t5: #fff;
+  --s1: #2a78d6; --s2: #eb6834;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #121211; --surface: #1a1a19; --surface-2: #242422; --line: #34342f;
+    --ink: #f0efec; --ink-2: #c3c2b7; --ink-3: #9a998f;
+    --accent: #6da7ec; --accent-soft: #172a42;
+    --bad: #ef7d7c; --bad-soft: #3a1d1c; --good: #5cc795; --good-soft: #15301f; --warn: #e3b04b; --warn-soft: #33270f;
+    --h0: #184f95; --h1: #1c5cab; --h2: #256abf; --h3: #3987e5; --h4: #6da7ec; --h5: #b7d3f6;
+    --t0: #f0efec; --t1: #f0efec; --t2: #f0efec; --t3: #0b0b0b; --t4: #0b0b0b; --t5: #0b0b0b;
+    --s1: #3987e5; --s2: #d95926;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #121211; --surface: #1a1a19; --surface-2: #242422; --line: #34342f;
+  --ink: #f0efec; --ink-2: #c3c2b7; --ink-3: #9a998f;
+  --accent: #6da7ec; --accent-soft: #172a42;
+  --bad: #ef7d7c; --bad-soft: #3a1d1c; --good: #5cc795; --good-soft: #15301f; --warn: #e3b04b; --warn-soft: #33270f;
+  --h0: #184f95; --h1: #1c5cab; --h2: #256abf; --h3: #3987e5; --h4: #6da7ec; --h5: #b7d3f6;
+  --t0: #f0efec; --t1: #f0efec; --t2: #f0efec; --t3: #0b0b0b; --t4: #0b0b0b; --t5: #0b0b0b;
+  --s1: #3987e5; --s2: #d95926;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 980px; margin: 0 auto; padding: 28px 16px 64px; }
+header { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+h1 { font-size: 26px; margin: 0 0 4px; letter-spacing: -0.01em; }
+h2 { font-size: 18px; margin: 40px 0 12px; }
+h3 { font-size: 15px; margin: 0 0 6px; }
+p { margin: 0 0 10px; }
+.sub { color: var(--ink-2); margin: 0; }
+.muted { color: var(--ink-3); font-size: 13px; }
+code { font: 13px ui-monospace, Consolas, monospace; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
+nav { display: flex; flex-wrap: wrap; gap: 6px; margin: 18px 0 0; }
+nav a { color: var(--ink-2); text-decoration: none; font-size: 13px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
+nav a:hover, nav a:focus-visible { color: var(--ink); border-color: var(--accent); }
+button { font: inherit; font-size: 13px; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+button:hover, button:focus-visible { border-color: var(--accent); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+.hero { margin-top: 22px; border-left: 4px solid var(--accent); }
+.hero p { font-size: 16px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.tag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; margin-right: 6px; vertical-align: 1px; }
+.tag.bad { color: var(--bad); background: var(--bad-soft); }
+.tag.warn { color: var(--warn); background: var(--warn-soft); }
+.tag.good { color: var(--good); background: var(--good-soft); }
+.tag.info { color: var(--accent); background: var(--accent-soft); }
+ul, ol { margin: 0; padding-left: 20px; }
+li { margin: 4px 0; }
+.roast li { margin: 10px 0; }
+.v1 { color: var(--ink-2); }
+.v1 s { color: var(--ink-3); }
+/* heatmap */
+.hm-wrap { overflow-x: auto; }
+table.hm { border-collapse: separate; border-spacing: 2px; width: 100%; min-width: 560px; }
+.hm th { font-size: 12px; font-weight: 600; color: var(--ink-2); padding: 6px 8px; text-align: center; }
+.hm th.row { text-align: left; white-space: nowrap; }
+.hm td { text-align: center; font-weight: 650; font-size: 15px; padding: 14px 6px; border-radius: 4px; cursor: default; font-variant-numeric: tabular-nums; }
+.hm td:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
+.b0 { background: var(--h0); color: var(--t0); } .b1 { background: var(--h1); color: var(--t1); }
+.b2 { background: var(--h2); color: var(--t2); } .b3 { background: var(--h3); color: var(--t3); }
+.b4 { background: var(--h4); color: var(--t4); } .b5 { background: var(--h5); color: var(--t5); }
+.legend { display: flex; align-items: center; gap: 2px; margin: 10px 0 0; font-size: 12px; color: var(--ink-2); flex-wrap: wrap; }
+.legend span.sw { display: inline-block; width: 46px; padding: 3px 0; text-align: center; border-radius: 3px; font-size: 11px; font-weight: 600; }
+.legend .lab { margin-right: 8px; }
+#tip { position: fixed; pointer-events: none; z-index: 9; max-width: 280px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); box-shadow: 0 4px 16px rgba(0,0,0,.18); border-radius: 8px; padding: 8px 10px; font-size: 13px; line-height: 1.4; display: none; }
+/* flow */
+.flow { display: flex; flex-direction: column; gap: 0; }
+.step { display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: start; }
+.num { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; background: var(--accent-soft); color: var(--accent); }
+.arrow { margin-left: 16px; width: 2px; height: 18px; background: var(--line); }
+.gate { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+.gate > div { border-radius: 10px; padding: 10px 12px; font-size: 14px; }
+.gate .yes { background: var(--good-soft); }
+.gate .no { background: var(--warn-soft); }
+.msg { white-space: pre-wrap; font-size: 14.5px; background: var(--surface-2); border-radius: 10px; padding: 14px 16px; margin: 10px 0; }
+a { color: var(--accent); }
+footer { margin-top: 44px; padding-top: 16px; border-top: 1px solid var(--line); }
+/* explainer + timeline */
+.eli .lead { font-size: 16px; }
+.eh { display: flex; align-items: center; gap: 10px; margin: 26px 0 10px; font-size: 16px; }
+.num.sm { width: 26px; height: 26px; font-size: 13px; flex: none; }
+svg.fig { display: block; width: 100%; height: auto; max-width: 680px; margin: 6px 0 8px; }
+svg.chart { max-width: 600px; }
+.cap { color: var(--ink-2); margin: 4px 0 6px; }
+.rules { margin-bottom: 10px; }
+.bars { margin: 6px 0 8px; }
+.bar-row { display: grid; grid-template-columns: minmax(150px, 36%) 1fr 54px; gap: 10px; align-items: center; margin: 6px 0; cursor: default; }
+.bar-row .lab { font-size: 13.5px; color: var(--ink-2); }
+.track { display: block; height: 22px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
+.bar { display: block; height: 100%; background: var(--accent); border-radius: 0 4px 4px 0; }
+.bar.floor { background: var(--ink-3); }
+.bar.hatch { background: repeating-linear-gradient(45deg, var(--accent) 0 6px, var(--accent-soft) 6px 10px); }
+.val { font-weight: 650; font-variant-numeric: tabular-nums; }
+.path { display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch; }
+.chip { flex: 1 1 170px; background: var(--surface-2); border-radius: 10px; padding: 10px 12px; font-size: 14px; }
+.chip .ok { color: var(--good); font-weight: 650; } .chip .no { color: var(--warn); font-weight: 650; }
+.arr { align-self: center; color: var(--ink-3); font-size: 18px; }
+.tl { position: relative; padding-left: 28px; }
+.tl::before { content: ""; position: absolute; left: 8px; top: 8px; bottom: 8px; width: 2px; background: var(--line); }
+.tl-item { position: relative; margin: 0 0 22px; }
+.tl-item:last-child { margin-bottom: 0; }
+.tl-item::before { content: ""; position: absolute; left: -26px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--surface); border: 2px solid var(--accent); }
+.tl-item.now::before { background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+.tl-date { font-size: 12px; font-weight: 650; letter-spacing: .03em; text-transform: uppercase; color: var(--ink-3); }
+.tl-date .tag { margin-left: 6px; }
+.tl-item h3 { margin: 4px 0 4px; font-size: 15.5px; }
+.why { color: var(--ink-2); }
+.legend-s { display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: var(--ink-2); margin: 8px 0 0; }
+.sw-line { display: inline-block; width: 18px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+.figwrap { overflow-x: auto; }
+@media (max-width: 560px) { svg.fig { min-width: 540px; } .bar-row { grid-template-columns: 1fr 54px; } .bar-row .lab { grid-column: 1 / -1; } .arr { transform: rotate(90deg); width: 100%; text-align: center; } }
+@media (max-width: 560px) { .gate, .grid { grid-template-columns: 1fr; } h1 { font-size: 22px; } }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div>
+    <h1>Clustering Plan v2</h1>
+    <p class="sub">GNN-guided constraint-aware clustering for bulky delivery · status, roast and revised plan · 2026-10-31</p>
+  </div>
+  <button id="theme" type="button" aria-label="Toggle light or dark theme">Theme</button>
+</header>
+<nav aria-label="Sections">
+  <a href="#eli5">Explained simply</a><a href="#timeline">Timeline</a><a href="#status">Status</a><a href="#v1">Plan v1</a><a href="#roast">Self-roast</a><a href="#map">Gap map</a>
+  <a href="#v2">Plan v2</a><a href="#next">Next actions</a><a href="#riri">Message to Ryry</a><a href="#sources">Sources</a>
+</nav>
+
+<section class="card hero" aria-label="Summary">
+  <p><strong>On the public data, the 50 km radius never binds.</strong> Amazon stops sit about 160 m from their 4th-nearest neighbour, so a 50 km limit is roughly 300× too loose to matter.</p>
+  <p style="margin:0">The radius only cuts in once it is less than about 4× that spacing. That points to regional bulky delivery, probably Ryry's setting. <strong>Ryry's data, or a few numbers about it, now decides whether the paper exists.</strong></p>
+</section>
+
+<h2 id="eli5">What's going on, explained simply</h2>
+<div class="card eli">
+  <p class="lead">Imagine a furniture shop that has to deliver sofas and fridges to hundreds of homes tomorrow. It wants to send as few trucks as possible, and every truck trip has to follow four rules. That's the whole puzzle.</p>
+
+  <h3 class="eh"><span class="num sm">1</span>The puzzle</h3>
+  <div class="figwrap"><svg class="fig" viewBox="0 0 640 232" role="img" aria-labelledby="f1t">
+    <title id="f1t">Homes grouped into four truck trips that start from one depot</title>
+    <g style="stroke:var(--ink-3);stroke-width:1.5;stroke-dasharray:4 5;opacity:.6">
+      <line x1="70" y1="117" x2="190" y2="70"/><line x1="70" y1="117" x2="330" y2="160"/><line x1="70" y1="117" x2="470" y2="70"/><line x1="70" y1="117" x2="565" y2="172"/></g>
+    <g style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:2">
+      <circle cx="190" cy="70" r="46"/><circle cx="330" cy="160" r="50"/><circle cx="470" cy="70" r="44"/><circle cx="565" cy="172" r="38"/></g>
+    <g style="fill:var(--ink)">
+      <circle cx="170" cy="55" r="5"/><circle cx="200" cy="46" r="5"/><circle cx="216" cy="74" r="5"/><circle cx="186" cy="92" r="5"/><circle cx="164" cy="80" r="5"/>
+      <circle cx="304" cy="150" r="5"/><circle cx="330" cy="132" r="5"/><circle cx="356" cy="152" r="5"/><circle cx="346" cy="184" r="5"/><circle cx="314" cy="182" r="5"/>
+      <circle cx="452" cy="58" r="5"/><circle cx="486" cy="52" r="5"/><circle cx="492" cy="86" r="5"/><circle cx="458" cy="90" r="5"/>
+      <circle cx="548" cy="166" r="5"/><circle cx="580" cy="160" r="5"/><circle cx="568" cy="194" r="5"/></g>
+    <rect x="44" y="104" width="26" height="26" rx="4" style="fill:var(--ink-2)"/>
+    <g style="fill:var(--ink-2);font-size:13px" text-anchor="middle">
+      <text x="57" y="150">depot</text><text x="190" y="15">trip 1 · 5 stops</text><text x="330" y="227">trip 2 · 5 stops</text>
+      <text x="470" y="15">trip 3 · 4 stops</text><text x="565" y="127">trip 4 · 3 stops</text></g>
+  </svg></div>
+  <p class="cap">Each dot is a home waiting for something big. Each circle is one truck trip. The rules for every trip:</p>
+  <ol class="rules">
+    <li>The truck stops at <strong>5 homes at most</strong>.</li>
+    <li>Everything has to <strong>fit in the truck</strong>.</li>
+    <li>Every home must be <strong>within 50 km of the trip's middle</strong>.</li>
+    <li>Every home gets <strong>exactly one visit</strong>.</li>
+  </ol>
+  <p>Fewer circles means fewer trucks, drivers and fuel.</p>
+
+  <h3 class="eh"><span class="num sm">2</span>The floor: a score nobody can beat</h3>
+  <div class="figwrap"><svg class="fig" viewBox="0 0 640 112" role="img" aria-labelledby="f2t">
+    <title id="f2t">30 homes split into 6 trucks of 5 stops each</title>
+    <g style="fill:var(--ink-2);font-size:13px" text-anchor="middle"><text x="320" y="16">30 homes ÷ 5 stops per truck</text>
+      <text x="320" y="106">= at least 6 trucks, even with perfect planning</text></g>
+    <g style="fill:var(--surface-2);stroke:var(--line)">
+      <rect x="8" y="30" width="94" height="46" rx="8"/><rect x="113" y="30" width="94" height="46" rx="8"/><rect x="218" y="30" width="94" height="46" rx="8"/>
+      <rect x="323" y="30" width="94" height="46" rx="8"/><rect x="428" y="30" width="94" height="46" rx="8"/><rect x="533" y="30" width="94" height="46" rx="8"/></g>
+    <g id="f2dots" style="fill:var(--ink)"></g>
+  </svg></div>
+  <p>Some limits can't be beaten. With 30 homes and 5 stops per truck, you need at least 6 trucks. Space works the same way: if all the furniture together fills 7 trucks, you need at least 7. The bigger of those two numbers is the <strong>floor</strong>. We score every method by how far above the floor it lands.</p>
+  <p class="cap" style="margin-top:14px"><strong>Trucks used for every 100 the floor allows</strong> (hover over a bar for details)</p>
+  <div class="bars">
+    <div class="bar-row" title="The floor: max(homes ÷ 5, total volume ÷ truck capacity)"><span class="lab">The floor (nobody can beat it)</span><span class="track"><span class="bar floor" style="width:83.3%"></span></span><span class="val">100</span></div>
+    <div class="bar-row" title="Real Amazon parcels, 50 km rule: a simple method hits the floor on every day (median 0.0% extra over 1,066 depot-days)"><span class="lab">Simple method · real Amazon data</span><span class="track"><span class="bar" style="width:83.3%"></span></span><span class="val">100</span></div>
+    <div class="bar-row" title="Amazon homes, parcels scaled up to sofa size: median +4.7% over 1,066 depot-days"><span class="lab">Simple method · Amazon with sofa-sized parcels</span><span class="track"><span class="bar" style="width:87.5%"></span></span><span class="val">~105</span></div>
+    <div class="bar-row" title="Ryry's framework: about 11.5% extra clusters on Ryry's own data. Compared with what? To be confirmed with Ryry."><span class="lab">Ryry's tool today (on Ryry's data)</span><span class="track"><span class="bar hatch" style="width:92.9%"></span></span><span class="val">~112*</span></div>
+  </div>
+  <p class="muted">Bars start at zero, so the gaps look small. But 12 extra trucks for every 100, every day, is a lot of drivers and fuel. *Striped: we don't yet know what Ryry's 11.5% is compared with.</p>
+
+  <h3 class="eh"><span class="num sm">3</span>Ryry's tool today</h3>
+  <p>It never breaks a rule, which is great. But it uses about <strong>11.5% more trucks</strong>, roughly 112 where 100 might do. It also makes some trips more spread out than they need to be. Ryry asked: can an AI help pick better trips while keeping all four rules?</p>
+
+  <h3 class="eh"><span class="num sm">4</span>This week's test: real Amazon addresses</h3>
+  <div class="figwrap"><svg class="fig" viewBox="0 0 640 262" role="img" aria-labelledby="f3t">
+    <title id="f3t">The 50 km circle drawn to scale next to a zoomed-in Amazon neighbourhood where neighbours are about 160 m apart</title>
+    <circle cx="140" cy="130" r="110" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:2"/>
+    <rect x="135" y="125" width="10" height="10" style="fill:none;stroke:var(--ink);stroke-width:1.5"/>
+    <circle cx="140" cy="130" r="1.2" style="fill:var(--ink)"/>
+    <g style="stroke:var(--ink-3);stroke-width:1;stroke-dasharray:3 4"><line x1="145" y1="125" x2="480" y2="15"/><line x1="145" y1="135" x2="480" y2="245"/></g>
+    <circle cx="480" cy="130" r="115" style="fill:var(--surface);stroke:var(--ink-3);stroke-width:1.5"/>
+    <g style="stroke:var(--ink-3);stroke-width:1"><line x1="480" y1="130" x2="385" y2="100"/><line x1="480" y1="130" x2="550" y2="58"/><line x1="480" y1="130" x2="570" y2="180"/><line x1="480" y1="130" x2="440" y2="222"/></g>
+    <circle cx="480" cy="130" r="6" style="fill:var(--accent)"/>
+    <g style="fill:var(--ink)"><circle cx="385" cy="100" r="5"/><circle cx="550" cy="58" r="5"/><circle cx="570" cy="180" r="5"/><circle cx="440" cy="222" r="5"/></g>
+    <g style="font-size:12.5px" text-anchor="middle">
+      <text x="140" y="62" style="fill:var(--ink-2)">the 50 km rule</text>
+      <text x="140" y="257" style="fill:var(--ink-3)">a whole neighbourhood is &lt; 1 pixel here</text>
+      <text x="480" y="40" style="fill:var(--ink-3)">zoomed in ~300×</text>
+      <text x="428" y="104" style="fill:var(--ink-2)">≈ 160 m</text></g>
+  </svg></div>
+  <p>We tested on real delivery addresses from Amazon in five US cities (1,066 depot-days). We found two surprises:</p>
+  <ul>
+    <li><strong>The homes are packed close together.</strong> A home's 4th-closest neighbour is only about 160 m away, about two football fields. The 50 km rule is around 300 times bigger, so it never matters. It's like a rule saying "everyone in one car must live in the same city" when they all live on one street.</li>
+    <li><strong>The parcels are tiny.</strong> A whole day's parcels fit in about 1.5 trucks, but the 5-stop rule alone needs about 62. So the space rule never matters either.</li>
+  </ul>
+  <p>With neither rule biting, a simple method already hits the floor exactly: <strong>0% extra trucks</strong>. On this data, a clever method has nothing left to fix.</p>
+
+  <h3 class="eh"><span class="num sm">5</span>Making the puzzle hard on purpose</h3>
+  <p>So we shrank the circle and blew the parcels up to sofa size, to find where trucks get wasted. The <a href="#map">gap map</a> shows the answer: the circle rule only starts to hurt once it's smaller than about 4 neighbour-distances. For a 50 km rule, that means homes about 12–50 km apart, like delivering furniture across the countryside. That's probably Ryry's world, which is why Ryry's data matters so much.</p>
+
+  <h3 class="eh"><span class="num sm">6</span>What happens next</h3>
+  <div class="path">
+    <div class="chip"><strong>1 · Perfect-answer calculator</strong><br>Solve small puzzles perfectly (an "exact solver"), so we know what the best possible plan looks like.</div>
+    <div class="arr" aria-hidden="true">→</div>
+    <div class="chip"><strong>2 · Simple shortcut</strong><br>Let each home team up only with its nearest neighbours, then let the calculator choose.</div>
+    <div class="arr" aria-hidden="true">→</div>
+    <div class="chip split"><span class="ok">Close to perfect?</span> We're done, no AI needed. That's still a paper.<br><span class="no">Not close enough?</span> A GNN (an AI that reads the map of homes) suggests better teammates.</div>
+    <div class="arr" aria-hidden="true">→</div>
+    <div class="chip"><strong>3 · Ryry's real data</strong><br>The final test, and the headline number.</div>
+  </div>
+</div>
+
+<h2 id="timeline">Timeline: what we tried and why</h2>
+<div class="card">
+  <div class="tl">
+    <div class="tl-item">
+      <div class="tl-date">Oct 20 <span class="tag good">done</span></div>
+      <h3>Started: teaching a camera to spot things in warehouses</h3>
+      <p>A small AI (YOLO) learns to find pallets, forklifts and other objects in warehouse photos (the LOCO dataset).</p>
+      <p class="why"><strong>Why:</strong> labelling photos by hand is slow, so we wanted to need fewer labels.</p>
+    </div>
+    <div class="tl-item">
+      <div class="tl-date">Oct 20 <span class="tag good">done</span></div>
+      <h3>Built a fair practice/exam split</h3>
+      <p>All photos from the same recording session go to the same side: practice or exam, never both.</p>
+      <p class="why"><strong>Why:</strong> a published split put almost-identical video frames on both sides. That's like seeing the exam answers while studying.</p>
+    </div>
+    <div class="tl-item">
+      <div class="tl-date">Oct 21 → 30 <span class="tag bad">no gain</span></div>
+      <h3>Tried the "flight simulator" idea</h3>
+      <p>The AI first practised on computer-made warehouse images (SORDI), then learned from 2–100% of the real labels. That made 37 training runs, with 3 repeats each.</p>
+      <div class="legend-s" aria-hidden="true"><span><i class="sw-line" style="background:var(--s1)"></i>Real photos only</span><span><i class="sw-line" style="background:var(--s2)"></i>Simulator first, then real</span></div>
+      <div class="figwrap"><svg class="fig chart" viewBox="0 0 560 232" role="img" aria-labelledby="f4t">
+        <title id="f4t">Detection score against share of real labels: the two lines nearly overlap</title>
+        <g style="stroke:var(--line);stroke-width:1"><line x1="44" y1="196" x2="470" y2="196"/><line x1="44" y1="144.6" x2="470" y2="144.6"/><line x1="44" y1="93.1" x2="470" y2="93.1"/><line x1="44" y1="41.7" x2="470" y2="41.7"/></g>
+        <g style="fill:var(--ink-3);font-size:12px" text-anchor="end"><text x="36" y="200">0</text><text x="36" y="148.6">10</text><text x="36" y="97.1">20</text><text x="36" y="45.7">30</text></g>
+        <g style="fill:var(--ink-3);font-size:12px" text-anchor="middle"><text x="44" y="216">2%</text><text x="129.2" y="216">5%</text><text x="214.4" y="216">10%</text><text x="299.6" y="216">25%</text><text x="384.8" y="216">50%</text><text x="470" y="216">100%</text></g>
+        <polyline points="44,164.6 129.2,146.6 214.4,127.1 299.6,92.6 384.8,70 470,41.2" style="fill:none;stroke:var(--s1);stroke-width:2"/>
+        <polyline points="44,158.5 129.2,146.1 214.4,125 299.6,90.6 384.8,67.4 470,42.7" style="fill:none;stroke:var(--s2);stroke-width:2"/>
+        <g style="fill:var(--s1);stroke:var(--surface);stroke-width:2">
+          <circle cx="44" cy="164.6" r="4"><title>Real only, 2% labels: 6.1</title></circle><circle cx="129.2" cy="146.6" r="4"><title>Real only, 5%: 9.6</title></circle><circle cx="214.4" cy="127.1" r="4"><title>Real only, 10%: 13.4</title></circle><circle cx="299.6" cy="92.6" r="4"><title>Real only, 25%: 20.1</title></circle><circle cx="384.8" cy="70" r="4"><title>Real only, 50%: 24.5</title></circle><circle cx="470" cy="41.2" r="4"><title>Real only, 100%: 30.1</title></circle></g>
+        <g style="fill:var(--s2);stroke:var(--surface);stroke-width:2">
+          <circle cx="44" cy="158.5" r="4"><title>Simulator first, 2% labels: 7.3</title></circle><circle cx="129.2" cy="146.1" r="4"><title>Simulator first, 5%: 9.7</title></circle><circle cx="214.4" cy="125" r="4"><title>Simulator first, 10%: 13.8</title></circle><circle cx="299.6" cy="90.6" r="4"><title>Simulator first, 25%: 20.5</title></circle><circle cx="384.8" cy="67.4" r="4"><title>Simulator first, 50%: 25.0</title></circle><circle cx="470" cy="42.7" r="4"><title>Simulator first, 100%: 29.8</title></circle></g>
+        <g style="fill:var(--ink-2);font-size:12px"><text x="480" y="36">real only</text><text x="480" y="56">simulator first</text></g>
+      </svg></div>
+      <p class="muted">Detection score (mAP50-95, %, validation set, average of 3 repeats) against the share of real labels used. Hover over a dot for its value.</p>
+      <p class="why"><strong>What we learned:</strong> the two lines almost overlap. The simulator helped by −0.4 to +1.2 points, less than the 2.5–4.6 point wobble between repeats of the same run, so there was no positive result to publish.</p>
+    </div>
+    <div class="tl-item">
+      <div class="tl-date">Oct 21 <span class="tag warn">parked</span></div>
+      <h3>Ryry's first steer, and a self-training idea</h3>
+      <p>Ryry wanted a focus on bulky products and how much space is left in a warehouse or truck. We also planned to let the AI teach itself from 11,124 unlabelled frames, keeping a guess only if the next frame agreed.</p>
+      <p class="why"><strong>Why it stopped:</strong> the cameras were carried by people walking, so objects jump between frames and "the next frame agrees" is unreliable. Then Ryry changed the topic.</p>
+    </div>
+    <div class="tl-item">
+      <div class="tl-date">Oct 27 <span class="tag info">current topic</span></div>
+      <h3>Ryry switched to truck trips for bulky delivery</h3>
+      <p>Ryry's tool always follows the four rules but needs about 11.5% extra trips and makes trips more spread out. The goal: fewer, tighter trips with the rules unchanged.</p>
+      <p class="why"><strong>Why:</strong> Ryry found it more interesting than detection, and Ryry sets the topic.</p>
+    </div>
+    <div class="tl-item">
+      <div class="tl-date">Oct 28 <span class="tag info">proposed</span></div>
+      <h3>The idea: shortlist, then solve exactly</h3>
+      <p>An AI (GNN) shortlists good teammates for each home, and an exact solver picks the trips from the shortlist. Ryry's own trips stay in as a backup, so the answer can never be worse than today's.</p>
+      <p class="why"><strong>Why:</strong> an AI alone can break rules, and an exact solver alone gets slow on big days. Closest prior work: Spieckermann, Minner &amp; Schiffer, Transportation Science 2025.</p>
+    </div>
+    <div class="tl-item">
+      <div class="tl-date">Oct 30 <span class="tag good">done</span></div>
+      <h3>Choices locked</h3>
+      <p>We measure the radius from the trip's middle and aim high: real data plus a public test set, a comparison against the perfect answer, and routes inside each trip. We also removed the old project name from files and servers.</p>
+      <p class="why"><strong>Why:</strong> these choices give the strongest possible paper, if the data supports them.</p>
+    </div>
+    <div class="tl-item now">
+      <div class="tl-date">Oct 31 <span class="tag info">now</span></div>
+      <h3>Reality check on the public data</h3>
+      <ul>
+        <li><strong>Belgium:</strong> made-up units, and the rules never bite.</li>
+        <li><strong>Loggi:</strong> taken offline.</li>
+        <li><strong>Amazon:</strong> neighbours are 160 m apart, so the 50 km rule never matters and a simple method is already perfect.</li>
+      </ul>
+      <p>We built the <a href="#map">gap map</a> to find where the puzzle gets hard.</p>
+      <p class="why"><strong>Result:</strong> <a href="#v2">Plan v2</a>. Exact solver first, AI only if it's needed, and Ryry's data decides.</p>
+    </div>
+  </div>
+</div>
+
+<h2 id="status">Status: what can be done now</h2>
+<div class="grid">
+  <div class="card"><h3>Topic</h3><p>Cut extra clusters in Ryry's framework. The four rules stay hard: ≤ 5 stops, volume ≤ capacity, radius &lt; 50 km from the cluster centre, each customer exactly once. The GNN is optional and has to earn its place.</p></div>
+  <div class="card"><h3>Data</h3><p>Amazon Last Mile (evaluation split), 194 MB, in <code>data/almrrc/</code>. License CC BY-NC 4.0.</p></div>
+  <div class="card"><h3>Machines</h3><p><span class="tag good">free</span>blackwell: all experiments finished, GPU idle.</p><p style="margin:0"><span class="tag warn">billing</span>AWS A10G: idle. Roughly $1.2/h, my estimate.</p></div>
+  <div class="card"><h3>Waiting on Ryry</h3><ul><li>the data, or a few numbers about it</li><li>the framework code</li><li>what the 11.5% is measured against</li></ul></div>
+  <div class="card"><h3>Possible now</h3><p>On a CPU only, with no Ryry input needed: exact solves on small days, the nearest-neighbour baseline, and the gap map below.</p></div>
+</div>
+
+<h2 id="v1">Plan v1 (last time)</h2>
+<div class="card v1">
+  <ul>
+    <li><strong>Data:</strong> <s>the Belgium instances</s> plus Amazon, <s>up to 30,000 customers</s>.</li>
+    <li><strong>Method:</strong> the GNN predicts which customers belong together, an exact solver picks the clusters, and Ryry's clusters serve as a safety net.</li>
+    <li><strong>Headline:</strong> "X% fewer trucks, <s>within Y% of optimal, 30k customers in minutes</s>."</li>
+  </ul>
+</div>
+
+<h2 id="roast">Self-roast, with measured numbers</h2>
+<div class="card">
+  <ol class="roast">
+    <li><span class="tag bad">dead</span><strong>The Belgium set is useless here.</strong> Coordinates sit on a unitless 0–2,000 grid, so "50 km" means nothing. Demand is 0–3 against capacity 100, so volume can never bind with 5 stops.</li>
+    <li><span class="tag bad">dead</span><strong>On Amazon, the radius never binds.</strong> The median distance to the 4th-nearest stop (call it <em>d4</em>) is 0.16 km. A typical day's stops all lie within 8.2 km of the centre (the most spread-out day: 54.5 km).</li>
+    <li><span class="tag bad">dead</span><strong>On Amazon, raw volume never binds either.</strong> A day needs about 62 clusters for the 5-stop rule but only about 1.5 truckloads by volume. A simple greedy hits the lower bound exactly, so there is nothing to improve.</li>
+    <li><span class="tag warn">weak</span><strong>Scaling volumes up to "bulky" opens a ~5% gap, but it isn't geographic.</strong> The gap is the same at 3 km and at 50 km, so it is a packing problem. A GNN that learns who is near whom can't help with it. Whether the gap is real or just a weak bound is still unknown.</li>
+    <li><span class="tag bad">dead</span><strong>"30k customers" is gone.</strong> It came only from Belgium. Amazon's depot-days are samples of about 2–3 routes (median 308 stops, max 3,453), not full days.</li>
+    <li><span class="tag bad">wrong</span><strong>"Within Y% of optimal" was not a valid claim.</strong> Solving over a pruned candidate set gives no lower bound. Only the simple bound, max(⌈n/5⌉, ⌈total volume ÷ capacity⌉), or column generation on small cases counts.</li>
+    <li><span class="tag warn">risk</span><strong>The novelty is incremental</strong> over Spieckermann, Minner &amp; Schiffer (Transportation Science 2025).</li>
+    <li><span class="tag bad">dead</span><strong>Loggi Brazil benchmark</strong> (7k–32k deliveries, MIT license): both the repo and the download return 404.</li>
+    <li><span class="tag warn">ops</span><strong>The AWS GPU is billing for nothing.</strong> The project also has no version control, and another agent edited the same files at the same time yesterday.</li>
+  </ol>
+</div>
+
+<h2 id="map">The fix: where the gap actually opens</h2>
+<div class="card">
+  <p>Each cell shows how many more clusters a greedy that keeps all four rules uses than the simple lower bound. It is the median over 1,066 Amazon station-days.</p>
+  <ul>
+    <li><strong>Columns:</strong> the radius limit R, as a multiple of <em>d4</em>.</li>
+    <li><strong>Rows:</strong> volume pressure, meaning truckloads by volume divided by the clusters needed for the 5-stop rule.</li>
+  </ul>
+  <p>Hover over or tab to a cell for details.</p>
+  <div class="hm-wrap">
+  <table class="hm" aria-label="Greedy cluster count above lower bound, by radius and volume pressure">
+    <thead><tr><th class="row" scope="col">Volume pressure</th><th scope="col">R = 1×d4<br><span class="muted">≈ 0.16 km</span></th><th scope="col">R = 2×d4<br><span class="muted">≈ 0.32 km</span></th><th scope="col">R = 4×d4<br><span class="muted">≈ 0.64 km</span></th><th scope="col">R = 50 km<br><span class="muted">Ryry's limit</span></th></tr></thead>
+    <tbody>
+      <tr><th class="row" scope="row">Raw Amazon (≈ 0.02)</th>
+        <td class="b4" tabindex="0" data-p="raw Amazon volumes" data-r="1×d4">32.0%</td><td class="b2" tabindex="0" data-p="raw Amazon volumes" data-r="2×d4">5.6%</td><td class="b0" tabindex="0" data-p="raw Amazon volumes" data-r="4×d4">1.5%</td><td class="b0" tabindex="0" data-p="raw Amazon volumes" data-r="50 km">0.0%</td></tr>
+      <tr><th class="row" scope="row">0.5 (scaled)</th>
+        <td class="b5" tabindex="0" data-p="pressure 0.5" data-r="1×d4">52.6%</td><td class="b4" tabindex="0" data-p="pressure 0.5" data-r="2×d4">24.0%</td><td class="b3" tabindex="0" data-p="pressure 0.5" data-r="4×d4">17.8%</td><td class="b3" tabindex="0" data-p="pressure 0.5" data-r="50 km">15.0%</td></tr>
+      <tr><th class="row" scope="row">1.0 (scaled, "bulky")</th>
+        <td class="b4" tabindex="0" data-p="pressure 1.0" data-r="1×d4">27.9%</td><td class="b3" tabindex="0" data-p="pressure 1.0" data-r="2×d4">10.9%</td><td class="b2" tabindex="0" data-p="pressure 1.0" data-r="4×d4">6.8%</td><td class="b1" tabindex="0" data-p="pressure 1.0" data-r="50 km">4.7%</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="legend" aria-hidden="true"><span class="lab">% above bound</span>
+    <span class="sw b0">0–2</span><span class="sw b1">2–5</span><span class="sw b2">5–10</span><span class="sw b3">10–20</span><span class="sw b4">20–35</span><span class="sw b5">35+</span></div>
+  <h3 style="margin-top:16px">How to read it</h3>
+  <ul>
+    <li><strong>The radius hurts only when it is tight compared with customer spacing</strong> (the top row falls from 32% to 0% left to right). For a 50 km limit, that means customers whose 4 nearest neighbours are about 12–50 km away: regional bulky delivery.</li>
+    <li><strong>High volume pressure opens gaps at any radius.</strong> Some of that may be a weak lower bound rather than a real gap. Exact solves (Plan v2, step 1) will tell.</li>
+    <li><strong>This map is the honest public benchmark.</strong> It uses real geography and two scale-free knobs. Ryry's data becomes one point on it, located by two numbers.</li>
+  </ul>
+  <p class="muted" style="margin-top:10px">The greedy picks seeds farthest from the day's centre first, then adds the nearest unassigned stops while all four rules hold; a self-check confirms each run's output. Scaled volumes put the median stop at pressure × capacity ÷ 5. At pressure 1.0, 6% of stops exceeded a truck and were capped at capacity for this check.</p>
+</div>
+
+<h2 id="v2">Plan v2</h2>
+<div class="card">
+  <div class="flow">
+    <div class="step"><div class="num">1</div><div><h3>Exact solves on small days</h3><p>Run CP-SAT at every cell of the map. This splits each gap into "the greedy is bad" and "the bound is weak", and shows where real room exists. CPU only, 1–2 days.</p></div></div>
+    <div class="arrow"></div>
+    <div class="step"><div class="num">2</div><div><h3>Decision gate, set in advance</h3><p>Run the exact solver on candidates from plain nearest-neighbour pruning, with no learning.</p>
+      <div class="gate">
+        <div class="yes"><strong>Within ~1% of the best, in minutes, everywhere</strong><br>No GNN. The paper becomes exact clustering with a never-worse guarantee, plus the map (target: an operations-research journal).</div>
+        <div class="no"><strong>Falls short, or too slow at large sizes</strong><br>The GNN scores the candidates. It goes in only if it beats nearest-neighbour pruning at the same candidate budget.</div>
+      </div></div></div>
+    <div class="arrow"></div>
+    <div class="step"><div class="num">3</div><div><h3>Ryry's data and framework</h3><p>Headline: <em>"X fewer trucks per day than the current framework, 100% feasible, within Y% of the bound"</em>, plus the map that explains where and why.</p></div></div>
+  </div>
+  <h3 style="margin-top:18px">Changed from v1</h3>
+  <ul>
+    <li>Belgium and Loggi are dropped. Amazon is used only through the map.</li>
+    <li>Gaps are reported against the simple lower bound everywhere, and against the true optimum only on small cases.</li>
+    <li>The scale claim becomes whatever Ryry's largest real day is.</li>
+  </ul>
+</div>
+
+<h2 id="next">Next three actions</h2>
+<div class="grid">
+  <div class="card"><h3><span class="tag info">you</span>Send Ryry the message</h3><p>It's below and ready to copy.</p></div>
+  <div class="card"><h3><span class="tag info">me</span>Exact-solve check</h3><p>Small days, every map cell, CPU only, 1–2 days.</p></div>
+  <div class="card"><h3><span class="tag info">you</span>Two decisions</h3><p>Stop the AWS instance? Run <code>git init</code> locally (no remote)?</p></div>
+</div>
+
+<h2 id="riri">Message to Ryry</h2>
+<div class="card">
+  <p class="muted">Written for Ryry, as a WhatsApp message.</p>
+  <div class="msg" id="msg">Hi Ryry, before we build, a few quick numbers about your bulky data (rough is fine):
+1. About how many customers per day per depot?
+2. How spread out are they? For example, the typical distance from a customer to its 4–5 nearest customers that day.
+3. Typical order volume compared with truck capacity (for example, one sofa ≈ 30% of a truck)?
+4. The 11.5% extra clusters is compared with what: the minimum possible (customers ÷ 5, or total volume ÷ capacity) or another method?
+5. Does your framework assign by volume first or by distance first? Does "centre" mean the average of the customers' coordinates?
+6. Can we use the data in the paper, even anonymised?
+
+Why I'm asking: on public Amazon data the 50 km limit never matters (neighbours are about 160 m apart), so the method only shows its value on data like yours.</div>
+  <button id="copy" type="button">Copy message</button> <span class="muted" id="copied" role="status"></span>
+</div>
+
+<h2 id="sources">Sources</h2>
+<div class="card">
+  <ul>
+    <li><a href="https://registry.opendata.aws/amazon-last-mile-challenges">Amazon Last Mile Routing Research Challenge (AWS Open Data)</a></li>
+    <li><a href="https://huggingface.co/datasets/CO-Bench/FrontierCO/blob/main/CVRP/hard_test_instances/Antwerp2.vrp">Belgium instance mirror: Antwerp2 (Hugging Face, CO-Bench)</a></li>
+    <li><a href="https://github.com/shubhampachori12110095/loggibud">Loggi BUD, surviving fork</a></li>
+    <li><a href="https://canaltech.com.br/inovacao/loggi-anuncia-plataforma-de-benchmark-para-fomentar-estudos-sobre-logistica-182526/">Canaltech on the Loggi benchmark</a></li>
+  </ul>
+</div>
+
+<footer class="muted">
+  <p><strong>Not checked yet:</strong></p>
+  <ul>
+    <li>No exact solves, so every gap is a greedy against a simple bound and may overstate the real room.</li>
+    <li>Only Amazon's evaluation split was used, not the training split.</li>
+    <li>The AWS price is an estimate.</li>
+  </ul>
+  <p style="margin-top:10px">The check script is a temporary file in the session scratchpad (<code>bindcheck.py</code>).</p>
+</footer>
+</main>
+<div id="tip" role="tooltip"></div>
+<script>
+(function () {
+  var root = document.documentElement, KEY = "plan-theme";
+  try { var t = localStorage.getItem(KEY); if (t) root.dataset.theme = t; } catch (e) {}
+  document.getElementById("theme").addEventListener("click", function () {
+    var dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem(KEY, root.dataset.theme); } catch (e) {}
+  });
+
+  var dots = document.getElementById("f2dots"), NS = "http://www.w3.org/2000/svg";
+  for (var i = 0; i < 6; i++) for (var j = 0; j < 5; j++) {
+    var c = document.createElementNS(NS, "circle");
+    c.setAttribute("cx", 23 + i * 105 + j * 16); c.setAttribute("cy", 53); c.setAttribute("r", 5); dots.appendChild(c);
+  }
+
+  var tip = document.getElementById("tip");
+  function show(td, x, y) {
+    var v = td.textContent;
+    tip.innerHTML = "<strong>" + td.dataset.p + ", R = " + td.dataset.r + "</strong><br>The greedy uses " + v +
+      " more clusters than the lower bound.<br><span style='opacity:.7'>Median over 1,066 Amazon station-days.</span>";
+    tip.style.display = "block";
+    var w = tip.offsetWidth, h = tip.offsetHeight;
+    tip.style.left = Math.min(x + 12, innerWidth - w - 8) + "px";
+    tip.style.top = (y - h - 12 < 8 ? y + 16 : y - h - 12) + "px";
+  }
+  document.querySelectorAll(".hm td").forEach(function (td) {
+    td.addEventListener("mousemove", function (e) { show(td, e.clientX, e.clientY); });
+    td.addEventListener("mouseleave", function () { tip.style.display = "none"; });
+    td.addEventListener("focus", function () { var r = td.getBoundingClientRect(); show(td, r.left, r.top); });
+    td.addEventListener("blur", function () { tip.style.display = "none"; });
+  });
+
+  document.getElementById("copy").addEventListener("click", function () {
+    var text = document.getElementById("msg").textContent, out = document.getElementById("copied");
+    function done(ok) { out.textContent = ok ? "Copied." : "Copy failed: select the text instead."; }
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
+    else {
+      var ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select();
+      try { done(document.execCommand("copy")); } catch (e) { done(false); } ta.remove();
+    }
+  });
+})();
+</script>
+</body>
+</html>

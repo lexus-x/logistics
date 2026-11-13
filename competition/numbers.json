@@ -1,0 +1,397 @@
+{
+ "data": {
+  "jobs": 97,
+  "stops": 6395,
+  "days": 84,
+  "first": "2026-04-07",
+  "last": "2026-08-07",
+  "per_job_min": 8,
+  "per_job_med": 63,
+  "per_job_max": 141,
+  "big": 132,
+  "over_1t": 169,
+  "vol_med": 0.9,
+  "vol_total": 8990,
+  "cap_1t": 4.22,
+  "cap_14t": 4.73
+ },
+ "bench": [
+  {
+   "name": "P-n16-k8",
+   "customers": 15,
+   "capacity": 35,
+   "vehicles_opt": 8,
+   "optimum": 450,
+   "candidates": 164,
+   "vehicles": 8,
+   "cost": 450,
+   "gap": 0.0,
+   "s": 0.1,
+   "proven": true
+  },
+  {
+   "name": "P-n22-k8",
+   "customers": 21,
+   "capacity": 3000,
+   "vehicles_opt": 8,
+   "optimum": 603,
+   "candidates": 1569,
+   "vehicles": 8,
+   "cost": 603,
+   "gap": 0.0,
+   "s": 0.9,
+   "proven": true
+  },
+  {
+   "name": "P-n23-k8",
+   "customers": 22,
+   "capacity": 40,
+   "vehicles_opt": 8,
+   "optimum": 529,
+   "candidates": 1243,
+   "vehicles": 8,
+   "cost": 529,
+   "gap": 0.0,
+   "s": 0.3,
+   "proven": true
+  },
+  {
+   "name": "P-n55-k15",
+   "customers": 54,
+   "capacity": 70,
+   "vehicles_opt": 15,
+   "optimum": 989,
+   "candidates": 8927,
+   "vehicles": 15,
+   "cost": 992,
+   "gap": 0.3,
+   "s": 7.2,
+   "proven": true
+  },
+  {
+   "name": "P-n60-k15",
+   "customers": 59,
+   "capacity": 80,
+   "vehicles_opt": 15,
+   "optimum": 968,
+   "candidates": 20186,
+   "vehicles": 15,
+   "cost": 968,
+   "gap": 0.0,
+   "s": 16.8,
+   "proven": true
+  }
+ ],
+ "methods": {
+  "real": {
+   "name": "Real dispatch",
+   "trucks": 2517,
+   "km": 655444,
+   "hours": 8880,
+   "t14": 0,
+   "breaks": 230,
+   "at_bound": 4,
+   "gap": 32.8,
+   "vs_real": 0.0
+  },
+  "kmeans": {
+   "name": "k-means",
+   "trucks": 2702,
+   "km": 680366,
+   "hours": 9170,
+   "t14": 587,
+   "breaks": 0,
+   "at_bound": 0,
+   "gap": 42.6,
+   "vs_real": 7.4
+  },
+  "agg": {
+   "name": "Agglomerative",
+   "trucks": 2235,
+   "km": 575984,
+   "hours": 7844,
+   "t14": 517,
+   "breaks": 0,
+   "at_bound": 1,
+   "gap": 17.9,
+   "vs_real": -11.2
+  },
+  "rule": {
+   "name": "Rule-based (our earlier method)",
+   "trucks": 2092,
+   "km": 570936,
+   "hours": 7856,
+   "t14": 829,
+   "breaks": 0,
+   "at_bound": 9,
+   "gap": 10.4,
+   "vs_real": -16.9
+  },
+  "opt": {
+   "name": "Optimizer, 15-nearest list",
+   "trucks": 1920,
+   "km": 526087,
+   "hours": 7303,
+   "t14": 808,
+   "breaks": 0,
+   "at_bound": 79,
+   "gap": 1.3,
+   "vs_real": -23.7
+  },
+  "gnn_opt": {
+   "name": "GNN + optimizer",
+   "trucks": 1933,
+   "km": 516628,
+   "hours": 7163,
+   "t14": 845,
+   "breaks": 0,
+   "at_bound": 63,
+   "gap": 2.0,
+   "vs_real": -23.2
+  },
+  "long": {
+   "name": "GNN + optimizer, long run (ours)",
+   "trucks": 1912,
+   "km": 519761,
+   "hours": 7222,
+   "t14": 827,
+   "breaks": 0,
+   "at_bound": 81,
+   "gap": 0.9,
+   "vs_real": -24.0
+  }
+ },
+ "lb": 1895,
+ "lb_simple": 1803,
+ "proof": {
+  "optimal": 81,
+  "plus1": 15,
+  "plus2": 1,
+  "exact": 80,
+  "long_s_med": 61.5,
+  "long_s_max": 4646,
+  "prove_s_med": 2.5,
+  "loads_med": 60456,
+  "left_med": 4069
+ },
+ "gnn": {
+  "pairs": 43927,
+  "acc": 0.8175154233159561,
+  "base_acc": 0.8125070929527283,
+  "auc": 0.7360546419636171,
+  "cols": [
+   19280.0,
+   2859.0
+  ],
+  "s": [
+   67.2,
+   6.8
+  ],
+  "limit": [
+   13,
+   2
+  ],
+  "params": 137857
+ },
+ "speed": {
+  "opt_max": 141,
+  "gnn_max": 120,
+  "opt_fallback": 4,
+  "gnn_fallback": 0
+ },
+ "forward": {
+  "train": 60,
+  "test": 37,
+  "real": 920,
+  "rule": 760,
+  "knn8": 703,
+  "fwd": 697,
+  "cv": 700,
+  "bound": 680
+ },
+ "depot": [
+  {
+   "site": "Depot (Myeongseo-dong)",
+   "real": 655445,
+   "rule": 570936,
+   "long": 519762
+  },
+  {
+   "site": "10 km north",
+   "real": 640462,
+   "rule": 559580,
+   "long": 509736
+  },
+  {
+   "site": "10 km east",
+   "real": 677644,
+   "rule": 588407,
+   "long": 536007
+  },
+  {
+   "site": "10 km south",
+   "real": 674944,
+   "rule": 586632,
+   "long": 534374
+  },
+  {
+   "site": "10 km west",
+   "real": 643763,
+   "rule": 561461,
+   "long": 511596
+  }
+ ],
+ "cost": {
+  "real": {
+   "S1": 426538559,
+   "S2": 403620817
+  },
+  "kmeans": {
+   "S1": 453836649,
+   "S2": 428786512
+  },
+  "agg": {
+   "S1": 394260790,
+   "S2": 373506436
+  },
+  "rule": {
+   "S1": 391498804,
+   "S2": 371346775
+  },
+  "opt": {
+   "S1": 367516737,
+   "S2": 348777692
+  },
+  "gnn_opt": {
+   "S1": 364586375,
+   "S2": 345585554
+  },
+  "long": {
+   "S1": 364946258,
+   "S2": 346220113
+  }
+ },
+ "co2": {
+  "kg_per_l": 2.68,
+  "kg_per_km": 0.304,
+  "real": 199.4,
+  "kmeans": 206.9,
+  "agg": 175.2,
+  "rule": 173.6,
+  "opt": 160.0,
+  "gnn_opt": 157.1,
+  "long": 158.1
+ },
+ "year_factor": 2.97,
+ "save": {
+  "real": {
+   "trucks": 584,
+   "km": 138816,
+   "hours": 1717,
+   "won": 61952184,
+   "co2_t": 42.2,
+   "year": {
+    "trucks": 1733,
+    "km": 411934,
+    "hours": 5095,
+    "won": 183841847,
+    "co2_t": 125.2
+   }
+  }
+ },
+ "pct": {
+  "real": {
+   "trucks": -23.2,
+   "km": -21.2,
+   "hours": -19.3,
+   "cost": -14.5,
+   "co2": -21.2
+  }
+ },
+ "example": {
+  "stops": 26,
+  "candidates": 1494,
+  "trucks": 6,
+  "km": 1029,
+  "volume": 25.6,
+  "greedy_trucks": 7,
+  "greedy_km": 1216
+ },
+ "perjob": {
+  "fewer": 93,
+  "more": 1,
+  "same": 3
+ },
+ "folds": [
+  {
+   "k": 1,
+   "jobs": 20,
+   "first": "2026-04-07",
+   "last": "2026-05-04",
+   "pairs": 7495,
+   "acc": 85.1,
+   "base": 85.1,
+   "auc": 0.76
+  },
+  {
+   "k": 2,
+   "jobs": 19,
+   "first": "2026-05-06",
+   "last": "2026-05-29",
+   "pairs": 9998,
+   "acc": 82.8,
+   "base": 81.9,
+   "auc": 0.75
+  },
+  {
+   "k": 3,
+   "jobs": 20,
+   "first": "2026-06-01",
+   "last": "2026-06-29",
+   "pairs": 8893,
+   "acc": 80.6,
+   "base": 80.0,
+   "auc": 0.73
+  },
+  {
+   "k": 4,
+   "jobs": 19,
+   "first": "2026-06-30",
+   "last": "2026-07-22",
+   "pairs": 9782,
+   "acc": 81.7,
+   "base": 81.5,
+   "auc": 0.68
+  },
+  {
+   "k": 5,
+   "jobs": 19,
+   "first": "2026-07-23",
+   "last": "2026-08-07",
+   "pairs": 7759,
+   "acc": 78.4,
+   "base": 77.8,
+   "auc": 0.76
+  }
+ ],
+ "bysize": {
+  "med_stops": 63,
+  "small_saved": 4.1,
+  "big_saved": 7.9,
+  "small_pct": 20.9,
+  "big_pct": 24.6,
+  "corr": 0.76
+ },
+ "timesize": {
+  "big_jobs": 8,
+  "opt_big_med": 114.7,
+  "gnn_big_med": 62.7,
+  "opt_small_med": 18.6,
+  "gnn_small_med": 1.4
+ },
+ "cover": {
+  "stops": 70,
+  "trucks": 24,
+  "real": 30
+ }
+}

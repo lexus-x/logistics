@@ -1,0 +1,1768 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AI-Based Automatic Dispatch Clustering for Large-Volume Bulky
+Delivery</title>
+<meta name="description" content="Competition report of team ANALOG: a graph neural network and an exact optimizer that group bulky deliveries into fewer trucks, tested on 97 real dispatch jobs and a public benchmark.">
+<style>
+/* Hallmark · v2.0.0 · shape: print report, A4, 20 pages · theme: custom, the team poster's navy and blue (by request) · genre: editorial · posture: committed · surface: absolute, white paper for print · hero: full-bleed cover, the map of one real dispatch job · nav: none, a contents block on page 2 · footer: running page footer, team and page count · signature: the cover map, one real job's trucks with their 50 km radius */
+/* Hallmark · waive 7b · body background var(--paper) is #ffffff · a printed report sits on white paper; a tinted page base prints as a grey wash on all twenty pages */
+/* Hallmark · dismissed 46a · 0.7 % is measured by us: 1,933 trucks with the GNN list against 1,920 with the 15-nearest list, both in Table 8 */
+/* Hallmark · dismissed 69 · the 50 km radius is a company rule; a report must state it in the rule table, the figure, the method and the rule check */
+/* Hallmark · critique · a dense academic document: every page is text-led, so the web rules about the fold, nav and words per screen do not apply; colour and type run on tokens, captions and labels are plain sentence case */
+@font-face { font-family: "Plex"; src: url("../fonts/IBMPlexSans-VF.ttf"); font-weight: 100 700; font-style: normal; }
+@font-face { font-family: "Plex"; src: url("../fonts/IBMPlexSans-Italic-VF.ttf"); font-weight: 100 700; font-style: italic; }
+@font-face { font-family: "PlexMono"; src: url("../fonts/IBMPlexMono-Regular.ttf"); font-weight: 400; }
+@font-face { font-family: "PlexMono"; src: url("../fonts/IBMPlexMono-SemiBold.ttf"); font-weight: 600; }
+@font-face { font-family: "Barlow"; src: url("../fonts/Barlow-Medium.ttf"); font-weight: 500; }
+@font-face { font-family: "Barlow"; src: url("../fonts/Barlow-SemiBold.ttf"); font-weight: 600; }
+@font-face { font-family: "Barlow"; src: url("../fonts/Barlow-Bold.ttf"); font-weight: 700; }
+@font-face { font-family: "NotoKR"; src: url("../fonts/NotoSansKR-VF.ttf"); font-weight: 100 900; }
+
+:root {
+  --navy: #1d3f86; --blue: #2f6fdb; --sky: #eef4fb; --sky2: #dce8fb; --ink: #1c2430; --ink-strong: #101828; --muted: #5b6676;
+  --faint: #7a8594; --line: #d3dcea; --orange: #cf7f2e; --paper: #ffffff; --code-bg: #f6f8fc;
+  --code-str: #9a5a1a; --code-fn: #24405f; --code-op: #444444; --on-dark: #f5f8ff; --on-dark-soft: #dce8fb;
+  --font-body: "Plex", "NotoKR", sans-serif; --font-head: "Barlow", sans-serif; --font-mono: "PlexMono", monospace;
+}
+@page { size: A4; margin: 15mm 17mm 16mm 17mm;
+  @bottom-left { content: "Team ANALOG  |  2nd LogisticSolver 2026"; font: 500 7.5pt var(--font-head); color: var(--faint); }
+  @bottom-right { content: counter(page) " / " counter(pages); font: 600 7.5pt var(--font-head); color: var(--faint); } }
+@page :first { margin: 0; @bottom-left { content: none; } @bottom-right { content: none; } }
+
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; overflow-x: clip; }
+body { margin: 0; font: 400 11pt/1.55 var(--font-body); color: var(--ink); background: var(--paper);
+  font-variant-numeric: tabular-nums; hyphens: auto; overflow-x: clip; }
+p, li { text-align: justify; hyphens: auto; }  /* body text flush on both edges; hyphenation keeps the word gaps even */
+p { margin: 0 0 7pt; orphans: 3; widows: 3; }
+.refs p, .contents p, .cover p, figcaption, caption, th, td { text-align: left; }
+strong { font-weight: 600; color: var(--ink-strong); }
+p strong, li strong { color: var(--navy); }  /* run-in heads and key results in the poster navy */
+.hl strong { background: linear-gradient(transparent 56%, var(--sky2) 56%); box-decoration-break: clone; -webkit-box-decoration-break: clone; }  /* soft marker under the headline numbers */
+.why em { font-style: normal; font-weight: 600; color: var(--blue); }
+p:has(> .why:first-child) { background: var(--sky); border-left: 2pt solid var(--blue); padding: 3pt 7pt; break-after: auto; }  /* the "why" notes; one may end a page without pulling the next table along */
+tr.ours td { background: var(--sky); }  /* our planner's row in result tables */
+figcaption .lab { font-weight: 600; color: var(--navy); }
+a { color: var(--blue); text-decoration: none; }
+a:active { color: var(--navy); }
+a:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.pb { break-after: page; height: 0; }
+p:has(+ div.sourceCode), p:has(+ pre), p:has(+ ul), p:has(+ ol), p:has(+ table) { break-after: avoid; }
+h1, h2 { break-after: avoid; text-wrap: balance; }
+
+/* headings */
+h1 { font: 700 17pt/1.15 var(--font-head); color: var(--navy); margin: 13pt 0 6pt; padding-bottom: 3.5pt;
+  border-bottom: 1.6pt solid var(--blue); break-after: avoid; overflow-wrap: break-word; min-width: 0; }
+h2 { font: 600 12.4pt/1.2 var(--font-head); color: var(--navy); margin: 9pt 0 3.5pt; break-after: avoid; }
+h1 + h2 { margin-top: 4pt; }
+
+/* lists */
+ul, ol { margin: 0 0 5.5pt; padding-left: 13pt; }
+li { margin: 0 0 3pt; }
+li::marker { color: var(--blue); }
+
+/* tables */
+table { width: 100%; border-collapse: collapse; margin: 3pt 0 9pt; font-size: 9.1pt; line-height: 1.32; break-inside: avoid; }
+table:has(tbody tr:nth-child(4)) { break-inside: auto; }  /* tables of 4+ rows may split between rows */
+tbody tr:last-child { break-before: avoid; }  /* never one row alone at the top of a page */
+tr { break-inside: avoid; }
+tbody tr:nth-child(-n+2) { break-before: avoid; }  /* never a caption and header alone at a page foot */
+caption { break-after: avoid; caption-side: top; text-align: left; font: 600 9.6pt/1.3 var(--font-head); color: var(--navy); margin-bottom: 3pt; }
+th { font: 600 9pt/1.25 var(--font-head); color: var(--navy); background: var(--sky); text-align: left; padding: 3.2pt 4pt;
+  border-bottom: 1pt solid var(--navy); vertical-align: bottom; }
+td { padding: 3.2pt 4pt; border-bottom: 0.5pt solid var(--line); vertical-align: top; }
+th[style*="right"], td[style*="right"] { text-align: right; }
+tbody tr:last-child td { border-bottom: 1pt solid var(--navy); }
+
+/* figures */
+figure { margin: 4pt 0 8pt; break-inside: avoid; }
+figure img { display: block; width: 100%; height: auto; }
+figcaption { font: 400 8.9pt/1.38 var(--font-body); color: var(--muted); margin-top: 3pt; }
+.figrow { display: grid; grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr); gap: 12pt; align-items: start; margin: 2pt 0 4pt; break-inside: avoid; }
+.figrow figure { margin: 0; }
+.figrow:has(img.map) { grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr); }
+.figrow .side p:first-child { margin-top: 0; }
+
+/* code */
+pre { background: var(--code-bg); border: 0.5pt solid var(--line); border-left: 2.5pt solid var(--blue); border-radius: 2pt;
+  padding: 5pt 7pt; margin: 2pt 0 8pt; font: 400 7.6pt/1.38 var(--font-mono); white-space: pre; overflow: hidden; break-inside: avoid; }
+code { font-family: var(--font-mono); font-size: 0.9em; }
+pre code { font-size: inherit; }
+.sourceCode { background: none; }
+code span.kw, code span.cf { color: var(--navy); font-weight: 600; }
+code span.st, code span.ss { color: var(--code-str); }
+code span.co { color: var(--faint); font-style: italic; }
+code span.dv, code span.fl, code span.bn { color: var(--blue); }
+code span.fu, code span.bu { color: var(--code-fn); }
+code span.op { color: var(--code-op); }
+
+/* math */
+math { font-size: 1.04em; }
+math[display="block"] { margin: 3pt 0 5pt; }
+
+/* summary & contents page */
+.contents { columns: 2; column-gap: 18pt; background: var(--sky); padding: 9pt 13pt 5pt; margin: 0 0 10pt; font-size: 9.8pt; }
+.contents p { font: 700 12pt var(--font-head); color: var(--navy); column-span: all; margin-bottom: 4pt; }
+.contents ol { margin: 0; padding-left: 16pt; }
+.contents li { margin-bottom: 1.6pt; }
+h2#summary { font-size: 13pt; margin-top: 4pt; }
+
+/* references */
+.refs p { font-size: 8.8pt; line-height: 1.32; margin-bottom: 2pt; padding-left: 16pt; text-indent: -16pt; }
+
+/* cover: the full-page map of one real job (figs/cover_bg.png) carries the page; type sits on the open left side */
+.cover { height: 297mm; box-sizing: border-box; position: relative; hyphens: manual; display: flex; flex-direction: column; break-after: page;
+  background: var(--navy) url("../figs/cover_bg.png") center / cover no-repeat; color: var(--on-dark); }
+.cover-top { font: 600 11pt var(--font-head); color: var(--on-dark-soft); padding: 14mm 20mm 0; }
+.cover-top p { margin: 0; }
+.cover-title { padding: 16mm 20mm 0; max-width: 150mm; }
+.cover-title p { font: 700 33pt/1.06 var(--font-head); color: var(--on-dark); margin: 0; overflow-wrap: break-word; min-width: 0; }
+.cover-sub { padding: 7mm 20mm 0; max-width: 98mm; }
+.cover-sub p { font: 400 12pt/1.45 var(--font-body); color: var(--on-dark-soft); margin: 0; }
+.cover-stats { display: flex; flex-direction: column; gap: 6mm; margin: 16mm 20mm 0; width: 72mm; }
+.cover-stats p { margin: 0; display: flex; flex-direction: column; }
+.stat strong { font: 700 25pt/1.05 var(--font-head); color: var(--on-dark); }
+.stat-l { font: 500 10pt/1.3 var(--font-head); color: var(--on-dark-soft); margin-top: 2pt; }
+.cover-art { display: none; }  /* the same picture is the page background; the Word copy shows it as an image */
+.cover-team { margin: auto 20mm 16mm; width: 82mm; font-size: 9.5pt; line-height: 1.5; color: var(--on-dark-soft); }
+.cover-team p { margin: 0 0 6pt; }
+.cover-team p:first-child { font: 700 15pt var(--font-head); color: var(--on-dark); }
+.cover-team p:first-child strong { color: var(--on-dark); }
+</style>
+</head>
+<body>
+<div class="cover">
+<div class="cover-top">
+<p>2nd LogisticSolver 2026: Smart Logistics Problem-Solving
+Competition</p>
+</div>
+<div class="cover-title">
+<p>AI-Based Automatic Dispatch Clustering for Large-Volume Bulky
+Delivery</p>
+</div>
+<div class="cover-sub">
+<p>A graph neural network that shortlists and an exact optimizer that
+decides, tested on 97 real dispatch jobs and on a public benchmark</p>
+</div>
+<div class="cover-stats">
+<p><span class="stat"><strong>−23.2 %</strong></span> <span
+class="stat-l">trucks: 1,933 instead of 2,517</span></p>
+<p><span class="stat"><strong>−21.2 %</strong></span> <span
+class="stat-l">road km: 516,628 instead of 655,444</span></p>
+<p><span class="stat"><strong>0.06 %</strong></span> <span
+class="stat-l">average gap to the proven optimum on a public
+benchmark</span></p>
+</div>
+<div class="cover-art">
+<p><img src="../figs/cover_bg.png" /></p>
+</div>
+<div class="cover-team">
+<p><strong>Team ANALOG</strong> (AI-based New Approach for
+LOGistics)</p>
+<p>Ryry Rizky Asri (team lead), Department of Information and
+Communication Engineering<br />
+최영은, Department of Electronic Engineering<br />
+최정혜, Department of Electronic Engineering</p>
+<p>Changwon National University, November 2026</p>
+</div>
+</div>
+<div class="contents">
+<p><strong>Contents</strong></p>
+<ol type="1">
+<li>Introduction: the problem in the field</li>
+<li>Problem definition</li>
+<li>Data: sources, processing and privacy</li>
+<li>Method, and why each step is needed</li>
+<li>Implementation and code</li>
+<li>Experimental setup, and why it is fair</li>
+<li>Results: savings, accuracy and speed</li>
+<li>Expected effects on logistics KPIs</li>
+<li>Prototype</li>
+<li>Deployment plan, resources and risks</li>
+<li>Novelty and differentiation</li>
+<li>Limitations and conclusion</li>
+</ol>
+</div>
+<h2 id="summary">Summary</h2>
+<p>A home-appliance manufacturer in the Changwon area ships large
+products (air coolers, large fans and similar equipment) from one depot
+to customers all over South Korea with hired trucks. For every dispatch
+job, a planner groups the delivery addresses into trucks by hand,
+following company rules: at most 5 addresses per truck, a load limit of
+60 % of the truck’s box volume, all addresses within 50 km of the
+group’s centre, and at most ten 1.4-ton trucks per job. Done by hand,
+this grouping uses more trucks and more kilometres than necessary.</p>
+<p>We built a planner that groups and routes together. A <strong>graph
+neural network (GNN)</strong> reads the stops of a job and keeps, for
+each stop, only its 8 most likely truck partners; on jobs it never saw,
+it ranks a true partner above a false one 74 % of the time (AUC 0.74).
+Every group from that short list that obeys the company rules becomes a
+candidate load. An <strong>exact optimizer</strong> (a mixed-integer
+program) then picks, among these candidates, the combination that uses
+the fewest trucks and, among those, the fewest road kilometres on real
+Korean roads. Every truck of the final plan is checked automatically
+against every rule.</p>
+<p>On 97 real dispatch jobs (6,395 stops, April to August 2026) the plan
+needs <span class="hl"><strong>1,933 trucks instead of 2,517 (−23.2
+%)</strong></span> and drives <span class="hl"><strong>516,628 km
+instead of 655,444 (−21.2 %)</strong></span>, with every company rule
+met. A standard routing solver, Google OR-Tools, needs 2,264 trucks on
+the same jobs, because it cannot express the company’s radius rule.
+Planning takes <span class="hl"><strong>6.8 s per job</strong></span>
+(median) on one PC, ten times faster than the same optimizer with a list
+of the 15 nearest stops, and with fewer trucks than a list of the 8
+nearest. To show that the optimizer is accurate, we also ran it on a
+<strong>public benchmark</strong> used in vehicle-routing research for
+three decades (CVRPLIB, set P [14]): on the five instances that fit the
+5-address rule, with the 15-nearest list, it finds the proven optimum on
+four and is 0.3 % above it on the fifth, <span class="hl"><strong>0.06 %
+on average</strong></span>.</p>
+<table>
+<caption>Results at a glance.</caption>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>KPI</th>
+<th style="text-align: right;">Real dispatch</th>
+<th style="text-align: right;">This work (GNN + optimizer)</th>
+<th style="text-align: right;">Change</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Trucks (97 real jobs)</td>
+<td style="text-align: right;">2,517</td>
+<td style="text-align: right;"><strong>1,933</strong></td>
+<td style="text-align: right;"><strong>−23.2 %</strong></td>
+</tr>
+<tr class="even">
+<td>Total road km (97 real jobs)</td>
+<td style="text-align: right;">655,444</td>
+<td style="text-align: right;"><strong>516,628</strong></td>
+<td style="text-align: right;"><strong>−21.2 %</strong></td>
+</tr>
+<tr class="odd">
+<td>Driving hours (97 real jobs)</td>
+<td style="text-align: right;">8,880</td>
+<td style="text-align: right;"><strong>7,163</strong></td>
+<td style="text-align: right;"><strong>−19.3 %</strong></td>
+</tr>
+<tr class="even">
+<td>Planning time per job</td>
+<td style="text-align: right;">by hand</td>
+<td style="text-align: right;"><strong>6.8 s</strong> (median)</td>
+<td style="text-align: right;"></td>
+</tr>
+<tr class="odd">
+<td>Gap to the proven optimum (public benchmark, 5 instances)</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"><strong>0.06 %</strong> on average</td>
+<td style="text-align: right;"></td>
+</tr>
+</tbody>
+</table>
+<table>
+<caption>Table 1. Key terms used in this report.</caption>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Term</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Dispatch job, stop, load</td>
+<td>A batch of deliveries planned together; one delivery address; the
+stops served by one truck</td>
+</tr>
+<tr class="even">
+<td>Short list</td>
+<td>For each stop, the few partners it may share a truck with; only
+groups from these partners are considered</td>
+</tr>
+<tr class="odd">
+<td>Graph neural network (GNN)</td>
+<td>A neural network that reads the stops and their links to neighbours
+and scores how likely two stops are to share a truck</td>
+</tr>
+<tr class="even">
+<td>MILP</td>
+<td>Mixed-integer linear program: an optimization model with yes-or-no
+decisions, solved exactly by a solver</td>
+</tr>
+<tr class="odd">
+<td>Benchmark (CVRPLIB)</td>
+<td>A public library of routing test problems whose best possible
+answers are proven; used to compare methods</td>
+</tr>
+<tr class="even">
+<td>Optimality gap</td>
+<td>How far a plan is above the proven best plan, in percent; 0 % means
+the plan is optimal</td>
+</tr>
+<tr class="odd">
+<td>AUC</td>
+<td>The chance that a true pair is ranked above a false one (0.5 is
+random, 1.0 is perfect)</td>
+</tr>
+</tbody>
+</table>
+<h1 id="introduction-the-problem-in-the-field">1. Introduction: the
+problem in the field</h1>
+<p><strong>Bulky delivery is planned truck by truck.</strong> Our
+partner company delivers large home appliances from its depot in
+Changwon to customers across the whole country. The trucks and drivers
+are hired per trip from third-party carriers, so the company never runs
+short of trucks; the question is how few it needs. A typical dispatch
+job has 63 delivery addresses (from 8 to 141), and each address receives
+about 0.9 m³ of boxes, a fifth of a small truck. Five typical addresses
+already fill a 1-ton truck, so the volume rule decides almost every
+grouping.</p>
+<p><strong>Today the grouping is done by people, following rules of
+thumb.</strong> A dispatcher looks at the addresses, groups neighbours
+into trucks, checks the load and the distances, and assigns a truck
+size. This takes time every day, depends on the person, and nobody can
+tell how far a plan is from the best one.</p>
+<p><strong>What we set out to do.</strong> Build a planner that (1)
+always meets the company rules, (2) needs as few trucks and kilometres
+as possible, (3) is fast enough for daily use, and (4) is measurably
+accurate, on a public benchmark that anyone can check. Table 2 lists the
+KPIs we measure and what we reached.</p>
+<table>
+<caption>Table 2. Logistics KPIs, how we measure them, and the
+result.</caption>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>KPI</th>
+<th>How it is measured</th>
+<th>Goal</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Trucks</td>
+<td>Trucks hired for all 97 jobs</td>
+<td>Fewer than the real dispatch</td>
+<td>1,933 (−23.2 %)</td>
+</tr>
+<tr class="even">
+<td>Total road km and driving hours</td>
+<td>Real road network, best stop order</td>
+<td>Fewer</td>
+<td>516,628 km (−21.2 %); −19.3 % hours</td>
+</tr>
+<tr class="odd">
+<td>Rule compliance</td>
+<td>Automatic check of every truck</td>
+<td>100 %</td>
+<td>100 % (0 violations)</td>
+</tr>
+<tr class="even">
+<td>Accuracy</td>
+<td>Gap to the proven optimum on public benchmark instances</td>
+<td>Within 1 %</td>
+<td>0.06 % on average; optimal on 4 of 5</td>
+</tr>
+<tr class="odd">
+<td>Planning time (lead time of planning)</td>
+<td>Seconds per job on one PC</td>
+<td>Under 1 minute</td>
+<td>6.8 s median</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why these KPIs.</strong> Trucks are the largest cost: each
+truck is a separate hired trip. Kilometres and driving hours set fuel
+use and driver time. Rule compliance decides whether a plan can be used
+at all, and planning time decides whether it fits the daily routine.
+Accuracy against a proven optimum is how routing methods are compared in
+research [10, 15], so it is the measure a reviewer can trust.</p>
+<p><strong>Existing approaches.</strong> Grouping deliveries into trucks
+and ordering the stops is the capacitated vehicle routing problem [10].
+Classic heuristics build routes by merging nearby stops, as in the
+savings algorithm [11], or cluster first and route second [12]. They are
+fast but say nothing about how far their plan is from the best one.
+Exact methods choose among candidate routes with set partitioning [2]
+and integer programming, often with column generation [4]. They are
+accurate, but they become slow when every possible route has to be
+considered. Neural networks that output routes directly are fast [13],
+but they cannot guarantee hard business rules such as a load limit.
+Learning which candidates an exact solver needs [7] combines speed with
+guarantees. Our team’s earlier work [1] automated this company’s
+grouping with a rule-based method; this report presents a new planner,
+compared with the real dispatch.</p>
+<p><strong>How this report maps to the judging criteria.</strong>
+Problem definition and KPIs: sections 1 and 2. Data plan: section 3.
+Creativity and differentiation: sections 4 and 11. Feasibility
+(technology, data, schedule, risks): sections 5 and 10. Quantified
+expected effects: section 8.</p>
+<h1 id="problem-definition">2. Problem definition</h1>
+<p>A <strong>dispatch job</strong> is a batch of deliveries planned
+together. A <strong>stop</strong> is one delivery address. A
+<strong>load</strong> (or cluster) is the set of stops that one truck
+serves. Each truck drives from the depot to its first stop and on to the
+others; it does not return, because carriers are hired one way. The
+rules come from the company’s constraint list and are summarized in
+Table 3.</p>
+<table>
+<caption>Table 3. The company’s dispatch rules.</caption>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Rule</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Addresses per truck</td>
+<td>1 to 5</td>
+</tr>
+<tr class="even">
+<td>Load limit</td>
+<td>At most 60 % of the truck’s inner box volume (safe packing, no
+stacking)</td>
+</tr>
+<tr class="odd">
+<td>Area</td>
+<td>Every stop within 50 km of the load’s centre</td>
+</tr>
+<tr class="even">
+<td>Trucks that may carry several addresses</td>
+<td>1-ton (4.22 m³ usable) or 1.4-ton (4.73 m³ usable)</td>
+</tr>
+<tr class="odd">
+<td>1.4-ton trucks</td>
+<td>At most 10 per job</td>
+</tr>
+<tr class="even">
+<td>Larger trucks (2.5-ton and up)</td>
+<td>One address only; used for the 132 stops too big for a 1.4-ton</td>
+</tr>
+<tr class="odd">
+<td>Fleet</td>
+<td>Unlimited (hired per trip)</td>
+</tr>
+<tr class="even">
+<td>Every stop</td>
+<td>Served exactly once</td>
+</tr>
+</tbody>
+</table>
+<figure>
+<img src="../figs/rules.svg"
+alt="Figure 1. The three rules that shape every load." />
+<figcaption aria-hidden="true"><span class="lab">Figure 1.</span> The three rules that shape
+every load.</figcaption>
+</figure>
+<p><strong>Objective.</strong> First, the fewest trucks. Second, among
+plans with the fewest trucks, the fewest road kilometres. <span
+class="why"><em>Why this order:</em></span> every truck is a separate
+hired trip and costs far more than a few extra kilometres; once the
+number of trucks is fixed, kilometres decide fuel and driving time.</p>
+<p><strong>Why this is hard.</strong> The number of possible loads
+explodes. A job with 63 stops has about 7.7 million different groups of
+up to 5 stops; the largest job (141 stops) has about 430 million groups
+of exactly 5. Choosing groups that cover every stop exactly once is the
+classic <em>set partitioning</em> problem [2], which is NP-hard. The
+rules also interact: a group that is good for distance may break the
+volume limit, and the limit of ten 1.4-ton trucks links all groups of a
+job together. Simple methods (greedy rules, k-means) handle one rule at
+a time and therefore waste trucks.</p>
+<h1 id="data-sources-processing-and-privacy">3. Data: sources,
+processing and privacy</h1>
+<p><strong>Sources and legal basis.</strong> All data are either the
+company’s own operating records, shared with its consent for this
+project, or public open data (Table 4).</p>
+<table>
+<caption>Table 4. Data sources.</caption>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Data</th>
+<th>Source</th>
+<th>Used for</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>97 dispatch jobs, 6,395 stops (7 April to 7 August 2026, 84
+operating days): job, date, address coordinates, order volume, real
+truck group and truck label</td>
+<td>Company records (private, shared with consent)</td>
+<td>Planning input; real-dispatch baseline</td>
+</tr>
+<tr class="even">
+<td>Truck sizes (8 classes, inner box W × L × H)</td>
+<td>Company truck list</td>
+<td>Usable volume per truck</td>
+</tr>
+<tr class="odd">
+<td>Company dispatch rules</td>
+<td>Company constraint list</td>
+<td>Rules of Table 3</td>
+</tr>
+<tr class="even">
+<td>Korean road network</td>
+<td>OpenStreetMap, open licence (ODbL) [3]</td>
+<td>Road km and driving time</td>
+</tr>
+<tr class="odd">
+<td>Benchmark instances with proven optimal solutions</td>
+<td>CVRPLIB, set P [14, 15], public</td>
+<td>Accuracy test (section 7.2)</td>
+</tr>
+<tr class="even">
+<td>Province outlines</td>
+<td>Statistics Korea, open data</td>
+<td>Maps only</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Processing flow.</strong> (1) The order export is read and
+checked: 9 stops whose coordinates came from a typo correction are left
+out, giving 6,395 stops. (2) Coordinates are projected to a flat
+kilometre grid (EPSG:5179) for the 50 km rule. (3) A private map server
+(OSRM [3], run on the project’s own server) computes road kilometres and
+driving time between the depot and every stop of a job. (4) Stops too
+big for a 1.4-ton truck (132) are assigned their own larger truck by a
+fixed rule; the other 6,263 go to the planner. (5) The planner’s results
+are stored as stop IDs and numbers only.</p>
+<div class="figrow">
+<figure>
+<img src="../figs/map.svg" class="map"
+alt="Figure 2. Where the 6,395 stops are (each dot one stop, no labels). Every truck leaves from the depot in Changwon." />
+<figcaption aria-hidden="true"><span class="lab">Figure 2.</span> Where the 6,395 stops are (each
+dot one stop, no labels). Every truck leaves from the depot in
+Changwon.</figcaption>
+</figure>
+<div class="side">
+<p><strong>Privacy by design.</strong> The raw records contain customer
+names, phone numbers and addresses. These fields are never used by the
+planner and never leave the project’s server. Road distances come from
+our own map server, not from an online service, so no address is sent
+anywhere. This report shows locations only at national scale, without
+labels, and every example in it uses synthetic data.</p>
+<p><strong>Synthetic sample.</strong> To show the data format and to run
+the code without customer data, we generate synthetic jobs in the same
+format. Table 5 shows the first rows of the synthetic job used in Figure
+5 and Table 13.</p>
+<table>
+<caption>Table 5. Synthetic sample (format of the planner’s
+input).</caption>
+<thead>
+<tr class="header">
+<th>Stop</th>
+<th style="text-align: right;">x (km)</th>
+<th style="text-align: right;">y (km)</th>
+<th style="text-align: right;">Volume (m³)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>S01</td>
+<td style="text-align: right;">40.0</td>
+<td style="text-align: right;">33.3</td>
+<td style="text-align: right;">0.94</td>
+</tr>
+<tr class="even">
+<td>S02</td>
+<td style="text-align: right;">37.0</td>
+<td style="text-align: right;">20.2</td>
+<td style="text-align: right;">1.24</td>
+</tr>
+<tr class="odd">
+<td>S03</td>
+<td style="text-align: right;">35.0</td>
+<td style="text-align: right;">19.1</td>
+<td style="text-align: right;">0.81</td>
+</tr>
+<tr class="even">
+<td>S04</td>
+<td style="text-align: right;">40.7</td>
+<td style="text-align: right;">44.7</td>
+<td style="text-align: right;">1.31</td>
+</tr>
+<tr class="odd">
+<td>…</td>
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+<td style="text-align: right;">…</td>
+</tr>
+<tr class="even">
+<td>S26</td>
+<td style="text-align: right;">138.4</td>
+<td style="text-align: right;">101.8</td>
+<td style="text-align: right;">0.73</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p><strong>Facts about the data.</strong> Jobs have 8 to 141 stops
+(median 63). The median stop volume is 0.90 m³ and the total is 8,990
+m³. 169 stops are larger than a 1-ton truck’s 4.22 m³ limit. Customers
+are spread over the whole country, with dense areas around Seoul, Daegu
+and Busan and Changwon (Figure 2).</p>
+<p><strong>Why two kinds of data.</strong> The real jobs show what the
+planner saves in practice, but nobody knows their best possible plan.
+The public benchmark instances have proven optimal answers, so they show
+how accurate the optimizer is. Each covers what the other cannot.</p>
+<h1 id="method-and-why-each-step-is-needed">4. Method, and why each step
+is needed</h1>
+<p>The planner works one dispatch job at a time, in five steps (Figure
+3). Each tool does what it is best at: the AI model narrows the search,
+the exact optimizer makes the decision and guarantees the rules, and a
+final check confirms every truck.</p>
+<h2 id="road-distances">4.1 Road distances</h2>
+<p>For each job one request to the private OSRM server [3] returns the
+road distance and driving time between the depot and every stop, in both
+directions. OSRM computes shortest paths on the OpenStreetMap road
+network of South Korea. In the rare case of a pair with no road between
+them (an island), 1.3 times the straight line at 60 km/h is used.</p>
+<p><span class="why"><em>Why:</em></span> trucks drive on roads, not
+straight lines. Mountains, rivers and coasts make road distance differ
+from the straight line, so both the plan and its savings must be
+measured on roads.</p>
+<figure>
+<img src="../figs/pipeline.svg"
+alt="Figure 3. The planning pipeline for one dispatch job." />
+<figcaption aria-hidden="true"><span class="lab">Figure 3.</span> The planning pipeline for one
+dispatch job.</figcaption>
+</figure>
+<h2 id="candidate-loads-and-the-short-list">4.2 Candidate loads and the
+short list</h2>
+<p>A <strong>candidate load</strong> is a group of 1 to 5 stops that
+obeys every rule: total volume at most 4.73 m³ and every stop within 50
+km of the group’s centre. Listing all of them is too slow for large
+jobs, so each stop only forms groups with a <strong>short list</strong>
+of likely partners: the stop plus any 1 to 4 of its partners. With the
+15 nearest stops as partners, a median job gets 19,280 candidate loads.
+With the GNN short list of 8 partners it gets 2,859, about seven times
+fewer, which is what makes the optimizer fast. A simple greedy plan is
+always added as a <strong>safety net</strong>, so the optimizer always
+has a valid plan to return.</p>
+<p><span class="why"><em>Why:</em></span> a large job has hundreds of
+millions of possible groups. The short list keeps only the groups a good
+plan is likely to use, and the rules are applied while listing, so no
+candidate can break a rule.</p>
+<h2 id="the-gnn-short-list">4.3 The GNN short list</h2>
+<p>The GNN scores how likely two stops are to share a truck in a good
+plan. Each job is a graph: the stops are nodes, and each stop is linked
+to its 12 nearest stops (pairs more than 100 km apart can never share a
+load and are dropped).</p>
+<ul>
+<li><strong>Node features (8):</strong> the stop’s volume as a share of
+a 1-ton truck; its position relative to the job’s centre (2 values);
+road km from the depot; distance to its nearest and to its 4th-nearest
+stop; the job’s size; the job’s volume pressure (total volume against
+truck capacity).</li>
+<li><strong>Edge features (4):</strong> straight-line distance; road
+distance; combined volume of the two stops; difference of their depot
+distances.</li>
+<li><strong>Network:</strong> edge-state message passing [6] with 4
+rounds and 64 hidden units. In each round, every edge computes a message
+from its two stops and its own state; each stop then updates itself from
+the average of its incoming messages. A small final network turns each
+pair into one probability. 137,857 parameters in total.</li>
+<li><strong>Training labels:</strong> a pair is labelled 1 if the two
+stops share a truck in the optimizer’s own plan. Loss: binary
+cross-entropy; AdamW optimizer, learning rate 0.001, 400 full-batch
+steps on a GPU (a few minutes). The GNN therefore learns to imitate the
+optimizer, not to beat it: its job is to find the right partners with a
+short list. Section 7.1 tests it against a list of the 8 nearest
+stops.</li>
+</ul>
+<figure>
+<img src="../figs/gnn.svg"
+alt="Figure 4. How the GNN builds the short list for one job." />
+<figcaption aria-hidden="true"><span class="lab">Figure 4.</span> How the GNN builds the short
+list for one job.</figcaption>
+</figure>
+<p>The GNN is used for ranking, not for deciding: for each stop we keep
+the 8 partners it rates highest. Learning which candidates an exact
+solver needs is an established research direction [7]; here it is
+applied to the company’s rules.</p>
+<p><span class="why"><em>Why a GNN:</em></span> a good partner is not
+just the nearest stop. It also depends on volume (two large orders
+cannot share a truck), on road distance and on how full the whole job
+is. A graph network reads a stop together with its neighbours, so it can
+rank partners by all of these at once; that is how 8 partners can
+replace 15 nearest ones.</p>
+<h2 id="exact-selection">4.4 Exact selection</h2>
+<p>For each candidate load
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>c</mi><annotation encoding="application/x-tex">c</annotation></semantics></math>,
+let
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>a</mi><mrow><mi>i</mi><mi>c</mi></mrow></msub><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">a_{ic}=1</annotation></semantics></math>
+if stop
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>
+is in
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>c</mi><annotation encoding="application/x-tex">c</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>h</mi><mi>c</mi></msub><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">h_c=1</annotation></semantics></math>
+if
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>c</mi><annotation encoding="application/x-tex">c</annotation></semantics></math>
+has several stops and needs a 1.4-ton truck, and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>c</mi></msub><annotation encoding="application/x-tex">d_c</annotation></semantics></math>
+the road km of its best route. One yes-or-no variable
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>x</mi><mi>c</mi></msub><annotation encoding="application/x-tex">x_c</annotation></semantics></math>
+says whether load
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>c</mi><annotation encoding="application/x-tex">c</annotation></semantics></math>
+is used. The optimizer solves two mixed-integer programs (MILP) with the
+HiGHS solver [5]:</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">(A)</mtext><mspace width="1.0em"></mspace><msup><mi>T</mi><mo>*</mo></msup><mo>=</mo><mo>min</mo><munder><mo>∑</mo><mi>c</mi></munder><msub><mi>x</mi><mi>c</mi></msub><mspace width="1.0em"></mspace><mtext mathvariant="normal">s.t.</mtext><mspace width="1.0em"></mspace><munder><mo>∑</mo><mi>c</mi></munder><msub><mi>a</mi><mrow><mi>i</mi><mi>c</mi></mrow></msub><mspace width="0.167em"></mspace><msub><mi>x</mi><mi>c</mi></msub><mo>=</mo><mn>1</mn><mspace width="0.222em"></mspace><mspace width="0.222em"></mspace><mo>∀</mo><mi>i</mi><mo>,</mo><mspace width="2.0em"></mspace><munder><mo>∑</mo><mi>c</mi></munder><msub><mi>h</mi><mi>c</mi></msub><mspace width="0.167em"></mspace><msub><mi>x</mi><mi>c</mi></msub><mo>≤</mo><mn>10</mn><mo>,</mo><mspace width="2.0em"></mspace><msub><mi>x</mi><mi>c</mi></msub><mo>∈</mo><mo stretchy="false" form="prefix">{</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="false" form="postfix">}</mo></mrow><annotation encoding="application/x-tex">\text{(A)}\quad T^\ast=\min \sum_c x_c \quad\text{s.t.}\quad \sum_c a_{ic}\,x_c = 1\ \ \forall i,\qquad \sum_c h_c\,x_c \le 10,\qquad x_c\in\{0,1\}</annotation></semantics></math></p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext mathvariant="normal">(B)</mtext><mspace width="1.0em"></mspace><mo>min</mo><munder><mo>∑</mo><mi>c</mi></munder><msub><mi>d</mi><mi>c</mi></msub><mspace width="0.167em"></mspace><msub><mi>x</mi><mi>c</mi></msub><mspace width="1.0em"></mspace><mtext mathvariant="normal">s.t. the constraints of (A) and</mtext><mspace width="1.0em"></mspace><munder><mo>∑</mo><mi>c</mi></munder><msub><mi>x</mi><mi>c</mi></msub><mo>=</mo><msup><mi>T</mi><mo>*</mo></msup></mrow><annotation encoding="application/x-tex">\text{(B)}\quad \min \sum_c d_c\,x_c \quad\text{s.t. the constraints of (A) and}\quad \sum_c x_c = T^\ast</annotation></semantics></math></p>
+<p>Stage A finds the fewest trucks; stage B finds, among those plans,
+the one with the fewest kilometres. Because
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>d</mi><mi>c</mi></msub><annotation encoding="application/x-tex">d_c</annotation></semantics></math>
+is the length of each load’s best route, <strong>grouping and routing
+are decided together</strong>. Each stage has a 60-second time limit; if
+the solver has not beaten the safety net by then, the safety net is
+returned. <em>Exact</em> means the best combination of the candidate
+loads; loads that are not on the short list are never considered, so the
+plan is not proven to be the best possible for the whole job.</p>
+<p><span class="why"><em>Why exact optimization:</em></span> a greedy
+method decides one truck at a time and cannot undo a choice, so the last
+stops often end up in half-empty trucks. The MILP weighs all candidate
+loads at once, and its constraints guarantee every rule by
+construction.</p>
+<h2 id="routing-inside-a-truck">4.5 Routing inside a truck</h2>
+<p>A truck has at most 5 stops, so there are at most 120 possible stop
+orders. All of them are evaluated on the real road distances (depot →
+first stop → … → last stop), so the stop order of every truck is exactly
+optimal for the road data. This is done for all candidate loads at once
+with vectorized array operations.</p>
+<p><span class="why"><em>Why:</em></span> with 5 stops, trying every
+order is cheap, so there is no reason to accept an approximate
+route.</p>
+<h2 id="rule-check">4.6 Rule check</h2>
+<p>Before a plan is accepted, an automatic check confirms that every
+stop is served exactly once, that no truck has more than 5 stops, more
+than its volume or a stop more than 50 km from its centre, and that a
+job uses at most ten 1.4-ton trucks (Listing 3). A failure stops the
+run.</p>
+<p><span class="why"><em>Why:</em></span> a plan that breaks one rule
+cannot be used. The check is independent of the optimizer, so it would
+also catch a bug in the optimizer itself.</p>
+<h2 id="worked-example">4.7 Worked example</h2>
+<p>Figure 5 runs the real code on the synthetic job of Table 5: 26
+stops, 1,494 candidate loads from each stop’s 8 nearest partners. The
+optimizer chooses 6 trucks and 1,029 km. The total volume is 25.6 m³ and
+one truck carries at most 4.73 m³, so no plan can use fewer than 6
+trucks: the plan is provably the best possible in trucks. Table 13
+(section 9) shows the plan sheet a dispatcher receives for this job.</p>
+<figure>
+<img src="../figs/example.svg"
+alt="Figure 5. A synthetic example job solved by the real code: 26 stops (a), the short list of 4 nearest partners per stop shown for clarity (b), and the optimal plan with 6 trucks (c)." />
+<figcaption aria-hidden="true"><span class="lab">Figure 5.</span> A synthetic example job solved
+by the real code: 26 stops (a), the short list of 4 nearest partners per
+stop shown for clarity (b), and the optimal plan with 6 trucks
+(c).</figcaption>
+</figure>
+<h1 id="implementation-and-code">5. Implementation and code</h1>
+<p>The planner is about 1,200 lines of Python. Table 6 lists the
+technology; all of it is free and open source and runs on one ordinary
+PC.</p>
+<table>
+<caption>Table 6. Technology stack.</caption>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Part</th>
+<th>Technology</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Language and numerics</td>
+<td>Python 3.12, NumPy, SciPy [8]</td>
+</tr>
+<tr class="even">
+<td>Optimizer</td>
+<td>HiGHS MILP solver [5] via SciPy</td>
+</tr>
+<tr class="odd">
+<td>AI model</td>
+<td>PyTorch [9], plain message passing (no graph library)</td>
+</tr>
+<tr class="even">
+<td>Road distances</td>
+<td>OSRM 5.27 in Docker, OpenStreetMap Korea [3]</td>
+</tr>
+<tr class="odd">
+<td>Parallel runs</td>
+<td>7 worker processes on an 8-core CPU; one 23 GB GPU used only for
+training</td>
+</tr>
+<tr class="even">
+<td>Tests</td>
+<td>Unit tests against brute force on small cases; automatic rule check
+on every plan</td>
+</tr>
+<tr class="odd">
+<td>Prototype</td>
+<td>Static web page (HTML, JavaScript, SVG) behind a password, no
+external services</td>
+</tr>
+</tbody>
+</table>
+<p>The core pieces are shown below, shortened (comments, logging and
+bookkeeping removed).</p>
+<p><strong>Listing 1. One GNN forward pass:</strong> 4 rounds of
+edge-state message passing, then one score per pair.</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> forward(s, X, E, a, b):                       <span class="co"># X: stop features, E: pair features, a -&gt; b: links</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    h, e <span class="op">=</span> s.nx(X), s.ne(E)                       <span class="co"># encode stops and pairs</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    deg <span class="op">=</span> torch.bincount(b, minlength<span class="op">=</span><span class="bu">len</span>(X)).clamp(<span class="bu">min</span><span class="op">=</span><span class="dv">1</span>).unsqueeze(<span class="dv">1</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> msg, upd, nrm <span class="kw">in</span> <span class="bu">zip</span>(s.msg, s.upd, s.nrm):</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>        m <span class="op">=</span> msg(torch.cat([h[a], h[b], e], <span class="dv">1</span>))    <span class="co"># message along each link</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        e <span class="op">=</span> e <span class="op">+</span> m                                 <span class="co"># the link remembers it</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        agg <span class="op">=</span> torch.zeros_like(h).index_add_(<span class="dv">0</span>, b, m) <span class="op">/</span> deg</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        h <span class="op">=</span> nrm(h <span class="op">+</span> upd(torch.cat([h, agg], <span class="dv">1</span>)))  <span class="co"># each stop updates from its average message</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> s.head(torch.cat([h[a], h[b], e], <span class="dv">1</span>)).squeeze(<span class="dv">1</span>)   <span class="co"># one score per pair</span></span></code></pre></div>
+<p><strong>Listing 2. Exact selection</strong> (stage A: fewest trucks;
+stage B: fewest km at that count).</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># A: one row per stop (covered exactly once), one row for the 1.4-ton limit</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>cons <span class="op">=</span> [LinearConstraint(A, <span class="dv">1</span>, <span class="dv">1</span>), LinearConstraint(t14[<span class="va">None</span>], <span class="dv">0</span>, MAX14)]</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>res <span class="op">=</span> milp(np.ones(m), integrality<span class="op">=</span>np.ones(m), bounds<span class="op">=</span>Bounds(<span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>           constraints<span class="op">=</span>cons, options<span class="op">=</span>{<span class="st">&quot;time_limit&quot;</span>: <span class="dv">60</span>})</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>k <span class="op">=</span> <span class="bu">int</span>(<span class="bu">round</span>(res.x.<span class="bu">sum</span>()))                            <span class="co"># fewest trucks found</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>res2 <span class="op">=</span> milp(km_per_load, integrality<span class="op">=</span>np.ones(m), bounds<span class="op">=</span>Bounds(<span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>            constraints<span class="op">=</span>cons <span class="op">+</span> [LinearConstraint(np.ones((<span class="dv">1</span>, m)), k, k)],</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>            options<span class="op">=</span>{<span class="st">&quot;time_limit&quot;</span>: <span class="dv">60</span>})</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>plan <span class="op">=</span> [loads[j] <span class="cf">for</span> j <span class="kw">in</span> np.flatnonzero(res2.x <span class="op">&gt;</span> <span class="fl">0.5</span>)]</span></code></pre></div>
+<p><strong>Listing 3. The rule check</strong> that every plan passes
+before it is accepted.</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> check(xy, v, C, R, clusters):</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">assert</span> np.array_equal(np.sort(np.concatenate(clusters)), np.arange(<span class="bu">len</span>(xy))), <span class="st">&quot;every stop exactly once&quot;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> c <span class="kw">in</span> clusters:</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">assert</span> <span class="bu">len</span>(c) <span class="op">&lt;=</span> K <span class="kw">and</span> v[c].<span class="bu">sum</span>() <span class="op">&lt;=</span> C <span class="kw">and</span> radius(xy, np.array([c]))[<span class="dv">0</span>] <span class="op">&lt;=</span> R, c</span></code></pre></div>
+<p><strong>Correctness checks.</strong> The candidate listing and the
+optimizer are compared with brute force (every possible plan) on random
+small jobs. The benchmark script recomputes each published optimal
+solution with our distance code and stops if the cost differs, so our
+distances match the benchmark’s. The full code and the synthetic data
+generator are kept by the team and can be shared with the judges on
+request.</p>
+<h1 id="experimental-setup-and-why-it-is-fair">6. Experimental setup,
+and why it is fair</h1>
+<p><strong>Jobs.</strong> All 97 real dispatch jobs, each planned
+separately from the depot, on the same road distances and under the same
+rules for every method.</p>
+<p><strong>Methods compared, and why each.</strong></p>
+<ul>
+<li><em>Real dispatch:</em> the groups that were actually driven,
+measured on the same roads. This is the practice the planner must
+beat.</li>
+<li><em>k-means:</em> the most widely used clustering method, then split
+wherever a rule breaks. This is the first thing a company would
+try.</li>
+<li><em>Agglomerative clustering:</em> repeatedly merge the two closest
+groups (by road km) while the rules hold. A stronger classic method that
+respects the rules while it merges.</li>
+<li><em>OR-Tools:</em> Google’s open-source routing solver [16], the
+standard tool a developer would reach for: volume and 5-stop limits,
+one-way routes, a fixed cost per truck so that fewer trucks come first,
+guided local search for 30 s per job. It cannot express the 50 km radius
+rule, so routes that break it are split by the same repair as
+k-means.</li>
+<li><em>Optimizer, 15-nearest list:</em> our optimizer with plain
+nearest-neighbour candidates, 60 s per stage. The most accurate list we
+can solve, but slow.</li>
+<li><em>Optimizer, 8-nearest list:</em> the same list size as the GNN,
+with the 8 nearest stops. It isolates what the GNN’s choice of partners
+adds.</li>
+<li><em>GNN + optimizer (our planner):</em> the GNN short list of 8
+partners, 60 s per stage.</li>
+</ul>
+<p><strong>Accuracy benchmark.</strong> CVRPLIB [15] is the standard
+library for this problem class; its set P (Augerat et al. [14]) has 24
+instances with published optimal or best-known solutions, and section
+7.2 explains which five we use. The code is the same: candidates from
+each customer’s 15 nearest partners, then fewest vehicles, then shortest
+distance, 60 s per stage. Distances follow the CVRPLIB convention
+(rounded straight-line distance, round trips from the depot, no radius
+rule).</p>
+<p><strong>No information leak.</strong> The GNN is evaluated <em>out of
+fold</em>: the 97 jobs are cut into 5 consecutive date blocks, five
+models are trained on 4 blocks each, and every job is planned by the
+model that never saw its block.</p>
+<table>
+<caption>Table 7. How the evaluation guards against common
+errors.</caption>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Concern</th>
+<th>What we did</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Only easy jobs are tested</td>
+<td>All 97 real jobs, none left out</td>
+</tr>
+<tr class="even">
+<td>Methods get different conditions</td>
+<td>The same roads, rules and time limits for every method</td>
+</tr>
+<tr class="odd">
+<td>A plan looks good because it breaks a rule</td>
+<td>Automatic rule check on every plan: 0 violations</td>
+</tr>
+<tr class="even">
+<td>The AI model has seen the test jobs</td>
+<td>Out of fold: every job is planned by a model that never saw its date
+block</td>
+</tr>
+<tr class="odd">
+<td>Accuracy that only we can check</td>
+<td>A public benchmark with proven optimal answers that anyone can
+rerun</td>
+</tr>
+<tr class="even">
+<td>A misleading accuracy number</td>
+<td>AUC reported next to accuracy and the default accuracy</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Metrics.</strong> Trucks; total road km and driving hours
+(from OSRM); rule violations; optimality gap on the benchmark; planning
+time per job on one CPU core; the GNN’s pair accuracy and AUC. <span
+class="why"><em>Why AUC and not only accuracy:</em></span> only about 19
+% of stop pairs share a truck, so a model that always answers “different
+truck” is already 81 % accurate. This <strong>default accuracy</strong>
+says nothing about the model; AUC measures the ranking, which is all the
+short list needs.</p>
+<h1 id="results-savings-accuracy-and-speed">7. Results: savings,
+accuracy and speed</h1>
+<h2 id="trucks-and-kilometres">7.1 Trucks and kilometres</h2>
+<table style="width:100%;">
+<caption>Table 8. All methods on the 97 jobs.</caption>
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Method</th>
+<th style="text-align: right;">Trucks</th>
+<th style="text-align: right;">vs real dispatch</th>
+<th style="text-align: right;">Total road km</th>
+<th style="text-align: right;">vs real dispatch</th>
+<th style="text-align: right;">Driving h</th>
+<th style="text-align: right;">1.4-ton used</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Real dispatch</td>
+<td style="text-align: right;">2,517</td>
+<td style="text-align: right;">0 %</td>
+<td style="text-align: right;">655,444</td>
+<td style="text-align: right;">0 %</td>
+<td style="text-align: right;">8,880</td>
+<td style="text-align: right;">n/a</td>
+</tr>
+<tr class="even">
+<td>k-means</td>
+<td style="text-align: right;">2,702</td>
+<td style="text-align: right;">+7.4 %</td>
+<td style="text-align: right;">680,366</td>
+<td style="text-align: right;">+3.8 %</td>
+<td style="text-align: right;">9,170</td>
+<td style="text-align: right;">587</td>
+</tr>
+<tr class="odd">
+<td>Agglomerative</td>
+<td style="text-align: right;">2,235</td>
+<td style="text-align: right;">−11.2 %</td>
+<td style="text-align: right;">575,984</td>
+<td style="text-align: right;">−12.1 %</td>
+<td style="text-align: right;">7,844</td>
+<td style="text-align: right;">517</td>
+</tr>
+<tr class="even">
+<td>OR-Tools (30 s per job)</td>
+<td style="text-align: right;">2,264</td>
+<td style="text-align: right;">−10.1 %</td>
+<td style="text-align: right;">577,639</td>
+<td style="text-align: right;">−11.9 %</td>
+<td style="text-align: right;">7,936</td>
+<td style="text-align: right;">457</td>
+</tr>
+<tr class="odd">
+<td>Optimizer, 15-nearest list</td>
+<td style="text-align: right;">1,920</td>
+<td style="text-align: right;">−23.7 %</td>
+<td style="text-align: right;">526,087</td>
+<td style="text-align: right;">−19.7 %</td>
+<td style="text-align: right;">7,303</td>
+<td style="text-align: right;">808</td>
+</tr>
+<tr class="even">
+<td>Optimizer, 8-nearest list</td>
+<td style="text-align: right;">1,941</td>
+<td style="text-align: right;">−22.9 %</td>
+<td style="text-align: right;">518,682</td>
+<td style="text-align: right;">−20.9 %</td>
+<td style="text-align: right;">7,185</td>
+<td style="text-align: right;">825</td>
+</tr>
+<tr class="odd ours">
+<td><strong>GNN + optimizer (ours)</strong></td>
+<td style="text-align: right;"><strong>1,933</strong></td>
+<td style="text-align: right;"><strong>−23.2 %</strong></td>
+<td style="text-align: right;"><strong>516,628</strong></td>
+<td style="text-align: right;"><strong>−21.2 %</strong></td>
+<td style="text-align: right;"><strong>7,163</strong></td>
+<td style="text-align: right;"><strong>845</strong></td>
+</tr>
+</tbody>
+</table>
+<figure>
+<img src="../figs/trucks.svg"
+alt="Figure 6. Trucks and total road km for all 97 jobs, by method (fewer is better in both)." />
+<figcaption aria-hidden="true"><span class="lab">Figure 6.</span> Trucks and total road km for
+all 97 jobs, by method (fewer is better in both).</figcaption>
+</figure>
+<p><strong>What the results show.</strong></p>
+<ul>
+<li><strong>The optimizer is what saves the trucks.</strong> All
+optimizer rows beat every other method by at least 294 trucks. Our plan
+uses 584 fewer trucks than the real dispatch.</li>
+<li><strong>Total distance falls with the trucks.</strong> Our plan
+drives 138,816 fewer road kilometres than the real dispatch (−21.2 %),
+because each load’s cost in stage B is its true best route on real
+roads. It also drives the fewest kilometres of all methods.</li>
+<li><strong>What the GNN adds.</strong> With the same list size, the
+GNN’s partners give 8 fewer trucks and 2,054 fewer km than the 8 nearest
+stops (fewer trucks on 9 jobs, more on 2) for about one second more per
+job. Against the 15-nearest list it needs 13 more trucks (0.7 %) but
+solves ten times faster (section 7.3). The gain over plain nearest
+neighbours is small but real.</li>
+<li><strong>Classic clustering is not enough.</strong> k-means ignores
+the volume rule, so its groups must be split, and it ends up worse than
+the real dispatch. Agglomerative clustering does better but still needs
+302 more trucks than our plan.</li>
+<li><strong>A standard routing solver is not enough either.</strong>
+OR-Tools has no way to state the radius rule: 262 of its routes broke
+it, on 89 of 97 jobs, and had to be split. Its final plan needs 331 more
+trucks than ours (more on 92 jobs, fewer on none). Much of that gap
+comes from the repair, which is the point: the company’s rules have to
+be inside the model, not fixed afterwards.</li>
+<li><strong>The real dispatch handled things our data do not
+contain.</strong> Dispatchers also consider customer time requests,
+driver availability and special handling. 230 of the real groups are
+outside the written rules (for example wider than 50 km), which suggests
+such operational reasons. The saving does not come from those breaks: on
+the 13 jobs where every real group obeys the written rules, our plan
+needs 28.2 % fewer trucks (209 against 291) and 24.9 % fewer km. Time
+requests may still apply there; the pilot (section 10) will measure
+them.</li>
+</ul>
+<figure>
+<img src="../figs/bysize.svg"
+alt="Figure 7. Trucks saved on each job against the number of stops in the job." />
+<figcaption aria-hidden="true"><span class="lab">Figure 7.</span> Trucks saved on each job
+against the number of stops in the job.</figcaption>
+</figure>
+<div class="figrow">
+<figure>
+<img src="../figs/perjob.svg" class="half"
+alt="Figure 8. Each dot is one job: trucks in the real dispatch against trucks in our plan." />
+<figcaption aria-hidden="true"><span class="lab">Figure 8.</span> Each dot is one job: trucks in
+the real dispatch against trucks in our plan.</figcaption>
+</figure>
+<div class="side">
+<p><strong>Job by job.</strong> The saving is spread over almost every
+job. Our plan uses fewer trucks than the real dispatch on <span
+class="hl"><strong>93 of the 97 jobs</strong></span>, the same number on
+3 and one more on 1 (Figure 8). The largest single saving is 24 trucks
+on one job in early May.</p>
+<p><strong>Where the savings come from.</strong> Larger jobs save more
+(Figure 7): jobs above the median of 63 stops save 7.9 trucks on average
+(24.6 % of their trucks), smaller jobs 4.1 (20.9 %). Larger jobs offer
+more ways to combine stops, and the optimizer uses them, while a
+hand-made plan cannot weigh them all.</p>
+</div>
+</div>
+<h2 id="accuracy">7.2 Accuracy</h2>
+<p><strong>Accuracy on a public benchmark.</strong> Table 9 shows the
+optimizer on every set-P instance whose proven optimal routes visit at
+most 5 customers: the rule picked the five, and we report all of them.
+The other 19 need longer routes, which the 5-address rule does not
+allow. The optimizer finds the proven optimum on four and is 3 distance
+units (0.3 %) above it on P-n55-k15; the average gap is <span
+class="hl"><strong>0.06 %</strong></span>. It uses the same number of
+vehicles as the optimum on all five, and no instance takes more than 17
+s. For comparison, OR-Tools with 30 s per instance finds the optimum on
+three, is 3.8 % above it on P-n60-k15 and needs one more vehicle on
+P-n55-k15.</p>
+<table>
+<caption>Table 9. The optimizer on the public benchmark (CVRPLIB set P
+[14]). Gap = (our distance − proven optimum) / proven optimum.</caption>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Instance</th>
+<th style="text-align: right;">Customers</th>
+<th style="text-align: right;">Vehicles (optimum / ours)</th>
+<th style="text-align: right;">Candidate loads</th>
+<th style="text-align: right;">Proven optimum</th>
+<th style="text-align: right;">Our distance</th>
+<th style="text-align: right;">Gap</th>
+<th style="text-align: right;">Time</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>P-n16-k8</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">8 / 8</td>
+<td style="text-align: right;">164</td>
+<td style="text-align: right;">450</td>
+<td style="text-align: right;">450</td>
+<td style="text-align: right;">0.0 %</td>
+<td style="text-align: right;">0.1 s</td>
+</tr>
+<tr class="even">
+<td>P-n22-k8</td>
+<td style="text-align: right;">21</td>
+<td style="text-align: right;">8 / 8</td>
+<td style="text-align: right;">1,569</td>
+<td style="text-align: right;">603</td>
+<td style="text-align: right;">603</td>
+<td style="text-align: right;">0.0 %</td>
+<td style="text-align: right;">0.9 s</td>
+</tr>
+<tr class="odd">
+<td>P-n23-k8</td>
+<td style="text-align: right;">22</td>
+<td style="text-align: right;">8 / 8</td>
+<td style="text-align: right;">1,243</td>
+<td style="text-align: right;">529</td>
+<td style="text-align: right;">529</td>
+<td style="text-align: right;">0.0 %</td>
+<td style="text-align: right;">0.3 s</td>
+</tr>
+<tr class="even">
+<td>P-n55-k15</td>
+<td style="text-align: right;">54</td>
+<td style="text-align: right;">15 / 15</td>
+<td style="text-align: right;">8,927</td>
+<td style="text-align: right;">989</td>
+<td style="text-align: right;">992</td>
+<td style="text-align: right;">0.3 %</td>
+<td style="text-align: right;">7.2 s</td>
+</tr>
+<tr class="odd">
+<td>P-n60-k15</td>
+<td style="text-align: right;">59</td>
+<td style="text-align: right;">15 / 15</td>
+<td style="text-align: right;">20,186</td>
+<td style="text-align: right;">968</td>
+<td style="text-align: right;">968</td>
+<td style="text-align: right;">0.0 %</td>
+<td style="text-align: right;">16.8 s</td>
+</tr>
+</tbody>
+</table>
+<p><strong>What the benchmark does and does not show.</strong> The
+instances are small (15 to 59 customers), and with routes of at most 5
+customers the 15-nearest list holds almost every useful route, so the
+benchmark confirms that the optimizer and its distance code are right
+and near-exact; it is not a hard test. A shorter list costs accuracy:
+with the 8 nearest partners the optimizer still finds the optimum on
+three instances, but is 10.4 % above it on P-n23-k8 and needs one more
+vehicle on P-n55-k15. The GNN cannot run on the benchmark, which has no
+roads or volumes; on the real jobs, its 8 partners lose 0.7 % in trucks
+against the 15-nearest list, while the 8 nearest lose 1.1 %.</p>
+<p><strong>Accuracy of the GNN itself.</strong> On 43,927 stop pairs it
+never saw in training, its ranking reaches <span class="hl"><strong>AUC
+0.74</strong></span> (0.5 is random): the right partners are near the
+top of the list. Its accuracy, 81.8 %, is only just above the default
+accuracy of 81.3 %, as expected for a ranking model (section 6). Table
+10 shows both on every date block.</p>
+<table style="width:100%;">
+<caption>Table 10. GNN scores on each date block, from the model that
+did not see that block.</caption>
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">Block</th>
+<th>Dates (2026)</th>
+<th style="text-align: right;">Jobs</th>
+<th style="text-align: right;">Stop pairs</th>
+<th style="text-align: right;">Accuracy</th>
+<th style="text-align: right;">Default accuracy</th>
+<th style="text-align: right;">AUC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td>04-07 to 05-04</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">7,495</td>
+<td style="text-align: right;">85.1 %</td>
+<td style="text-align: right;">85.1 %</td>
+<td style="text-align: right;">0.76</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td>05-06 to 05-29</td>
+<td style="text-align: right;">19</td>
+<td style="text-align: right;">9,998</td>
+<td style="text-align: right;">82.8 %</td>
+<td style="text-align: right;">81.9 %</td>
+<td style="text-align: right;">0.75</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td>06-01 to 06-29</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">8,893</td>
+<td style="text-align: right;">80.6 %</td>
+<td style="text-align: right;">80.0 %</td>
+<td style="text-align: right;">0.73</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td>06-30 to 07-22</td>
+<td style="text-align: right;">19</td>
+<td style="text-align: right;">9,782</td>
+<td style="text-align: right;">81.7 %</td>
+<td style="text-align: right;">81.5 %</td>
+<td style="text-align: right;">0.68</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td>07-23 to 08-07</td>
+<td style="text-align: right;">19</td>
+<td style="text-align: right;">7,759</td>
+<td style="text-align: right;">78.4 %</td>
+<td style="text-align: right;">77.8 %</td>
+<td style="text-align: right;">0.76</td>
+</tr>
+</tbody>
+</table>
+<p>The ranking quality is similar on every block (AUC 0.68 to 0.76), so
+the GNN does not depend on a particular month. <strong>Rule
+compliance:</strong> every plan meets every rule, 0 violations over
+1,933 trucks.</p>
+<h2 id="speed">7.3 Speed</h2>
+<table>
+<caption>Table 11. Planning time per job (one CPU core per
+job).</caption>
+<thead>
+<tr class="header">
+<th>Optimizer with</th>
+<th style="text-align: right;">Median</th>
+<th style="text-align: right;">Slowest job</th>
+<th style="text-align: right;">Hit the 60 s limit</th>
+<th style="text-align: right;">Trucks</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>15-nearest list</td>
+<td style="text-align: right;">67.2 s</td>
+<td style="text-align: right;">141 s</td>
+<td style="text-align: right;">13 jobs</td>
+<td style="text-align: right;">1,920</td>
+</tr>
+<tr class="even">
+<td>8-nearest list</td>
+<td style="text-align: right;">5.8 s</td>
+<td style="text-align: right;">72 s</td>
+<td style="text-align: right;">0 jobs</td>
+<td style="text-align: right;">1,941</td>
+</tr>
+<tr class="odd ours">
+<td>GNN short list (ours)</td>
+<td style="text-align: right;"><strong>6.8 s</strong></td>
+<td style="text-align: right;">120 s</td>
+<td style="text-align: right;">2 jobs</td>
+<td style="text-align: right;">1,933</td>
+</tr>
+</tbody>
+</table>
+<p>The GNN short list gives a plan within 0.7 % of the 15-nearest plan
+in <strong>one tenth of the time</strong>, and it almost never runs into
+the solver’s time limit. For daily dispatch this means a near-optimal
+plan in seconds.</p>
+<figure>
+<img src="../figs/speed.svg"
+alt="Figure 9. What the GNN short list buys: about 7 times fewer candidate loads and 10 times faster solving." />
+<figcaption aria-hidden="true"><span class="lab">Figure 9.</span> What the GNN short list buys:
+about 7 times fewer candidate loads and 10 times faster
+solving.</figcaption>
+</figure>
+<p>The speed-up is largest on small and medium jobs: on jobs under 50
+stops the median solve takes 1.4 s with the GNN list against 18.6 s with
+the 15-nearest list. On the 8 jobs with 100 stops or more both lists
+need longer (62.7 s against 114.7 s, median), and the 60-second limit
+per stage with the safety net keeps the time bounded.</p>
+<h1 id="expected-effects-on-logistics-kpis">8. Expected effects on
+logistics KPIs</h1>
+<p><strong>Calculation basis.</strong></p>
+<ul>
+<li><strong>Trucks, road km, driving hours:</strong> measured directly
+on the 97 jobs (section 7).</li>
+<li><strong>Per year:</strong> the 97 jobs cover 123 days (7 April to 7
+August), so we multiply by 365 / 123 = 2.97, assuming the same order
+volume all year. April to August is the main season for air coolers and
+fans, so the per-year figures are an <strong>upper bound</strong>.</li>
+<li><strong>Hire cost (estimate):</strong> every truck of both plans
+priced with the public one-way list prices of two Korean truck brokers
+(accessed 11 Nov 2026; a base fare plus a rate per km for each truck
+size, plus a fee per extra address). These are list prices, not the
+company’s contract rates; the two lists give −14.5 % and −14.4 %. The
+saving in money is smaller than in trucks because the fare depends
+mostly on distance; our objective counts trucks first, and it could be
+changed to estimated cost directly.</li>
+</ul>
+<table>
+<caption>Table 12. Expected savings against the real dispatch.</caption>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>KPI</th>
+<th style="text-align: right;">4 months (97 jobs)</th>
+<th style="text-align: right;">Per year (upper bound)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Trucks hired</td>
+<td style="text-align: right;">584 fewer (−23.2 %)</td>
+<td style="text-align: right;">about 1,700 fewer</td>
+</tr>
+<tr class="even">
+<td>Total road km</td>
+<td style="text-align: right;">138,816 fewer (−21.2 %)</td>
+<td style="text-align: right;">about 412,000 fewer</td>
+</tr>
+<tr class="odd">
+<td>Driving hours</td>
+<td style="text-align: right;">1,717 fewer (−19.3 %)</td>
+<td style="text-align: right;">about 5,100 fewer</td>
+</tr>
+<tr class="even">
+<td>Hire cost (estimate)</td>
+<td style="text-align: right;">about 62 million won less (−14.5 %)</td>
+<td style="text-align: right;">about 180 million won less</td>
+</tr>
+<tr class="odd">
+<td>Planning time</td>
+<td style="text-align: right;">minutes by hand per job</td>
+<td style="text-align: right;">6.8 s per job</td>
+</tr>
+</tbody>
+</table>
+<p>Fewer trucks also mean fewer drivers to book and coordinate, fewer
+loading slots at the depot each day, and less dispatcher time per
+job.</p>
+<h1 id="prototype">9. Prototype</h1>
+<p>We built an interactive web prototype that presents every plan. It
+shows the headline numbers, the comparison of all methods, a per-job
+chart, and an explorer that shows every job’s trucks on a map with their
+truck size, load, km and hours. Because it shows customer locations, it
+runs behind a password and loads no external maps or trackers; we will
+demonstrate it live at the presentation.</p>
+<p><strong>How a dispatcher uses it.</strong> The planner fits into the
+existing routine (Figure 10): the order export the company already
+produces goes in, and a plan sheet comes out that a dispatcher can check
+and book from. Table 13 shows the plan sheet for the synthetic job of
+Figure 5: every truck with its stops in visiting order, its size and how
+full it is.</p>
+<figure>
+<img src="../figs/workflow.svg"
+alt="Figure 10. The planner in the daily dispatch routine." />
+<figcaption aria-hidden="true"><span class="lab">Figure 10.</span> The planner in the daily
+dispatch routine.</figcaption>
+</figure>
+<table>
+<caption>Table 13. The planner’s output for the synthetic job (6 trucks
+for 26 stops).</caption>
+<colgroup>
+<col style="width: 7%" />
+<col style="width: 46%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+<col style="width: 11%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">Truck</th>
+<th>Stops in visiting order</th>
+<th style="text-align: right;">Volume (m³)</th>
+<th style="text-align: right;">Truck size</th>
+<th style="text-align: right;">Share of the 60 % limit</th>
+<th style="text-align: right;">km (synthetic)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td>S03 → S05 → S01 → S08 → S04</td>
+<td style="text-align: right;">4.55</td>
+<td style="text-align: right;">1.4-ton</td>
+<td style="text-align: right;">96 %</td>
+<td style="text-align: right;">87</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">2</td>
+<td>S02 → S07 → S06</td>
+<td style="text-align: right;">4.52</td>
+<td style="text-align: right;">1.4-ton</td>
+<td style="text-align: right;">96 %</td>
+<td style="text-align: right;">79</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">3</td>
+<td>S10 → S14 → S11 → S09 → S12</td>
+<td style="text-align: right;">3.95</td>
+<td style="text-align: right;">1-ton</td>
+<td style="text-align: right;">93 %</td>
+<td style="text-align: right;">156</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td>S16 → S17 → S20 → S21 → S19</td>
+<td style="text-align: right;">4.41</td>
+<td style="text-align: right;">1.4-ton</td>
+<td style="text-align: right;">93 %</td>
+<td style="text-align: right;">184</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">5</td>
+<td>S13 → S15 → S26 → S23</td>
+<td style="text-align: right;">4.66</td>
+<td style="text-align: right;">1.4-ton</td>
+<td style="text-align: right;">98 %</td>
+<td style="text-align: right;">239</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">6</td>
+<td>S18 → S22 → S25 → S24</td>
+<td style="text-align: right;">3.50</td>
+<td style="text-align: right;">1-ton</td>
+<td style="text-align: right;">83 %</td>
+<td style="text-align: right;">283</td>
+</tr>
+</tbody>
+</table>
+<h1 id="deployment-plan-resources-and-risks">10. Deployment plan,
+resources and risks</h1>
+<p><strong>What the company needs.</strong> One office PC or small
+server (8 CPU cores, 16 to 32 GB memory). A GPU is only needed to
+retrain the model, which takes minutes and can be done monthly on any
+GPU machine. The road map is free OpenStreetMap data, updated monthly.
+Input is the existing order export (a spreadsheet); output is a plan per
+truck (stops in order, truck size, km, hours) as a spreadsheet and on
+the web page.</p>
+<p><span class="why"><em>Why a shadow mode first:</em></span> the plan
+meets the written rules, but dispatchers also know things the data do
+not hold (section 7.1). Running side by side shows those gaps before any
+truck is booked from the plan.</p>
+<table>
+<caption>Table 14. Pilot schedule.</caption>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Phase</th>
+<th>When</th>
+<th>What</th>
+<th>Success measure</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0. Setup</td>
+<td>Dec 2026 (2 weeks)</td>
+<td>Install on a company PC; connect the order export; train the model
+on all past jobs</td>
+<td>Plans produced for every past job</td>
+</tr>
+<tr class="even">
+<td>1. Shadow mode</td>
+<td>Jan 2027 (4 weeks)</td>
+<td>The planner runs next to the dispatcher every day; plans are
+compared, not used</td>
+<td>Trucks and km per job against the manual plan; dispatcher
+feedback</td>
+</tr>
+<tr class="odd">
+<td>2. Assisted mode</td>
+<td>Feb to Mar 2027</td>
+<td>The dispatcher starts from the planner’s plan and edits it</td>
+<td>Share of plans used with few edits; trucks, km, hours</td>
+</tr>
+<tr class="even">
+<td>3. Review</td>
+<td>Apr 2027</td>
+<td>Decide on full use; add rules learned in phases 1 and 2</td>
+<td>Measured savings against this report’s estimates</td>
+</tr>
+</tbody>
+</table>
+<table>
+<caption>Table 15. Risks and responses.</caption>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Risk</th>
+<th>Response</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Rules not in the data (customer time requests, driver hours, special
+handling)</td>
+<td>Shadow and assisted modes first; add each rule as a constraint in
+the optimizer, which handles extra linear rules directly</td>
+</tr>
+<tr class="even">
+<td>Address or coordinate errors</td>
+<td>Flag stops far from their region or sharing a point; the dispatcher
+can correct them before planning</td>
+</tr>
+<tr class="odd">
+<td>Very large days take longer to solve</td>
+<td>Time limit with the safety net (a valid greedy plan is always
+available); the GNN short list keeps the median at seconds</td>
+</tr>
+<tr class="even">
+<td>Dispatcher trust</td>
+<td>Every plan is checked against all rules and shown on a map; the
+dispatcher keeps the final say</td>
+</tr>
+<tr class="odd">
+<td>Personal data</td>
+<td>Everything runs on the company’s own computer; no address is sent to
+an online service, in line with the Personal Information Protection
+Act</td>
+</tr>
+<tr class="even">
+<td>Model drift (new products, new regions)</td>
+<td>Monthly retraining on new jobs; the optimizer and the rule check do
+not depend on the model being right</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Scaling up.</strong> Nothing in the method is specific to one
+company: the rules are parameters (addresses per truck, load limit,
+radius, truck list, 1.4-ton cap). Any shipper or carrier delivering
+bulky goods with hired trucks can use it, for example furniture,
+appliances or building materials, and the same design fits port and
+inland transport legs where loads are grouped by area and volume.</p>
+<h1 id="novelty-and-differentiation">11. Novelty and
+differentiation</h1>
+<p><strong>What we consider new for this problem.</strong> (1) Grouping
+and routing of bulky deliveries decided together by an exact optimizer
+under the company’s full rule set. (2) A GNN trained on the optimizer’s
+own plans, used to shortlist candidates rather than to make the plan,
+which keeps the rule guarantee and gains speed. (3) A test on real
+operating data with the actual dispatch as the baseline, backed by a
+public benchmark for accuracy. Using a neural network to shortlist
+candidates for an exact solver is itself established research [7]; we
+apply it, we do not claim it.</p>
+<table>
+<caption>Table 16. How this work differs from current
+practice.</caption>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>Manual dispatch</th>
+<th>This work</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>How groups are chosen</td>
+<td>By experience</td>
+<td>Exact optimization over thousands of candidate loads</td>
+</tr>
+<tr class="even">
+<td>Routing</td>
+<td>Separate step</td>
+<td>Decided together with grouping; exact stop order on real roads</td>
+</tr>
+<tr class="odd">
+<td>Rule compliance</td>
+<td>Not checked automatically</td>
+<td>Always, with an automatic check on every truck</td>
+</tr>
+<tr class="even">
+<td>Evidence of accuracy</td>
+<td>None</td>
+<td>0.06 % average gap to proven optima on a public benchmark</td>
+</tr>
+<tr class="odd">
+<td>Role of AI</td>
+<td>None</td>
+<td>GNN short list makes exact optimization 10 times faster and picks
+better partners than the nearest stops</td>
+</tr>
+<tr class="even">
+<td>Speed</td>
+<td>Minutes per job</td>
+<td>Seconds per job (median 6.8 s)</td>
+</tr>
+<tr class="odd">
+<td>Privacy</td>
+<td>n/a</td>
+<td>Private map server; no address leaves the company</td>
+</tr>
+</tbody>
+</table>
+<h1 id="limitations-and-conclusion">12. Limitations and conclusion</h1>
+<p><strong>Limitations.</strong> The plan follows the written rules;
+time windows, driver hours and unloading constraints are not yet in the
+data. The limit of ten 1.4-ton trucks is assumed per job. The data cover
+one company over four months of its main season, so per-year figures are
+an upper bound, and the depot is placed at the centre of its district.
+<em>Exact</em> means exact over the candidate loads, not a proof that a
+plan is the best possible for the whole job. The benchmark tests the
+optimizer on round trips without the radius rule, and only on instances
+whose optimal routes have at most 5 customers; the GNN is tested on the
+real jobs, not on the benchmark, and its gain over the 8 nearest stops
+is small (8 trucks over 97 jobs). OR-Tools ran with its standard search
+for 30 s per job; more time or tuning could narrow its gap.</p>
+<p><strong>Conclusion.</strong> Exact optimization, made fast by a graph
+neural network short list, plans bulky deliveries with 23 % fewer trucks
+and 21 % fewer road kilometres than the real dispatch, while meeting
+every company rule. On a public benchmark the same optimizer finds the
+proven optimum on four of five instances, 0.06 % from it on average. It
+runs in seconds on one PC, keeps customer data inside the company, and
+is ready for a shadow-mode pilot.</p>
+<p><strong>Acknowledgments.</strong> We thank our partner company for
+sharing its dispatch data and rules. AI tools (Claude, Anthropic)
+assisted in writing the code and preparing this report.</p>
+<h2 id="references">References</h2>
+<div class="refs">
+<p>[1] R. R. Asri, A. B. Wahyutama, M. Hwang and K. Jin, “Automated
+Clustering and Vehicle Dispatching Service for Bulky Product Delivery,”
+<em>2026 IEEE Int. Conf. on Industry 4.0, Artificial Intelligence, and
+Communications Technology (IAICT)</em>, 2026.
+doi:10.1109/IAICT71158.2026.11621014.</p>
+<p>[2] M. L. Balinski and R. E. Quandt, “On an integer program for a
+delivery problem,” <em>Operations Research</em>, 12(2), 300-304,
+1964.</p>
+<p>[3] D. Luxen and C. Vetter, “Real-time routing with OpenStreetMap
+data,” <em>Proc. ACM SIGSPATIAL GIS</em>, 513-516, 2011; map data ©
+OpenStreetMap contributors, ODbL.</p>
+<p>[4] A. A. Farley, “A note on bounding a class of linear programming
+problems, including cutting stock problems,” <em>Operations
+Research</em>, 38(5), 922-923, 1990.</p>
+<p>[5] Q. Huangfu and J. A. J. Hall, “Parallelizing the dual revised
+simplex method,” <em>Mathematical Programming Computation</em>, 10,
+119-142, 2018 (HiGHS).</p>
+<p>[6] J. Gilmer, S. S. Schoenholz, P. F. Riley, O. Vinyals and G. E.
+Dahl, “Neural message passing for quantum chemistry,” <em>Proc.
+ICML</em>, 2017.</p>
+<p>[7] M. Morabit, G. Desaulniers and A. Lodi, “Machine-learning-based
+column selection for column generation,” <em>Transportation
+Science</em>, 55(4), 815-831, 2021.</p>
+<p>[8] P. Virtanen et al., “SciPy 1.0: fundamental algorithms for
+scientific computing in Python,” <em>Nature Methods</em>, 17, 261-272,
+2020.</p>
+<p>[9] A. Paszke et al., “PyTorch: an imperative style, high-performance
+deep learning library,” <em>Advances in NeurIPS</em>, 32, 2019.</p>
+<p>[10] P. Toth and D. Vigo (eds.), <em>Vehicle Routing: Problems,
+Methods, and Applications</em>, 2nd ed., SIAM, 2014.</p>
+<p>[11] G. Clarke and J. W. Wright, “Scheduling of vehicles from a
+central depot to a number of delivery points,” <em>Operations
+Research</em>, 12(4), 568-581, 1964.</p>
+<p>[12] M. L. Fisher and R. Jaikumar, “A generalized assignment
+heuristic for vehicle routing,” <em>Networks</em>, 11(2), 109-124,
+1981.</p>
+<p>[13] W. Kool, H. van Hoof and M. Welling, “Attention, learn to solve
+routing problems!,” <em>Proc. ICLR</em>, 2019.</p>
+<p>[14] P. Augerat, J. M. Belenguer, E. Benavent, A. Corberán, D. Naddef
+and G. Rinaldi, “Computational results with a branch and cut code for
+the capacitated vehicle routing problem,” Research Report 949-M,
+Université Joseph Fourier, Grenoble, 1995.</p>
+<p>[15] E. Uchoa, D. Pecin, A. Pessoa, M. Poggi, T. Vidal and A.
+Subramanian, “New benchmark instances for the capacitated vehicle
+routing problem,” <em>European Journal of Operational Research</em>,
+257(3), 845-858, 2017. Library: CVRPLIB,
+galgos.inf.puc-rio.br/cvrplib.</p>
+<p>[16] L. Perron and V. Furnon, <em>OR-Tools</em>, version 9.15,
+Google, developers.google.com/optimization.</p>
+</div>
+</body>
+</html>
