@@ -1,4 +1,4 @@
-# Bulky-Delivery Spatial Clustering &amp; GNN Routing
+  # Bulky-Delivery Spatial Clustering &amp; GNN Routing
 
 Automated vehicle clustering and dispatch system for nationwide bulky-delivery operations across South Korea (97 delivery jobs, 6,404 stops).
 
