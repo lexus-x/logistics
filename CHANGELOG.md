@@ -2,6 +2,16 @@
 
 All notable changes to this project. Dates are in 2026; the format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.2.0] - 2026-11-17
+
+### Changed
+- Slides (still 15): new design. Each slide carries a real visual: the data flow with its counts, the method as a route with each step's numbers, the 60 % rule as a loaded truck, native charts, one real job planned by hand and by the planner side by side, the plan sheet a dispatcher receives.
+- Report: newer references (2015 to 2026) with a related-work section, the KPI table in the summary, shorter section titles, a new look matching the slides. English 20 pages, Korean 18.
+- README shortened.
+
+### Removed
+- `docs/banner.png`.
+
 ## [1.1.0] - 2026-11-17
 
 ### Added

@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-11-13T01:33:23.397465</dc:date>
+    <dc:date>2026-11-17T12:48:14.193359</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -40,7 +40,7 @@ Q 2.88 9.3249 2.88 16.19946
 L 2.88 75.49254 
 Q 2.88 82.3671 9.30816 82.3671 
 z
-" clip-path="url(#p131062e4a9)" style="fill: #eef4fb; stroke: #b9c8de; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#p23cee8e250)" style="fill: #edf3ef; stroke: #bccbc2; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="patch_3">
     <path d="M 91.66896 82.3671 
@@ -53,7 +53,7 @@ Q 85.2408 9.3249 85.2408 16.19946
 L 85.2408 75.49254 
 Q 85.2408 82.3671 91.66896 82.3671 
 z
-" clip-path="url(#p131062e4a9)" style="fill: #eef4fb; stroke: #b9c8de; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#p23cee8e250)" style="fill: #edf3ef; stroke: #bccbc2; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="patch_4">
     <path d="M 174.02976 82.3671 
@@ -66,7 +66,7 @@ Q 167.6016 9.3249 167.6016 16.19946
 L 167.6016 75.49254 
 Q 167.6016 82.3671 174.02976 82.3671 
 z
-" clip-path="url(#p131062e4a9)" style="fill: #dce8fb; stroke: #1d3f86; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#p23cee8e250)" style="fill: #dcebe2; stroke: #0e5a3f; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="patch_5">
     <path d="M 256.39056 82.3671 
@@ -79,7 +79,7 @@ Q 249.9624 9.3249 249.9624 16.19946
 L 249.9624 75.49254 
 Q 249.9624 82.3671 256.39056 82.3671 
 z
-" clip-path="url(#p131062e4a9)" style="fill: #eef4fb; stroke: #b9c8de; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#p23cee8e250)" style="fill: #edf3ef; stroke: #bccbc2; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="patch_6">
     <path d="M 338.75136 82.3671 
@@ -92,11 +92,11 @@ Q 332.3232 9.3249 332.3232 16.19946
 L 332.3232 75.49254 
 Q 332.3232 82.3671 338.75136 82.3671 
 z
-" clip-path="url(#p131062e4a9)" style="fill: #eef4fb; stroke: #b9c8de; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#p23cee8e250)" style="fill: #edf3ef; stroke: #bccbc2; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="text_1">
     <!-- Job graph -->
-    <g style="fill: #1d3f86" transform="translate(8.50464 29.60164) scale(0.088 -0.088)">
+    <g style="fill: #0e5a3f" transform="translate(8.50464 29.60164) scale(0.088 -0.088)">
      <defs>
       <path id="Barlow-SemiBold-4c" d="M 1696 -51 
 Q 1229 -51 877 125 
@@ -397,7 +397,7 @@ z
    </g>
    <g id="text_2">
     <!-- stops as nodes, -->
-    <g style="fill: #1c2430" transform="translate(8.50464 52.672316) scale(0.078 -0.078)">
+    <g style="fill: #1e2622" transform="translate(8.50464 52.672316) scale(0.078 -0.078)">
      <defs>
       <path id="Barlow-Regular-12e" d="M 1574 -32 
 Q 1216 -32 937 83 
@@ -728,7 +728,7 @@ z
      <use xlink:href="#Barlow-Regular-223" transform="translate(642.671875 0)"/>
     </g>
     <!-- 12 nearest linked -->
-    <g style="fill: #1c2430" transform="translate(8.50464 66.068816) scale(0.078 -0.078)">
+    <g style="fill: #1e2622" transform="translate(8.50464 66.068816) scale(0.078 -0.078)">
      <defs>
       <path id="Barlow-Regular-1ea" d="M 1152 4461 
 Q 1190 4480 1235 4480 
@@ -891,16 +891,16 @@ z
    <g id="patch_7">
     <path d="M 76.793835 45.846 
 Q 79.415764 45.846 80.807855 45.846 
-" style="fill: none; stroke: #1d3f86; stroke-width: 1.1; stroke-linecap: round"/>
+" style="fill: none; stroke: #0e5a3f; stroke-width: 1.1; stroke-linecap: round"/>
     <path d="M 77.007855 43.946 
 L 80.807855 45.846 
 L 77.007855 47.746 
 z
-" style="fill: #1d3f86; stroke: #1d3f86; stroke-width: 1.1; stroke-linecap: round"/>
+" style="fill: #0e5a3f; stroke: #0e5a3f; stroke-width: 1.1; stroke-linecap: round"/>
    </g>
    <g id="text_3">
     <!-- Features -->
-    <g style="fill: #1d3f86" transform="translate(90.86544 29.60164) scale(0.088 -0.088)">
+    <g style="fill: #0e5a3f" transform="translate(90.86544 29.60164) scale(0.088 -0.088)">
      <defs>
       <path id="Barlow-SemiBold-39" d="M 3494 3917 
 Q 3494 3885 3472 3862 
@@ -1097,7 +1097,7 @@ z
    </g>
    <g id="text_4">
     <!-- 8 per stop, -->
-    <g style="fill: #1c2430" transform="translate(90.86544 52.711316) scale(0.078 -0.078)">
+    <g style="fill: #1e2622" transform="translate(90.86544 52.711316) scale(0.078 -0.078)">
      <defs>
       <path id="Barlow-Regular-1f1" d="M 2822 1882 
 Q 2944 1619 2944 1254 
@@ -1162,7 +1162,7 @@ z
      <use xlink:href="#Barlow-Regular-223" transform="translate(426.8125 0)"/>
     </g>
     <!-- 4 per pair -->
-    <g style="fill: #1c2430" transform="translate(90.86544 65.347316) scale(0.078 -0.078)">
+    <g style="fill: #1e2622" transform="translate(90.86544 65.347316) scale(0.078 -0.078)">
      <defs>
       <path id="Barlow-Regular-1ed" d="M 3072 1645 
 Q 3136 1645 3136 1581 
@@ -1215,16 +1215,16 @@ z
    <g id="patch_8">
     <path d="M 159.154635 45.846 
 Q 161.776564 45.846 163.168655 45.846 
-" style="fill: none; stroke: #1d3f86; stroke-width: 1.1; stroke-linecap: round"/>
+" style="fill: none; stroke: #0e5a3f; stroke-width: 1.1; stroke-linecap: round"/>
     <path d="M 159.368655 43.946 
 L 163.168655 45.846 
 L 159.368655 47.746 
 z
-" style="fill: #1d3f86; stroke: #1d3f86; stroke-width: 1.1; stroke-linecap: round"/>
+" style="fill: #0e5a3f; stroke: #0e5a3f; stroke-width: 1.1; stroke-linecap: round"/>
    </g>
    <g id="text_5">
     <!-- 4 rounds of -->
-    <g style="fill: #1d3f86" transform="translate(181.129042 42.031062) scale(0.088 -0.088)">
+    <g style="fill: #0e5a3f" transform="translate(181.129042 42.031062) scale(0.088 -0.088)">
      <defs>
       <path id="Barlow-SemiBold-1ed" d="M 3341 1843 
 Q 3373 1843 3395 1820 
@@ -1394,7 +1394,7 @@ z
      <use xlink:href="#Barlow-SemiBold-e5" transform="translate(458.484375 0)"/>
     </g>
     <!-- message passing -->
-    <g style="fill: #1d3f86" transform="translate(169.71448 55.02) scale(0.088 -0.088)">
+    <g style="fill: #0e5a3f" transform="translate(169.71448 55.02) scale(0.088 -0.088)">
      <defs>
       <path id="Barlow-SemiBold-109" d="M 3898 3322 
 Q 4390 3322 4668 3024 
@@ -1491,16 +1491,16 @@ z
    <g id="patch_9">
     <path d="M 241.515435 45.846 
 Q 244.137364 45.846 245.529455 45.846 
-" style="fill: none; stroke: #1d3f86; stroke-width: 1.1; stroke-linecap: round"/>
+" style="fill: none; stroke: #0e5a3f; stroke-width: 1.1; stroke-linecap: round"/>
     <path d="M 241.729455 43.946 
 L 245.529455 45.846 
 L 241.729455 47.746 
 z
-" style="fill: #1d3f86; stroke: #1d3f86; stroke-width: 1.1; stroke-linecap: round"/>
+" style="fill: #0e5a3f; stroke: #0e5a3f; stroke-width: 1.1; stroke-linecap: round"/>
    </g>
    <g id="text_6">
     <!-- Pair score -->
-    <g style="fill: #1d3f86" transform="translate(255.58704 29.60164) scale(0.088 -0.088)">
+    <g style="fill: #0e5a3f" transform="translate(255.58704 29.60164) scale(0.088 -0.088)">
      <defs>
       <path id="Barlow-SemiBold-71" d="M 2266 4486 
 Q 2669 4486 2976 4320 
@@ -1587,7 +1587,7 @@ z
    </g>
    <g id="text_7">
     <!-- chance two stops -->
-    <g style="fill: #1c2430" transform="translate(255.58704 52.672316) scale(0.078 -0.078)">
+    <g style="fill: #1e2622" transform="translate(255.58704 52.672316) scale(0.078 -0.078)">
      <defs>
       <path id="Barlow-Regular-c6" d="M 1734 -51 
 Q 1274 -51 944 189 
@@ -1704,7 +1704,7 @@ z
      <use xlink:href="#Barlow-Regular-12e" transform="translate(709.109375 0)"/>
     </g>
     <!-- share a truck -->
-    <g style="fill: #1c2430" transform="translate(255.58704 66.029816) scale(0.078 -0.078)">
+    <g style="fill: #1e2622" transform="translate(255.58704 66.029816) scale(0.078 -0.078)">
      <defs>
       <path id="Barlow-Regular-137" d="M 2470 3174 
 Q 2470 3238 2534 3238 
@@ -1752,16 +1752,16 @@ z
    <g id="patch_10">
     <path d="M 323.876235 45.846 
 Q 326.498164 45.846 327.890255 45.846 
-" style="fill: none; stroke: #1d3f86; stroke-width: 1.1; stroke-linecap: round"/>
+" style="fill: none; stroke: #0e5a3f; stroke-width: 1.1; stroke-linecap: round"/>
     <path d="M 324.090255 43.946 
 L 327.890255 45.846 
 L 324.090255 47.746 
 z
-" style="fill: #1d3f86; stroke: #1d3f86; stroke-width: 1.1; stroke-linecap: round"/>
+" style="fill: #0e5a3f; stroke: #0e5a3f; stroke-width: 1.1; stroke-linecap: round"/>
    </g>
    <g id="text_8">
     <!-- Short list -->
-    <g style="fill: #1d3f86" transform="translate(337.94784 29.60164) scale(0.088 -0.088)">
+    <g style="fill: #0e5a3f" transform="translate(337.94784 29.60164) scale(0.088 -0.088)">
      <defs>
       <path id="Barlow-SemiBold-77" d="M 1914 -51 
 Q 1414 -51 1043 109 
@@ -1840,7 +1840,7 @@ z
    </g>
    <g id="text_9">
     <!-- each stop's -->
-    <g style="fill: #1c2430" transform="translate(337.94784 52.672316) scale(0.078 -0.078)">
+    <g style="fill: #1e2622" transform="translate(337.94784 52.672316) scale(0.078 -0.078)">
      <defs>
       <path id="Barlow-Regular-248" d="M 301 3155 
 Q 237 3155 237 3219 
@@ -1867,7 +1867,7 @@ z
      <use xlink:href="#Barlow-Regular-12e" transform="translate(430 0)"/>
     </g>
     <!-- 8 best partners -->
-    <g style="fill: #1c2430" transform="translate(337.94784 65.347316) scale(0.078 -0.078)">
+    <g style="fill: #1e2622" transform="translate(337.94784 65.347316) scale(0.078 -0.078)">
      <defs>
       <path id="Barlow-Regular-c5" d="M 3002 2413 
 Q 3078 2125 3078 1619 
@@ -1934,7 +1934,7 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="p131062e4a9">
+  <clipPath id="p23cee8e250">
    <rect x="2.88" y="2.88" width="401.76" height="85.932"/>
   </clipPath>
  </defs>

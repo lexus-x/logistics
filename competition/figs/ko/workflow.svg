@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-11-16T00:28:29.768007</dc:date>
+    <dc:date>2026-11-17T12:48:21.975560</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -40,7 +40,7 @@ Q 2.88 8.9091 2.88 15.34014
 L 2.88 70.80786 
 Q 2.88 77.2389 9.30816 77.2389 
 z
-" clip-path="url(#p3cf6ab6417)" style="fill: #eef4fb; stroke: #b9c8de; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#pfa94e427b7)" style="fill: #edf3ef; stroke: #bccbc2; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="patch_3">
     <path d="M 112.96224 77.2389 
@@ -53,7 +53,7 @@ Q 106.53408 8.9091 106.53408 15.34014
 L 106.53408 70.80786 
 Q 106.53408 77.2389 112.96224 77.2389 
 z
-" clip-path="url(#p3cf6ab6417)" style="fill: #dce8fb; stroke: #1d3f86; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#pfa94e427b7)" style="fill: #dcebe2; stroke: #0e5a3f; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="patch_4">
     <path d="M 216.61632 77.2389 
@@ -66,7 +66,7 @@ Q 210.18816 8.9091 210.18816 15.34014
 L 210.18816 70.80786 
 Q 210.18816 77.2389 216.61632 77.2389 
 z
-" clip-path="url(#p3cf6ab6417)" style="fill: #eef4fb; stroke: #b9c8de; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#pfa94e427b7)" style="fill: #edf3ef; stroke: #bccbc2; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="patch_5">
     <path d="M 320.2704 77.2389 
@@ -79,11 +79,11 @@ Q 313.84224 8.9091 313.84224 15.34014
 L 313.84224 70.80786 
 Q 313.84224 77.2389 320.2704 77.2389 
 z
-" clip-path="url(#p3cf6ab6417)" style="fill: #eef4fb; stroke: #b9c8de; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#pfa94e427b7)" style="fill: #edf3ef; stroke: #bccbc2; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="text_1">
     <!-- 주문 내보내기 -->
-    <g style="fill: #1d3f86" transform="translate(9.30816 28.90864) scale(0.088 -0.088)">
+    <g style="fill: #0e5a3f" transform="translate(9.30816 28.90864) scale(0.088 -0.088)">
      <defs>
       <path id="NotoSansKR-SemiBold-4548" d="M 2502 4704 
 L 3168 4704 
@@ -275,7 +275,7 @@ z
    </g>
    <g id="text_2">
     <!-- 기존 엑셀 파일, -->
-    <g style="fill: #1c2430" transform="translate(9.30816 50.123518) scale(0.078 -0.078)">
+    <g style="fill: #1e2622" transform="translate(9.30816 50.123518) scale(0.078 -0.078)">
      <defs>
       <path id="NotoSansKR-Regular-2a7c" d="M 4538 5293 
 L 5069 5293 
@@ -599,7 +599,7 @@ z
      <use xlink:href="#Barlow-Regular-223" transform="translate(592 0)"/>
     </g>
     <!-- 추가 입력 없음 -->
-    <g style="fill: #1c2430" transform="translate(9.30816 62.759518) scale(0.078 -0.078)">
+    <g style="fill: #1e2622" transform="translate(9.30816 62.759518) scale(0.078 -0.078)">
      <defs>
       <path id="NotoSansKR-Regular-49e0" d="M 2669 1613 
 L 3194 1613 
@@ -933,16 +933,16 @@ z
    <g id="patch_6">
     <path d="M 96.884974 43.074 
 Q 100.107069 43.074 102.099326 43.074 
-" style="fill: none; stroke: #1d3f86; stroke-width: 1.1; stroke-linecap: round"/>
+" style="fill: none; stroke: #0e5a3f; stroke-width: 1.1; stroke-linecap: round"/>
     <path d="M 98.299326 41.174 
 L 102.099326 43.074 
 L 98.299326 44.974 
 z
-" style="fill: #1d3f86; stroke: #1d3f86; stroke-width: 1.1; stroke-linecap: round"/>
+" style="fill: #0e5a3f; stroke: #0e5a3f; stroke-width: 1.1; stroke-linecap: round"/>
    </g>
    <g id="text_3">
     <!-- 배차 계획기 -->
-    <g style="fill: #1d3f86" transform="translate(112.96224 28.90864) scale(0.088 -0.088)">
+    <g style="fill: #0e5a3f" transform="translate(112.96224 28.90864) scale(0.088 -0.088)">
      <defs>
       <path id="NotoSansKR-SemiBold-387c" d="M 454 4806 
 L 1171 4806 
@@ -1152,7 +1152,7 @@ z
    </g>
    <g id="text_4">
     <!-- 회사 PC에서 -->
-    <g style="fill: #1c2430" transform="translate(112.96224 50.123518) scale(0.078 -0.078)">
+    <g style="fill: #1e2622" transform="translate(112.96224 50.123518) scale(0.078 -0.078)">
      <defs>
       <path id="NotoSansKR-Regular-52d8" d="M 1971 1818 
 L 2502 1818 
@@ -1413,7 +1413,7 @@ z
      <use xlink:href="#NotoSansKR-Regular-3d68" transform="translate(415.90625 0)"/>
     </g>
     <!-- 작업당 수 초 -->
-    <g style="fill: #1c2430" transform="translate(112.96224 62.763784) scale(0.078 -0.078)">
+    <g style="fill: #1e2622" transform="translate(112.96224 62.763784) scale(0.078 -0.078)">
      <defs>
       <path id="NotoSansKR-Regular-43dd" d="M 1747 4698 
 L 2182 4698 
@@ -1695,16 +1695,16 @@ z
    <g id="patch_7">
     <path d="M 200.539054 43.074 
 Q 203.761149 43.074 205.753406 43.074 
-" style="fill: none; stroke: #1d3f86; stroke-width: 1.1; stroke-linecap: round"/>
+" style="fill: none; stroke: #0e5a3f; stroke-width: 1.1; stroke-linecap: round"/>
     <path d="M 201.953406 41.174 
 L 205.753406 43.074 
 L 201.953406 44.974 
 z
-" style="fill: #1d3f86; stroke: #1d3f86; stroke-width: 1.1; stroke-linecap: round"/>
+" style="fill: #0e5a3f; stroke: #0e5a3f; stroke-width: 1.1; stroke-linecap: round"/>
    </g>
    <g id="text_5">
     <!-- 배차표 + 지도 -->
-    <g style="fill: #1d3f86" transform="translate(216.61632 28.90864) scale(0.088 -0.088)">
+    <g style="fill: #0e5a3f" transform="translate(216.61632 28.90864) scale(0.088 -0.088)">
      <defs>
       <path id="NotoSansKR-SemiBold-50a8" d="M 1632 2144 
 L 2394 2144 
@@ -1865,7 +1865,7 @@ z
    </g>
    <g id="text_6">
     <!-- 트럭별 방문 순서, -->
-    <g style="fill: #1c2430" transform="translate(216.61632 50.123518) scale(0.078 -0.078)">
+    <g style="fill: #1e2622" transform="translate(216.61632 50.123518) scale(0.078 -0.078)">
      <defs>
       <path id="NotoSansKR-Regular-4f04" d="M 992 2170 
 L 4966 2170 
@@ -2156,7 +2156,7 @@ z
      <use xlink:href="#Barlow-Regular-223" transform="translate(684 0)"/>
     </g>
     <!-- 차종, km, 시간 -->
-    <g style="fill: #1c2430" transform="translate(216.61632 62.759518) scale(0.078 -0.078)">
+    <g style="fill: #1e2622" transform="translate(216.61632 62.759518) scale(0.078 -0.078)">
      <defs>
       <path id="NotoSansKR-Regular-4874" d="M 1728 3917 
 L 2150 3917 
@@ -2446,16 +2446,16 @@ z
    <g id="patch_8">
     <path d="M 304.193134 43.074 
 Q 307.415229 43.074 309.407486 43.074 
-" style="fill: none; stroke: #1d3f86; stroke-width: 1.1; stroke-linecap: round"/>
+" style="fill: none; stroke: #0e5a3f; stroke-width: 1.1; stroke-linecap: round"/>
     <path d="M 305.607486 41.174 
 L 309.407486 43.074 
 L 305.607486 44.974 
 z
-" style="fill: #1d3f86; stroke: #1d3f86; stroke-width: 1.1; stroke-linecap: round"/>
+" style="fill: #0e5a3f; stroke: #0e5a3f; stroke-width: 1.1; stroke-linecap: round"/>
    </g>
    <g id="text_7">
     <!-- 배차 담당자 -->
-    <g style="fill: #1d3f86" transform="translate(320.2704 28.90864) scale(0.088 -0.088)">
+    <g style="fill: #0e5a3f" transform="translate(320.2704 28.90864) scale(0.088 -0.088)">
      <defs>
       <path id="NotoSansKR-SemiBold-2f40" d="M 4128 5344 
 L 4890 5344 
@@ -2621,7 +2621,7 @@ z
    </g>
    <g id="text_8">
     <!-- 검토하고 수정한 뒤 -->
-    <g style="fill: #1c2430" transform="translate(320.2704 50.127784) scale(0.078 -0.078)">
+    <g style="fill: #1e2622" transform="translate(320.2704 50.127784) scale(0.078 -0.078)">
      <defs>
       <path id="NotoSansKR-Regular-28cc" d="M 2726 4915 
 L 3283 4915 
@@ -2962,7 +2962,7 @@ z
      <use xlink:href="#NotoSansKR-Regular-30f0" transform="translate(684 0)"/>
     </g>
     <!-- 트럭 예약 -->
-    <g style="fill: #1c2430" transform="translate(320.2704 62.759518) scale(0.078 -0.078)">
+    <g style="fill: #1e2622" transform="translate(320.2704 62.759518) scale(0.078 -0.078)">
      <defs>
       <path id="NotoSansKR-Regular-4254" d="M 2624 3891 
 L 3757 3891 
@@ -3083,7 +3083,7 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="p3cf6ab6417">
+  <clipPath id="pfa94e427b7">
    <rect x="2.88" y="2.88" width="401.76" height="80.388"/>
   </clipPath>
  </defs>

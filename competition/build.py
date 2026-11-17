@@ -27,8 +27,12 @@ html = html.replace('src="figs/', 'src="../figs/')
 html = re.sub(r"<h2 id=\"summary\">", '<h2 id="summary">', html)
 html = re.sub(r'<tr class="(odd|even)">(\s*<td[^>]*>(?:<strong>)?GNN (?:\+ optimizer|short list|\+ 최적화기|후보 목록))', r'<tr class="\1 ours">\2', html)  # our planner's row, soft tint
 html = re.sub(r'(<figcaption[^>]*>)((?:Figure|그림) \d+\.)', r'\1<span class="lab">\2</span>', html)
+html = re.sub(r'(<h1 id="[^"]+">)(\d+)\. ', r'\1<span class="num">\2</span>', html)  # section number plate
+html = re.sub(r'(<h2 id="[^"]+">)(\d+\.\d+) ', r'\1<span class="num">\2</span>', html)
+html = re.sub(r'(\d) %', '\\1\u00a0%', html)  # "0 %" never splits across lines
 if KO:
     html = html.replace('url("../figs/cover_bg.png")', 'url("../figs/ko/cover_bg.png")')
+    html = html.replace('content: "Team ANALOG  |  2nd LogisticSolver 2026"', 'content: "팀 ANALOG  |  제2회 LogisticSolver 2026"')
 (BUILD / HTML).write_text(html)
 
 pdf = OUTDIR / f"{NAME}.pdf"

@@ -1,0 +1,23 @@
+[
+  [
+    "[1] Asri, Wahyutama, Hwang and Jin. Automated clustering and vehicle dispatching service for bulky product delivery. IEEE IAICT 2026.",
+    "[2] Balinski and Quandt. On an integer program for a delivery problem. Operations Research 1964.",
+    "[11] Clarke and Wright. Scheduling of vehicles from a central depot to a number of delivery points. Operations Research 1964.",
+    "[24] Vidal. Hybrid genetic search for the CVRP. Computers & Operations Research 2022.",
+    "[25] Wouda, Lan and Kool. PyVRP: a high-performance VRP solver package. INFORMS Journal on Computing 2024.",
+    "[15] Uchoa et al. New benchmark instances for the CVRP (CVRPLIB). European Journal of Operational Research 2017.",
+    "[30] Pollaris et al. Vehicle routing problems with loading constraints. OR Spectrum 2015.",
+    "[32] Chi, Song and He. CVRP with three-dimensional loading constraints: a systematic review. IET Intelligent Transport Systems 2026."
+  ],
+  [
+    "[17] Bengio, Lodi and Prouvost. Machine learning for combinatorial optimization. European Journal of Operational Research 2021.",
+    "[18] Bogyrbayeva et al. Machine learning to solve vehicle routing problems: a survey. IEEE Trans. Intelligent Transportation Systems 2024.",
+    "[7] Morabit, Desaulniers and Lodi. Machine-learning-based column selection for column generation. Transportation Science 2021.",
+    "[29] Morabit, Desaulniers and Lodi. Machine-learning-based arc selection in column generation. INFORMS Journal on Optimization 2023.",
+    "[19] Kwon et al. POMO. NeurIPS 2020.",
+    "[21] Hou et al. Learned heuristics for large-scale VRPs in real time. ICLR 2023.",
+    "[22] Ye et al. GLOP: global partition and local construction. AAAI 2024.",
+    "[27] Bi et al. Learning to handle complex constraints for vehicle routing problems. NeurIPS 2024.",
+    "[28] Merchán et al. 2021 Amazon Last Mile Routing Research Challenge: data set. Transportation Science 2024."
+  ]
+]

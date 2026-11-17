@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-11-16T00:28:28.240007</dc:date>
+    <dc:date>2026-11-17T12:48:20.430321</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -40,7 +40,7 @@ Q 2.88 18.896 2.88 25.3024
 L 2.88 88.5656 
 Q 2.88 94.972 9.30816 94.972 
 z
-" clip-path="url(#pe34bc50fde)" style="fill: #eef4fb; stroke: #b9c8de; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#p1d3cb42efb)" style="fill: #edf3ef; stroke: #bccbc2; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="patch_3">
     <path d="M 91.66896 94.972 
@@ -53,7 +53,7 @@ Q 85.2408 18.896 85.2408 25.3024
 L 85.2408 88.5656 
 Q 85.2408 94.972 91.66896 94.972 
 z
-" clip-path="url(#pe34bc50fde)" style="fill: #eef4fb; stroke: #b9c8de; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#p1d3cb42efb)" style="fill: #edf3ef; stroke: #bccbc2; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="patch_4">
     <path d="M 174.02976 94.972 
@@ -66,7 +66,7 @@ Q 167.6016 18.896 167.6016 25.3024
 L 167.6016 88.5656 
 Q 167.6016 94.972 174.02976 94.972 
 z
-" clip-path="url(#pe34bc50fde)" style="fill: #eef4fb; stroke: #b9c8de; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#p1d3cb42efb)" style="fill: #edf3ef; stroke: #bccbc2; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="patch_5">
     <path d="M 256.39056 94.972 
@@ -79,7 +79,7 @@ Q 249.9624 18.896 249.9624 25.3024
 L 249.9624 88.5656 
 Q 249.9624 94.972 256.39056 94.972 
 z
-" clip-path="url(#pe34bc50fde)" style="fill: #dce8fb; stroke: #1d3f86; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#p1d3cb42efb)" style="fill: #dcebe2; stroke: #0e5a3f; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="patch_6">
     <path d="M 338.75136 94.972 
@@ -92,11 +92,11 @@ Q 332.3232 18.896 332.3232 25.3024
 L 332.3232 88.5656 
 Q 332.3232 94.972 338.75136 94.972 
 z
-" clip-path="url(#pe34bc50fde)" style="fill: #eef4fb; stroke: #b9c8de; stroke-width: 1.1; stroke-linejoin: miter"/>
+" clip-path="url(#p1d3cb42efb)" style="fill: #edf3ef; stroke: #bccbc2; stroke-width: 1.1; stroke-linejoin: miter"/>
    </g>
    <g id="text_1">
     <!-- 1  도로 km -->
-    <g style="fill: #1d3f86" transform="translate(8.50464 37.6312) scale(0.088 -0.088)">
+    <g style="fill: #0e5a3f" transform="translate(8.50464 37.6312) scale(0.088 -0.088)">
      <defs>
       <path id="Barlow-SemiBold-1ea" d="M 1024 4461 
 Q 1075 4480 1120 4480 
@@ -277,7 +277,7 @@ z
    </g>
    <g id="text_2">
     <!-- 자체 지도 서버 -->
-    <g style="fill: #1c2430" transform="translate(8.50464 62.698677) scale(0.079 -0.079)">
+    <g style="fill: #1e2622" transform="translate(7.70112 62.960286) scale(0.073 -0.073)">
      <defs>
       <path id="NotoSansKR-Regular-43dc" d="M 1747 4461 
 L 2176 4461 
@@ -534,7 +534,7 @@ z
      <use xlink:href="#NotoSansKR-Regular-38d0" transform="translate(500 0)"/>
     </g>
     <!-- (OSRM, 한국) -->
-    <g style="fill: #1c2430" transform="translate(8.50464 75.393606) scale(0.079 -0.079)">
+    <g style="fill: #1e2622" transform="translate(7.70112 74.691044) scale(0.073 -0.073)">
      <defs>
       <path id="Barlow-Regular-231" d="M 742 -666 
 Q 698 -666 666 -627 
@@ -838,16 +838,16 @@ z
    <g id="patch_7">
     <path d="M 76.793835 56.934 
 Q 79.415764 56.934 80.807855 56.934 
-" style="fill: none; stroke: #1d3f86; stroke-width: 1.1; stroke-linecap: round"/>
+" style="fill: none; stroke: #0e5a3f; stroke-width: 1.1; stroke-linecap: round"/>
     <path d="M 77.007855 55.034 
 L 80.807855 56.934 
 L 77.007855 58.834 
 z
-" style="fill: #1d3f86; stroke: #1d3f86; stroke-width: 1.1; stroke-linecap: round"/>
+" style="fill: #0e5a3f; stroke: #0e5a3f; stroke-width: 1.1; stroke-linecap: round"/>
    </g>
    <g id="text_3">
     <!-- 2  후보 목록 -->
-    <g style="fill: #1d3f86" transform="translate(90.86544 37.6312) scale(0.088 -0.088)">
+    <g style="fill: #0e5a3f" transform="translate(90.86544 37.6312) scale(0.088 -0.088)">
      <defs>
       <path id="Barlow-SemiBold-1eb" d="M 1312 678 
 Q 1299 666 1302 653 
@@ -1047,7 +1047,7 @@ z
    </g>
    <g id="text_4">
     <!-- GNN: 배송지별 -->
-    <g style="fill: #1c2430" transform="translate(90.86544 62.702997) scale(0.079 -0.079)">
+    <g style="fill: #1e2622" transform="translate(90.06192 62.964278) scale(0.073 -0.073)">
      <defs>
       <path id="Barlow-Regular-3a" d="M 1965 -51 
 Q 1517 -51 1177 125 
@@ -1298,7 +1298,7 @@ z
      <use xlink:href="#NotoSansKR-Regular-3910" transform="translate(524.984375 0)"/>
     </g>
     <!-- 유력 파트너 8곳 -->
-    <g style="fill: #1c2430" transform="translate(90.86544 75.496677) scale(0.079 -0.079)">
+    <g style="fill: #1e2622" transform="translate(90.06192 74.786286) scale(0.073 -0.073)">
      <defs>
       <path id="NotoSansKR-Regular-436c" d="M 1664 1709 
 L 2208 1709 
@@ -1619,16 +1619,16 @@ z
    <g id="patch_8">
     <path d="M 159.154635 56.934 
 Q 161.776564 56.934 163.168655 56.934 
-" style="fill: none; stroke: #1d3f86; stroke-width: 1.1; stroke-linecap: round"/>
+" style="fill: none; stroke: #0e5a3f; stroke-width: 1.1; stroke-linecap: round"/>
     <path d="M 159.368655 55.034 
 L 163.168655 56.934 
 L 159.368655 58.834 
 z
-" style="fill: #1d3f86; stroke: #1d3f86; stroke-width: 1.1; stroke-linecap: round"/>
+" style="fill: #0e5a3f; stroke: #0e5a3f; stroke-width: 1.1; stroke-linecap: round"/>
    </g>
    <g id="text_5">
     <!-- 3  후보 묶음 -->
-    <g style="fill: #1d3f86" transform="translate(173.22624 37.6312) scale(0.088 -0.088)">
+    <g style="fill: #0e5a3f" transform="translate(173.22624 37.6312) scale(0.088 -0.088)">
      <defs>
       <path id="Barlow-SemiBold-1ec" d="M 2944 2131 
 Q 3072 1824 3072 1427 
@@ -1774,7 +1774,7 @@ z
    </g>
    <g id="text_6">
     <!-- 규칙을 지키는 -->
-    <g style="fill: #1c2430" transform="translate(173.22624 62.718427) scale(0.079 -0.079)">
+    <g style="fill: #1e2622" transform="translate(172.42272 62.978536) scale(0.073 -0.073)">
      <defs>
       <path id="NotoSansKR-Regular-2a28" d="M 986 4922 
 L 4602 4922 
@@ -1985,7 +1985,7 @@ z
      <use xlink:href="#NotoSansKR-Regular-2ee0" transform="translate(480 0)"/>
     </g>
     <!-- 1~5곳 묶음 -->
-    <g style="fill: #1c2430" transform="translate(173.22624 75.421997) scale(0.079 -0.079)">
+    <g style="fill: #1e2622" transform="translate(172.42272 74.717278) scale(0.073 -0.073)">
      <defs>
       <path id="Barlow-Regular-1ea" d="M 1152 4461 
 Q 1190 4480 1235 4480 
@@ -2177,16 +2177,16 @@ z
    <g id="patch_9">
     <path d="M 241.515435 56.934 
 Q 244.137364 56.934 245.529455 56.934 
-" style="fill: none; stroke: #1d3f86; stroke-width: 1.1; stroke-linecap: round"/>
+" style="fill: none; stroke: #0e5a3f; stroke-width: 1.1; stroke-linecap: round"/>
     <path d="M 241.729455 55.034 
 L 245.529455 56.934 
 L 241.729455 58.834 
 z
-" style="fill: #1d3f86; stroke: #1d3f86; stroke-width: 1.1; stroke-linecap: round"/>
+" style="fill: #0e5a3f; stroke: #0e5a3f; stroke-width: 1.1; stroke-linecap: round"/>
    </g>
    <g id="text_7">
     <!-- 4  선택 -->
-    <g style="fill: #1d3f86" transform="translate(255.58704 37.6312) scale(0.088 -0.088)">
+    <g style="fill: #0e5a3f" transform="translate(255.58704 37.6312) scale(0.088 -0.088)">
      <defs>
       <path id="Barlow-SemiBold-1ed" d="M 3341 1843 
 Q 3373 1843 3395 1820 
@@ -2344,7 +2344,7 @@ z
    </g>
    <g id="text_8">
     <!-- 정확 MILP: 최소 -->
-    <g style="fill: #1c2430" transform="translate(255.58704 62.72645) scale(0.079 -0.079)">
+    <g style="fill: #1e2622" transform="translate(254.78352 62.98595) scale(0.073 -0.073)">
      <defs>
       <path id="NotoSansKR-Regular-4461" d="M 3411 3789 
 L 4710 3789 
@@ -2656,7 +2656,7 @@ z
      <use xlink:href="#NotoSansKR-Regular-3dd8" transform="translate(563.3125 0)"/>
     </g>
     <!-- 트럭, 다음 최소 km -->
-    <g style="fill: #1c2430" transform="translate(255.58704 75.496677) scale(0.079 -0.079)">
+    <g style="fill: #1e2622" transform="translate(254.78352 74.786286) scale(0.073 -0.073)">
      <defs>
       <path id="NotoSansKR-Regular-3439" d="M 4550 5286 
 L 5082 5286 
@@ -2825,16 +2825,16 @@ z
    <g id="patch_10">
     <path d="M 323.876235 56.934 
 Q 326.498164 56.934 327.890255 56.934 
-" style="fill: none; stroke: #1d3f86; stroke-width: 1.1; stroke-linecap: round"/>
+" style="fill: none; stroke: #0e5a3f; stroke-width: 1.1; stroke-linecap: round"/>
     <path d="M 324.090255 55.034 
 L 327.890255 56.934 
 L 324.090255 58.834 
 z
-" style="fill: #1d3f86; stroke: #1d3f86; stroke-width: 1.1; stroke-linecap: round"/>
+" style="fill: #0e5a3f; stroke: #0e5a3f; stroke-width: 1.1; stroke-linecap: round"/>
    </g>
    <g id="text_9">
     <!-- 5  검사 -->
-    <g style="fill: #1d3f86" transform="translate(337.94784 37.6312) scale(0.088 -0.088)">
+    <g style="fill: #0e5a3f" transform="translate(337.94784 37.6312) scale(0.088 -0.088)">
      <defs>
       <path id="Barlow-SemiBold-1ee" d="M 3059 2010 
 Q 3142 1722 3142 1414 
@@ -2975,7 +2975,7 @@ z
    </g>
    <g id="text_10">
     <!-- 모든 트럭을 -->
-    <g style="fill: #1c2430" transform="translate(337.94784 62.694356) scale(0.079 -0.079)">
+    <g style="fill: #1e2622" transform="translate(337.14432 62.956294) scale(0.073 -0.073)">
      <defs>
       <path id="NotoSansKR-Regular-36f4" d="M 320 685 
 L 5568 685 
@@ -3044,7 +3044,7 @@ z
      <use xlink:href="#NotoSansKR-Regular-4390" transform="translate(388 0)"/>
     </g>
     <!-- 모든 규칙으로 검사 -->
-    <g style="fill: #1c2430" transform="translate(337.94784 75.516427) scale(0.079 -0.079)">
+    <g style="fill: #1e2622" transform="translate(337.14432 74.804536) scale(0.073 -0.073)">
      <defs>
       <path id="NotoSansKR-Regular-4388" d="M 2931 4922 
 Q 3539 4922 4012 4723 
@@ -3210,7 +3210,7 @@ z
    </g>
    <g id="text_11">
     <!-- 입력: 한 작업의 배송지(위치, 부피) -->
-    <g style="fill: #5b6676" transform="translate(2.88 106.1832) scale(0.079 -0.079)">
+    <g style="fill: #6b747c" transform="translate(2.88 106.1832) scale(0.079 -0.079)">
      <defs>
       <path id="NotoSansKR-Regular-43d1" d="M 4531 5293 
 L 5062 5293 
@@ -3604,7 +3604,7 @@ z
    </g>
    <g id="text_12">
     <!-- 출력: 트럭별 배송지, 차종, 방문 순서, km, 시간 -->
-    <g style="fill: #5b6676" transform="translate(255.943484 106.1832) scale(0.079 -0.079)">
+    <g style="fill: #6b747c" transform="translate(255.943484 106.1832) scale(0.079 -0.079)">
      <defs>
       <path id="NotoSansKR-Regular-49e8" d="M 2669 2406 
 L 3194 2406 
@@ -4065,7 +4065,7 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="pe34bc50fde">
+  <clipPath id="p1d3cb42efb">
    <rect x="2.88" y="2.88" width="401.76" height="108.108"/>
   </clipPath>
  </defs>

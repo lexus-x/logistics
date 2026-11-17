@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-11-16T00:28:27.958915</dc:date>
+    <dc:date>2026-11-17T12:48:20.146166</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -42,21 +42,21 @@ z
      <g id="line2d_1">
       <path d="M 70.828594 100.76 
 L 70.828594 19.38 
-" clip-path="url(#p0bea2d3955)" style="fill: none; stroke: #e3e8ef; stroke-width: 0.8; stroke-linecap: square"/>
+" clip-path="url(#p2518e9a3ad)" style="fill: none; stroke: #e4e8e6; stroke-width: 0.8; stroke-linecap: square"/>
      </g>
      <g id="line2d_2">
       <defs>
-       <path id="m5e8806b4f1" d="M 0 0 
+       <path id="mfc5b8f1ffa" d="M 0 0 
 L 0 3.5 
-" style="stroke: #5b6676; stroke-width: 0.8"/>
+" style="stroke: #6b747c; stroke-width: 0.8"/>
       </defs>
       <g>
-       <use xlink:href="#m5e8806b4f1" x="70.828594" y="100.76" style="fill: #5b6676; stroke: #5b6676; stroke-width: 0.8"/>
+       <use xlink:href="#mfc5b8f1ffa" x="70.828594" y="100.76" style="fill: #6b747c; stroke: #6b747c; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_1">
       <!-- 0 -->
-      <g style="fill: #5b6676" transform="translate(68.144844 117.26) scale(0.095 -0.095)">
+      <g style="fill: #6b747c" transform="translate(68.144844 117.26) scale(0.095 -0.095)">
        <defs>
         <path id="Barlow-Regular-1e9" d="M 1798 -64 
 Q 1184 -64 819 288 
@@ -92,16 +92,16 @@ z
      <g id="line2d_3">
       <path d="M 105.502641 100.76 
 L 105.502641 19.38 
-" clip-path="url(#p0bea2d3955)" style="fill: none; stroke: #e3e8ef; stroke-width: 0.8; stroke-linecap: square"/>
+" clip-path="url(#p2518e9a3ad)" style="fill: none; stroke: #e4e8e6; stroke-width: 0.8; stroke-linecap: square"/>
      </g>
      <g id="line2d_4">
       <g>
-       <use xlink:href="#m5e8806b4f1" x="105.502641" y="100.76" style="fill: #5b6676; stroke: #5b6676; stroke-width: 0.8"/>
+       <use xlink:href="#mfc5b8f1ffa" x="105.502641" y="100.76" style="fill: #6b747c; stroke: #6b747c; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_2">
       <!-- 5K -->
-      <g style="fill: #5b6676" transform="translate(100.158891 117.26) scale(0.095 -0.095)">
+      <g style="fill: #6b747c" transform="translate(100.158891 117.26) scale(0.095 -0.095)">
        <defs>
         <path id="Barlow-Regular-1ee" d="M 2912 1958 
 Q 2970 1677 2970 1382 
@@ -187,16 +187,16 @@ z
      <g id="line2d_5">
       <path d="M 140.176688 100.76 
 L 140.176688 19.38 
-" clip-path="url(#p0bea2d3955)" style="fill: none; stroke: #e3e8ef; stroke-width: 0.8; stroke-linecap: square"/>
+" clip-path="url(#p2518e9a3ad)" style="fill: none; stroke: #e4e8e6; stroke-width: 0.8; stroke-linecap: square"/>
      </g>
      <g id="line2d_6">
       <g>
-       <use xlink:href="#m5e8806b4f1" x="140.176688" y="100.76" style="fill: #5b6676; stroke: #5b6676; stroke-width: 0.8"/>
+       <use xlink:href="#mfc5b8f1ffa" x="140.176688" y="100.76" style="fill: #6b747c; stroke: #6b747c; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_3">
       <!-- 10K -->
-      <g style="fill: #5b6676" transform="translate(132.928485 117.26) scale(0.095 -0.095)">
+      <g style="fill: #6b747c" transform="translate(132.928485 117.26) scale(0.095 -0.095)">
        <defs>
         <path id="Barlow-Regular-1ea" d="M 1152 4461 
 Q 1190 4480 1235 4480 
@@ -229,16 +229,16 @@ z
      <g id="line2d_7">
       <path d="M 174.850735 100.76 
 L 174.850735 19.38 
-" clip-path="url(#p0bea2d3955)" style="fill: none; stroke: #e3e8ef; stroke-width: 0.8; stroke-linecap: square"/>
+" clip-path="url(#p2518e9a3ad)" style="fill: none; stroke: #e4e8e6; stroke-width: 0.8; stroke-linecap: square"/>
      </g>
      <g id="line2d_8">
       <g>
-       <use xlink:href="#m5e8806b4f1" x="174.850735" y="100.76" style="fill: #5b6676; stroke: #5b6676; stroke-width: 0.8"/>
+       <use xlink:href="#mfc5b8f1ffa" x="174.850735" y="100.76" style="fill: #6b747c; stroke: #6b747c; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_4">
       <!-- 15K -->
-      <g style="fill: #5b6676" transform="translate(167.844485 117.26) scale(0.095 -0.095)">
+      <g style="fill: #6b747c" transform="translate(167.844485 117.26) scale(0.095 -0.095)">
        <use xlink:href="#Barlow-Regular-1ea"/>
        <use xlink:href="#Barlow-Regular-1ee" transform="translate(35 0)"/>
        <use xlink:href="#Barlow-Regular-4e" transform="translate(86.40625 0)"/>
@@ -249,16 +249,16 @@ L 174.850735 19.38
      <g id="line2d_9">
       <path d="M 209.524782 100.76 
 L 209.524782 19.38 
-" clip-path="url(#p0bea2d3955)" style="fill: none; stroke: #e3e8ef; stroke-width: 0.8; stroke-linecap: square"/>
+" clip-path="url(#p2518e9a3ad)" style="fill: none; stroke: #e4e8e6; stroke-width: 0.8; stroke-linecap: square"/>
      </g>
      <g id="line2d_10">
       <g>
-       <use xlink:href="#m5e8806b4f1" x="209.524782" y="100.76" style="fill: #5b6676; stroke: #5b6676; stroke-width: 0.8"/>
+       <use xlink:href="#mfc5b8f1ffa" x="209.524782" y="100.76" style="fill: #6b747c; stroke: #6b747c; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_5">
       <!-- 20K -->
-      <g style="fill: #5b6676" transform="translate(201.393375 117.26) scale(0.095 -0.095)">
+      <g style="fill: #6b747c" transform="translate(201.393375 117.26) scale(0.095 -0.095)">
        <defs>
         <path id="Barlow-Regular-1eb" d="M 973 429 
 Q 954 397 986 397 
@@ -305,7 +305,7 @@ z
      <g id="line2d_11"/>
      <g id="text_6">
       <!-- 최근접 15곳 목록 -->
-      <g style="fill: #5b6676" transform="translate(2.88 40.159394) scale(0.095 -0.095)">
+      <g style="fill: #6b747c" transform="translate(2.88 40.159394) scale(0.095 -0.095)">
        <defs>
         <path id="NotoSansKR-Regular-49a8" d="M 1978 2234 
 L 2509 2234 
@@ -609,7 +609,7 @@ z
      <g id="line2d_12"/>
      <g id="text_7">
       <!-- GNN 후보 목록 -->
-      <g style="fill: #5b6676" transform="translate(10.036172 89.480606) scale(0.095 -0.095)">
+      <g style="fill: #6b747c" transform="translate(10.036172 89.480606) scale(0.095 -0.095)">
        <defs>
         <path id="Barlow-Regular-3a" d="M 1965 -51 
 Q 1517 -51 1177 125 
@@ -768,7 +768,7 @@ L 204.531719 47.739697
 L 204.531719 23.079091 
 L 70.828594 23.079091 
 z
-" clip-path="url(#p0bea2d3955)" style="fill: #a3acb8"/>
+" clip-path="url(#p2518e9a3ad)" style="fill: #b9bfc4"/>
    </g>
    <g id="patch_4">
     <path d="M 70.828594 97.060909 
@@ -776,16 +776,16 @@ L 90.655214 97.060909
 L 90.655214 72.400303 
 L 70.828594 72.400303 
 z
-" clip-path="url(#p0bea2d3955)" style="fill: #2f6fdb"/>
+" clip-path="url(#p2518e9a3ad)" style="fill: #1a7a52"/>
    </g>
    <g id="patch_5">
     <path d="M 70.828594 100.76 
 L 241.968594 100.76 
-" style="fill: none; stroke: #e3e8ef; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+" style="fill: none; stroke: #e4e8e6; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
    </g>
    <g id="text_8">
     <!-- 19,280 -->
-    <g style="fill: #1c2430" transform="translate(208.542812 39.009394) scale(0.09 -0.09)">
+    <g style="fill: #1e2622" transform="translate(208.542812 39.009394) scale(0.09 -0.09)">
      <defs>
       <path id="Barlow-Regular-1f2" d="M 2842 3693 
 Q 2918 3437 2918 3091 
@@ -904,7 +904,7 @@ z
    </g>
    <g id="text_9">
     <!-- 2,859 -->
-    <g style="fill: #1c2430" transform="translate(92.388777 88.330606) scale(0.09 -0.09)">
+    <g style="fill: #1e2622" transform="translate(92.388777 88.330606) scale(0.09 -0.09)">
      <use xlink:href="#Barlow-Regular-1eb"/>
      <use xlink:href="#Barlow-Regular-223" transform="translate(53.59375 0)"/>
      <use xlink:href="#Barlow-Regular-1f1" transform="translate(80 0)"/>
@@ -914,7 +914,7 @@ z
    </g>
    <g id="text_10">
     <!-- 작업당 후보 묶음 수(중앙값) -->
-    <g style="fill: #1c2430" transform="translate(70.828594 13.38) scale(0.105 -0.105)">
+    <g style="fill: #1e2622" transform="translate(70.828594 13.38) scale(0.105 -0.105)">
      <defs>
       <path id="NotoSansKR-SemiBold-43dd" d="M 1626 4736 
 L 2246 4736 
@@ -1579,16 +1579,16 @@ z
      <g id="line2d_13">
       <path d="M 329.268594 100.76 
 L 329.268594 19.38 
-" clip-path="url(#p39c85afa62)" style="fill: none; stroke: #e3e8ef; stroke-width: 0.8; stroke-linecap: square"/>
+" clip-path="url(#p208694cd9d)" style="fill: none; stroke: #e4e8e6; stroke-width: 0.8; stroke-linecap: square"/>
      </g>
      <g id="line2d_14">
       <g>
-       <use xlink:href="#m5e8806b4f1" x="329.268594" y="100.76" style="fill: #5b6676; stroke: #5b6676; stroke-width: 0.8"/>
+       <use xlink:href="#mfc5b8f1ffa" x="329.268594" y="100.76" style="fill: #6b747c; stroke: #6b747c; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_11">
       <!-- 0 -->
-      <g style="fill: #5b6676" transform="translate(326.584844 117.26) scale(0.095 -0.095)">
+      <g style="fill: #6b747c" transform="translate(326.584844 117.26) scale(0.095 -0.095)">
        <use xlink:href="#Barlow-Regular-1e9"/>
       </g>
      </g>
@@ -1597,16 +1597,16 @@ L 329.268594 19.38
      <g id="line2d_15">
       <path d="M 369.06119 100.76 
 L 369.06119 19.38 
-" clip-path="url(#p39c85afa62)" style="fill: none; stroke: #e3e8ef; stroke-width: 0.8; stroke-linecap: square"/>
+" clip-path="url(#p208694cd9d)" style="fill: none; stroke: #e4e8e6; stroke-width: 0.8; stroke-linecap: square"/>
      </g>
      <g id="line2d_16">
       <g>
-       <use xlink:href="#m5e8806b4f1" x="369.06119" y="100.76" style="fill: #5b6676; stroke: #5b6676; stroke-width: 0.8"/>
+       <use xlink:href="#mfc5b8f1ffa" x="369.06119" y="100.76" style="fill: #6b747c; stroke: #6b747c; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_12">
       <!-- 20 -->
-      <g style="fill: #5b6676" transform="translate(363.831737 117.26) scale(0.095 -0.095)">
+      <g style="fill: #6b747c" transform="translate(363.831737 117.26) scale(0.095 -0.095)">
        <use xlink:href="#Barlow-Regular-1eb"/>
        <use xlink:href="#Barlow-Regular-1e9" transform="translate(53.59375 0)"/>
       </g>
@@ -1616,16 +1616,16 @@ L 369.06119 19.38
      <g id="line2d_17">
       <path d="M 408.853787 100.76 
 L 408.853787 19.38 
-" clip-path="url(#p39c85afa62)" style="fill: none; stroke: #e3e8ef; stroke-width: 0.8; stroke-linecap: square"/>
+" clip-path="url(#p208694cd9d)" style="fill: none; stroke: #e4e8e6; stroke-width: 0.8; stroke-linecap: square"/>
      </g>
      <g id="line2d_18">
       <g>
-       <use xlink:href="#m5e8806b4f1" x="408.853787" y="100.76" style="fill: #5b6676; stroke: #5b6676; stroke-width: 0.8"/>
+       <use xlink:href="#mfc5b8f1ffa" x="408.853787" y="100.76" style="fill: #6b747c; stroke: #6b747c; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_13">
       <!-- 40 -->
-      <g style="fill: #5b6676" transform="translate(403.553084 117.26) scale(0.095 -0.095)">
+      <g style="fill: #6b747c" transform="translate(403.553084 117.26) scale(0.095 -0.095)">
        <defs>
         <path id="Barlow-Regular-1ed" d="M 3072 1645 
 Q 3136 1645 3136 1581 
@@ -1672,16 +1672,16 @@ z
      <g id="line2d_19">
       <path d="M 448.646384 100.76 
 L 448.646384 19.38 
-" clip-path="url(#p39c85afa62)" style="fill: none; stroke: #e3e8ef; stroke-width: 0.8; stroke-linecap: square"/>
+" clip-path="url(#p208694cd9d)" style="fill: none; stroke: #e4e8e6; stroke-width: 0.8; stroke-linecap: square"/>
      </g>
      <g id="line2d_20">
       <g>
-       <use xlink:href="#m5e8806b4f1" x="448.646384" y="100.76" style="fill: #5b6676; stroke: #5b6676; stroke-width: 0.8"/>
+       <use xlink:href="#mfc5b8f1ffa" x="448.646384" y="100.76" style="fill: #6b747c; stroke: #6b747c; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_14">
       <!-- 60 -->
-      <g style="fill: #5b6676" transform="translate(443.516384 117.26) scale(0.095 -0.095)">
+      <g style="fill: #6b747c" transform="translate(443.516384 117.26) scale(0.095 -0.095)">
        <defs>
         <path id="Barlow-Regular-1ef" d="M 2842 2106 
 Q 2976 1818 2976 1376 
@@ -1737,16 +1737,16 @@ z
      <g id="line2d_21">
       <path d="M 488.438981 100.76 
 L 488.438981 19.38 
-" clip-path="url(#p39c85afa62)" style="fill: none; stroke: #e3e8ef; stroke-width: 0.8; stroke-linecap: square"/>
+" clip-path="url(#p208694cd9d)" style="fill: none; stroke: #e4e8e6; stroke-width: 0.8; stroke-linecap: square"/>
      </g>
      <g id="line2d_22">
       <g>
-       <use xlink:href="#m5e8806b4f1" x="488.438981" y="100.76" style="fill: #5b6676; stroke: #5b6676; stroke-width: 0.8"/>
+       <use xlink:href="#mfc5b8f1ffa" x="488.438981" y="100.76" style="fill: #6b747c; stroke: #6b747c; stroke-width: 0.8"/>
       </g>
      </g>
      <g id="text_15">
       <!-- 80 -->
-      <g style="fill: #5b6676" transform="translate(483.280778 117.26) scale(0.095 -0.095)">
+      <g style="fill: #6b747c" transform="translate(483.280778 117.26) scale(0.095 -0.095)">
        <use xlink:href="#Barlow-Regular-1f1"/>
        <use xlink:href="#Barlow-Regular-1e9" transform="translate(52.09375 0)"/>
       </g>
@@ -1758,7 +1758,7 @@ L 488.438981 19.38
      <g id="line2d_23"/>
      <g id="text_16">
       <!-- 최근접 15곳 목록 -->
-      <g style="fill: #5b6676" transform="translate(261.32 40.159394) scale(0.095 -0.095)">
+      <g style="fill: #6b747c" transform="translate(261.32 40.159394) scale(0.095 -0.095)">
        <use xlink:href="#NotoSansKR-Regular-49a8"/>
        <use xlink:href="#NotoSansKR-Regular-2a48" transform="translate(92 0)"/>
        <use xlink:href="#NotoSansKR-Regular-445d" transform="translate(184 0)"/>
@@ -1776,7 +1776,7 @@ L 488.438981 19.38
      <g id="line2d_24"/>
      <g id="text_17">
       <!-- GNN 후보 목록 -->
-      <g style="fill: #5b6676" transform="translate(268.476172 89.480606) scale(0.095 -0.095)">
+      <g style="fill: #6b747c" transform="translate(268.476172 89.480606) scale(0.095 -0.095)">
        <use xlink:href="#Barlow-Regular-3a"/>
        <use xlink:href="#Barlow-Regular-55" transform="translate(61.296875 0)"/>
        <use xlink:href="#Barlow-Regular-55" transform="translate(127.484375 0)"/>
@@ -1796,7 +1796,7 @@ L 462.971719 47.739697
 L 462.971719 23.079091 
 L 329.268594 23.079091 
 z
-" clip-path="url(#p39c85afa62)" style="fill: #a3acb8"/>
+" clip-path="url(#p208694cd9d)" style="fill: #b9bfc4"/>
    </g>
    <g id="patch_8">
     <path d="M 329.268594 97.060909 
@@ -1804,16 +1804,16 @@ L 342.798077 97.060909
 L 342.798077 72.400303 
 L 329.268594 72.400303 
 z
-" clip-path="url(#p39c85afa62)" style="fill: #2f6fdb"/>
+" clip-path="url(#p208694cd9d)" style="fill: #1a7a52"/>
    </g>
    <g id="patch_9">
     <path d="M 329.268594 100.76 
 L 500.408594 100.76 
-" style="fill: none; stroke: #e3e8ef; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
+" style="fill: none; stroke: #e4e8e6; stroke-width: 0.8; stroke-linejoin: miter; stroke-linecap: square"/>
    </g>
    <g id="text_18">
     <!-- 67.2초 -->
-    <g style="fill: #1c2430" transform="translate(466.982812 39.009394) scale(0.09 -0.09)">
+    <g style="fill: #1e2622" transform="translate(466.982812 39.009394) scale(0.09 -0.09)">
      <defs>
       <path id="Barlow-Regular-1f0" d="M 966 0 
 Q 934 0 918 22 
@@ -1912,7 +1912,7 @@ z
    </g>
    <g id="text_19">
     <!-- 6.8초 -->
-    <g style="fill: #1c2430" transform="translate(344.405698 88.330606) scale(0.09 -0.09)">
+    <g style="fill: #1e2622" transform="translate(344.405698 88.330606) scale(0.09 -0.09)">
      <use xlink:href="#Barlow-Regular-1ef"/>
      <use xlink:href="#Barlow-Regular-222" transform="translate(51.5 0)"/>
      <use xlink:href="#Barlow-Regular-1f1" transform="translate(79.296875 0)"/>
@@ -1921,7 +1921,7 @@ z
    </g>
    <g id="text_20">
     <!-- 작업당 풀이 시간(초, 중앙값) -->
-    <g style="fill: #1c2430" transform="translate(329.268594 13.38) scale(0.105 -0.105)">
+    <g style="fill: #1e2622" transform="translate(329.268594 13.38) scale(0.105 -0.105)">
      <defs>
       <path id="NotoSansKR-SemiBold-50cc" d="M 749 5203 
 L 5120 5203 
@@ -2177,10 +2177,10 @@ z
   </g>
  </g>
  <defs>
-  <clipPath id="p0bea2d3955">
+  <clipPath id="p2518e9a3ad">
    <rect x="70.828594" y="19.38" width="171.14" height="81.38"/>
   </clipPath>
-  <clipPath id="p39c85afa62">
+  <clipPath id="p208694cd9d">
    <rect x="329.268594" y="19.38" width="171.14" height="81.38"/>
   </clipPath>
  </defs>

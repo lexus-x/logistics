@@ -46,17 +46,17 @@ Changwon National University, November 2026
 ::: contents
 **Contents**
 
-1. Introduction: the problem in the field
+1. Introduction
 2. Problem definition
-3. Data: sources, processing and privacy
-4. Method, and why each step is needed
+3. Data and privacy
+4. Method
 5. Implementation and code
-6. Experimental setup, and why it is fair
-7. Results: savings, accuracy and speed
-8. Expected effects on logistics KPIs
+6. Experimental setup
+7. Results
+8. Expected effects
 9. Prototype
 10. Deployment plan, resources and risks
-11. Novelty and differentiation
+11. Novelty
 12. Limitations, future work and conclusion
 :::
 
@@ -68,17 +68,17 @@ We built a planner that groups and routes together. A **graph neural network (GN
 
 On 97 real dispatch jobs (6,395 stops, April to August 2026) the plan needs [**1,933 trucks instead of 2,517 (−23.2 %)**]{.hl} and drives [**516,628 km instead of 655,444 (−21.2 %)**]{.hl}, with every company rule met. A standard routing solver, Google OR-Tools, needs 2,264 trucks on the same jobs, because it cannot express the company's radius rule. Planning takes [**6.8 s per job**]{.hl} (median) on one PC, ten times faster than the same optimizer with a list of the 15 nearest stops, and with fewer trucks than a list of the 8 nearest. To show that the optimizer is accurate, we also ran it on a **public benchmark** used in vehicle-routing research for three decades (CVRPLIB, set P [14]): on the five instances that fit the 5-address rule, with the 15-nearest list, it finds the proven optimum on four and is 0.3 % above it on the fifth, [**0.06 % on average**]{.hl}.
 
-: Results at a glance.
+: Table 1. Logistics KPIs: how we measure them, the goal and the result.
 
-| KPI | Real dispatch | This work (GNN + optimizer) | Change |
-|---|--:|--:|--:|
-| Trucks (97 real jobs) | 2,517 | **1,933** | **−23.2 %** |
-| Total road km (97 real jobs) | 655,444 | **516,628** | **−21.2 %** |
-| Driving hours (97 real jobs) | 8,880 | **7,163** | **−19.3 %** |
-| Planning time per job | by hand | **6.8 s** (median) | |
-| Gap to the proven optimum (public benchmark, 5 instances) | | **0.06 %** on average (optimizer, 15-nearest list) | |
+| KPI | How it is measured | Goal | Result |
+|---|---|---|---|
+| Trucks | Trucks hired for all 97 jobs | Fewer than the real dispatch | 1,933 (−23.2 %) |
+| Total road km and driving hours | Real road network, best stop order | Fewer | 516,628 km (−21.2 %); −19.3 % hours |
+| Rule compliance | Automatic check of every truck | 100 % | 100 % (0 violations) |
+| Accuracy | Gap to the proven optimum on public benchmark instances | Within 1 % | 0.06 % on average; optimal on 4 of 5 |
+| Planning time (lead time of planning) | Seconds per job on one PC | Under 1 minute | 6.8 s median |
 
-: Table 1. Key terms used in this report.
+: Table 2. Key terms used in this report.
 
 | Term | Meaning |
 |---|---|
@@ -90,27 +90,21 @@ On 97 real dispatch jobs (6,395 stops, April to August 2026) the plan needs [**1
 | Optimality gap | How far a plan is above the proven best plan, in percent; 0 % means the plan is optimal |
 | AUC | The chance that a true pair is ranked above a false one (0.5 is random, 1.0 is perfect) |
 
-# 1. Introduction: the problem in the field
+# 1. Introduction
 
-**Bulky delivery is planned truck by truck.** Our partner company delivers large home appliances from its depot in Changwon to customers across the whole country. The trucks and drivers are hired per trip from third-party carriers, so the company never runs short of trucks; the question is how few it needs. A typical dispatch job has 63 delivery addresses (from 8 to 141), and each address receives about 0.9 m³ of boxes, a fifth of a small truck. Five typical addresses already fill a 1-ton truck, so the volume rule decides almost every grouping.
+Our partner company delivers large home appliances from its depot in Changwon to customers across the whole country. The trucks and drivers are hired per trip from third-party carriers, so the company never runs short of trucks; the question is how few it needs. A typical dispatch job has 63 delivery addresses (from 8 to 141), and each address receives about 0.9 m³ of boxes, a fifth of a small truck. Five typical addresses already fill a 1-ton truck, so the volume rule decides almost every grouping.
 
-**Today the grouping is done by people, following rules of thumb.** A dispatcher looks at the addresses, groups neighbours into trucks, checks the load and the distances, and assigns a truck size. This takes time every day, depends on the person, and nobody can tell how far a plan is from the best one.
+Today the grouping is done by hand, following rules of thumb. A dispatcher looks at the addresses, groups neighbours into trucks, checks the load and the distances, and assigns a truck size. This takes time every day, depends on the person, and nobody can tell how far a plan is from the best one.
 
-**What we set out to do.** Build a planner that (1) always meets the company rules, (2) needs as few trucks and kilometres as possible, (3) is fast enough for daily use, and (4) is measurably accurate, on a public benchmark that anyone can check. Table 2 lists the KPIs we measure and what we reached.
+We set out to build a planner that (1) always meets the company rules, (2) needs as few trucks and kilometres as possible, (3) is fast enough for daily use, and (4) is measurably accurate, on a public benchmark that anyone can check. Table 1 in the summary lists the KPIs we measure, the goal for each and what we reached.
 
-: Table 2. Logistics KPIs, how we measure them, and the result.
+Trucks are the largest cost: each truck is a separate hired trip. Kilometres and driving hours set fuel use and driver time. Rule compliance decides whether a plan can be used at all, and planning time decides whether it fits the daily routine. Accuracy against a proven optimum is how routing methods are compared in research [10, 15], so it is the measure a reviewer can trust.
 
-| KPI | How it is measured | Goal | Result |
-|---|---|---|---|
-| Trucks | Trucks hired for all 97 jobs | Fewer than the real dispatch | 1,933 (−23.2 %) |
-| Total road km and driving hours | Real road network, best stop order | Fewer | 516,628 km (−21.2 %); −19.3 % hours |
-| Rule compliance | Automatic check of every truck | 100 % | 100 % (0 violations) |
-| Accuracy | Gap to the proven optimum on public benchmark instances | Within 1 % | 0.06 % on average; optimal on 4 of 5 |
-| Planning time (lead time of planning) | Seconds per job on one PC | Under 1 minute | 6.8 s median |
+## 1.1 Related work
 
-**Why these KPIs.** Trucks are the largest cost: each truck is a separate hired trip. Kilometres and driving hours set fuel use and driver time. Rule compliance decides whether a plan can be used at all, and planning time decides whether it fits the daily routine. Accuracy against a proven optimum is how routing methods are compared in research [10, 15], so it is the measure a reviewer can trust.
+Grouping deliveries into trucks and ordering the stops is the capacitated vehicle routing problem [10]. Classic heuristics merge nearby stops, as in the savings algorithm [11], or cluster first and route second [12]. Today's strongest heuristics, such as hybrid genetic search [24, 25], find near-optimal routes on large benchmark instances, but they give no bound on how far a plan is from the best one, and a rule such as a 50 km radius around each load is not part of their models. Exact methods choose among candidate routes with set partitioning [2] and integer programming, often with column generation [4]; they are accurate, but slow when every possible route has to be considered.
 
-**Existing approaches.** Grouping deliveries into trucks and ordering the stops is the capacitated vehicle routing problem [10]. Classic heuristics build routes by merging nearby stops, as in the savings algorithm [11], or cluster first and route second [12]. They are fast but say nothing about how far their plan is from the best one. Exact methods choose among candidate routes with set partitioning [2] and integer programming, often with column generation [4]. They are accurate, but they become slow when every possible route has to be considered. Neural networks that output routes directly are fast [13], but they cannot guarantee hard business rules such as a load limit. Learning which candidates an exact solver needs [7] combines speed with guarantees. Our team's earlier work [1] automated this company's grouping with a rule-based method; this report presents a new planner, compared with the real dispatch.
+Machine learning now supports both sides [17, 18]. Neural solvers build routes directly and fast [13, 19, 20, 26], and learned decompositions split large instances into smaller subproblems [21, 22, 23], but guaranteeing hard business rules inside a neural solver is still an open research topic [27]. Learning which columns or arcs an exact method needs [7, 29] keeps the solver's guarantees and gains speed; our planner follows this line. Real routes driven by drivers are now available as public data for learning [28], and loading rules are usually modelled as two- or three-dimensional packing [30, 31, 32]; the company's rule (at most 60 % of the box volume, no stacking) stands in for that packing. Our team's earlier work [1] automated this company's grouping with a rule-based method; this report presents a new planner, compared with the real dispatch.
 
 **How this report maps to the judging criteria.** Problem definition and KPIs: sections 1 and 2. Data plan: section 3. Creativity and differentiation: sections 4 and 11. Feasibility (technology, data, schedule, risks): sections 5 and 10. Quantified expected effects: section 8.
 
@@ -133,13 +127,13 @@ A **dispatch job** is a batch of deliveries planned together. A **stop** is one 
 
 ![Figure 1. The three rules that shape every load.](figs/rules)
 
-**Objective.** First, the fewest trucks. Second, among plans with the fewest trucks, the fewest road kilometres. [*Why this order:*]{.why} every truck is a separate hired trip and costs far more than a few extra kilometres; once the number of trucks is fixed, kilometres decide fuel and driving time.
+**Objective.** First, the fewest trucks. Second, among plans with the fewest trucks, the fewest road kilometres. This order matters because every truck is a separate hired trip and costs far more than a few extra kilometres; once the number of trucks is fixed, kilometres decide fuel and driving time.
 
-**Why this is hard.** The number of possible loads explodes. A job with 63 stops has about 7.7 million different groups of up to 5 stops; the largest job (141 stops) has about 430 million groups of exactly 5. Choosing groups that cover every stop exactly once is the classic *set partitioning* problem [2], which is NP-hard. The rules also interact: a group that is good for distance may break the volume limit, and the limit of ten 1.4-ton trucks links all groups of a job together. Simple methods (greedy rules, k-means) handle one rule at a time and therefore waste trucks.
+The problem is hard because the number of possible loads explodes. A job with 63 stops has about 7.7 million different groups of up to 5 stops; the largest job (141 stops) has about 430 million groups of exactly 5. Choosing groups that cover every stop exactly once is the classic *set partitioning* problem [2], which is NP-hard. The rules also interact: a group that is good for distance may break the volume limit, and the limit of ten 1.4-ton trucks links all groups of a job together. Simple methods (greedy rules, k-means) handle one rule at a time and therefore waste trucks.
 
-# 3. Data: sources, processing and privacy
+# 3. Data and privacy
 
-**Sources and legal basis.** All data are either the company's own operating records, shared with its consent for this project, or public open data (Table 4).
+All data are either the company's own operating records, shared with its consent for this project, or public open data (Table 4).
 
 : Table 4. Data sources.
 
@@ -160,7 +154,7 @@ A **dispatch job** is a batch of deliveries planned together. A **stop** is one 
 ::: side
 **Privacy by design.** The raw records contain customer names, phone numbers and addresses. These fields are never used by the planner and never leave the project's server. Road distances come from our own map server, not from an online service, so no address is sent anywhere. This report shows locations only at national scale, without labels, and every example in it uses synthetic data.
 
-**Synthetic sample.** To show the data format and to run the code without customer data, we generate synthetic jobs in the same format. Table 5 shows the first rows of the synthetic job used in Figure 5 and Table 13.
+To show the data format and to run the code without customer data, we generate synthetic jobs in the same format. Table 5 shows the first rows of the synthetic job used in Figure 5 and Table 13.
 
 : Table 5. Synthetic sample (format of the planner's input).
 
@@ -175,27 +169,23 @@ A **dispatch job** is a batch of deliveries planned together. A **stop** is one 
 :::
 :::
 
-**Facts about the data.** Jobs have 8 to 141 stops (median 63). The median stop volume is 0.90 m³ and the total is 8,990 m³. 169 stops are larger than a 1-ton truck's 4.22 m³ limit. Customers are spread over the whole country, with dense areas around Seoul, Daegu and Busan and Changwon (Figure 2).
+Jobs have 8 to 141 stops (median 63). The median stop volume is 0.90 m³ and the total is 8,990 m³. 169 stops are larger than a 1-ton truck's 4.22 m³ limit. Customers are spread over the whole country, with dense areas around Seoul, Daegu and Busan and Changwon (Figure 2).
 
-**Why two kinds of data.** The real jobs show what the planner saves in practice, but nobody knows their best possible plan. The public benchmark instances have proven optimal answers, so they show how accurate the optimizer is. Each covers what the other cannot.
+The two kinds of data complement each other. The real jobs show what the planner saves in practice, but nobody knows their best possible plan. The public benchmark instances have proven optimal answers, so they show how accurate the optimizer is. Each covers what the other cannot.
 
-# 4. Method, and why each step is needed
+# 4. Method
 
 The planner works one dispatch job at a time, in five steps (Figure 3). Each tool does what it is best at: the AI model narrows the search, the exact optimizer makes the decision and guarantees the rules, and a final check confirms every truck.
 
 ## 4.1 Road distances
 
-For each job one request to the private OSRM server [3] returns the road distance and driving time between the depot and every stop, in both directions. OSRM computes shortest paths on the OpenStreetMap road network of South Korea. In the rare case of a pair with no road between them (an island), 1.3 times the straight line at 60 km/h is used.
-
-[*Why:*]{.why} trucks drive on roads, not straight lines. Mountains, rivers and coasts make road distance differ from the straight line, so both the plan and its savings must be measured on roads.
+For each job one request to the private OSRM server [3] returns the road distance and driving time between the depot and every stop, in both directions. OSRM computes shortest paths on the OpenStreetMap road network of South Korea. In the rare case of a pair with no road between them (an island), 1.3 times the straight line at 60 km/h is used. Trucks drive on roads: mountains, rivers and coasts make road distance differ from the straight line, so both the plan and its savings are measured on roads.
 
 ![Figure 3. The planning pipeline for one dispatch job.](figs/pipeline)
 
 ## 4.2 Candidate loads and the short list
 
-A **candidate load** is a group of 1 to 5 stops that obeys every rule: total volume at most 4.73 m³ and every stop within 50 km of the group's centre. Listing all of them is too slow for large jobs, so each stop only forms groups with a **short list** of likely partners: the stop plus any 1 to 4 of its partners. With the 15 nearest stops as partners, a median job gets 19,280 candidate loads. With the GNN short list of 8 partners it gets 2,859, about seven times fewer, which is what makes the optimizer fast. A simple greedy plan is always added as a **safety net**, so the optimizer always has a valid plan to return.
-
-[*Why:*]{.why} a large job has hundreds of millions of possible groups. The short list keeps only the groups a good plan is likely to use, and the rules are applied while listing, so no candidate can break a rule.
+A **candidate load** is a group of 1 to 5 stops that obeys every rule: total volume at most 4.73 m³ and every stop within 50 km of the group's centre. Listing all of them is too slow for large jobs, so each stop only forms groups with a **short list** of likely partners: the stop plus any 1 to 4 of its partners. With the 15 nearest stops as partners, a median job gets 19,280 candidate loads. With the GNN short list of 8 partners it gets 2,859, about seven times fewer, which is what makes the optimizer fast. A simple greedy plan is always added as a **safety net**, so the optimizer always has a valid plan to return. The short list keeps only the groups a good plan is likely to use, and the rules are applied while listing, so no candidate can break a rule.
 
 ## 4.3 The GNN short list
 
@@ -208,9 +198,7 @@ The GNN scores how likely two stops are to share a truck in a good plan. Each jo
 
 ![Figure 4. How the GNN builds the short list for one job.](figs/gnn)
 
-The GNN is used for ranking, not for deciding: for each stop we keep the 8 partners it rates highest. Learning which candidates an exact solver needs is an established research direction [7]; here it is applied to the company's rules.
-
-[*Why a GNN:*]{.why} a good partner is not just the nearest stop. It also depends on volume (two large orders cannot share a truck), on road distance and on how full the whole job is. A graph network reads a stop together with its neighbours, so it can rank partners by all of these at once; that is how 8 partners can replace 15 nearest ones.
+The GNN is used for ranking, not for deciding: for each stop we keep the 8 partners it rates highest. Learning which candidates an exact solver needs is an established research direction [7, 29]; here it is applied to the company's rules. A graph network suits the task because a good partner is not just the nearest stop. It also depends on volume (two large orders cannot share a truck), on road distance and on how full the whole job is. A graph network reads a stop together with its neighbours, so it can rank partners by all of these at once; that is how 8 partners can replace 15 nearest ones.
 
 ## 4.4 Exact selection
 
@@ -222,19 +210,15 @@ $$\text{(B)}\quad \min \sum_c d_c\,x_c \quad\text{s.t. the constraints of (A) an
 
 Stage A finds the fewest trucks; stage B finds, among those plans, the one with the fewest kilometres. Because $d_c$ is the length of each load's best route, **grouping and routing are decided together**. Each stage has a 60-second time limit; if the solver has not beaten the safety net by then, the safety net is returned. *Exact* means the best combination of the candidate loads; loads that are not on the short list are never considered, so the plan is not proven to be the best possible for the whole job.
 
-[*Why exact optimization:*]{.why} a greedy method decides one truck at a time and cannot undo a choice, so the last stops often end up in half-empty trucks. The MILP weighs all candidate loads at once, and its constraints guarantee every rule by construction.
+A greedy method, by contrast, decides one truck at a time and cannot undo a choice, so the last stops often end up in half-empty trucks. The MILP weighs all candidate loads at once, and its constraints guarantee every rule by construction.
 
 ## 4.5 Routing inside a truck
 
-A truck has at most 5 stops, so there are at most 120 possible stop orders. All of them are evaluated on the real road distances (depot → first stop → … → last stop), so the stop order of every truck is exactly optimal for the road data. This is done for all candidate loads at once with vectorized array operations.
-
-[*Why:*]{.why} with 5 stops, trying every order is cheap, so there is no reason to accept an approximate route.
+A truck has at most 5 stops, so there are at most 120 possible stop orders. All of them are evaluated on the real road distances (depot → first stop → … → last stop), so the stop order of every truck is exactly optimal for the road data. This is done for all candidate loads at once with vectorized array operations. With 5 stops trying every order is cheap, so there is no reason to accept an approximate route.
 
 ## 4.6 Rule check
 
-Before a plan is accepted, an automatic check confirms that every stop is served exactly once, that no truck has more than 5 stops, more than its volume or a stop more than 50 km from its centre (Listing 3), and that a job uses at most ten 1.4-ton trucks. A failure stops the run.
-
-[*Why:*]{.why} a plan that breaks one rule cannot be used. The check is independent of the optimizer, so it would also catch a bug in the optimizer itself.
+Before a plan is accepted, an automatic check confirms that every stop is served exactly once, that no truck has more than 5 stops, more than its volume or a stop more than 50 km from its centre (Listing 3), and that a job uses at most ten 1.4-ton trucks. A failure stops the run, because a plan that breaks one rule cannot be used. The check is independent of the optimizer, so it would also catch a bug in the optimizer itself.
 
 ## 4.7 Worked example
 
@@ -299,11 +283,11 @@ def check(xy, v, C, R, clusters):
 
 **Correctness checks.** The candidate listing and the optimizer are compared with brute force (every possible plan) on random small jobs. The benchmark script recomputes each published optimal solution with our distance code and stops if the cost differs, so our distances match the benchmark's. The full code and the synthetic data generator are kept by the team and can be shared with the judges on request.
 
-# 6. Experimental setup, and why it is fair
+# 6. Experimental setup
 
-**Jobs.** All 97 real dispatch jobs, each planned separately from the depot, on the same road distances and under the same rules for every method.
+All 97 real dispatch jobs are used, each planned separately from the depot, on the same road distances and under the same rules for every method.
 
-**Methods compared, and why each.**
+**Methods compared.**
 
 - *Real dispatch:* the groups that were actually driven, measured on the same roads. This is the practice the planner must beat.
 - *k-means:* the most widely used clustering method, then split wherever a rule breaks. This is the first thing a company would try.
@@ -328,9 +312,9 @@ def check(xy, v, C, R, clusters):
 | Accuracy that only we can check | A public benchmark with proven optimal answers that anyone can rerun |
 | A misleading accuracy number | AUC reported next to accuracy and the default accuracy |
 
-**Metrics.** Trucks; total road km and driving hours (from OSRM); rule violations; optimality gap on the benchmark; planning time per job on one CPU core; the GNN's pair accuracy and AUC. [*Why AUC and not only accuracy:*]{.why} only about 19 % of stop pairs share a truck, so a model that always answers "different truck" is already 81 % accurate. This **default accuracy** says nothing about the model; AUC measures the ranking, which is all the short list needs.
+**Metrics.** Trucks; total road km and driving hours (from OSRM); rule violations; optimality gap on the benchmark; planning time per job on one CPU core; the GNN's pair accuracy and AUC. AUC is reported next to accuracy because only about 19 % of stop pairs share a truck, so a model that always answers "different truck" is already 81 % accurate. This **default accuracy** says nothing about the model; AUC measures the ranking, which is all the short list needs.
 
-# 7. Results: savings, accuracy and speed
+# 7. Results
 
 ## 7.1 Trucks and kilometres
 
@@ -363,15 +347,15 @@ def check(xy, v, C, R, clusters):
 ![Figure 8. Each dot is one job: trucks in the real dispatch against trucks in our plan.](figs/perjob){.half}
 
 ::: side
-**Job by job.** The saving is spread over almost every job. Our plan uses fewer trucks than the real dispatch on [**93 of the 97 jobs**]{.hl}, the same number on 3 and one more on 1 (Figure 8). The largest single saving is 24 trucks on one job in early May.
+The saving is spread over almost every job. Our plan uses fewer trucks than the real dispatch on [**93 of the 97 jobs**]{.hl}, the same number on 3 and one more on 1 (Figure 8). The largest single saving is 24 trucks on one job in early May.
 
-**Where the savings come from.** Larger jobs save more (Figure 7): jobs above the median of 63 stops save 7.9 trucks on average (24.6 % of their trucks), smaller jobs 4.1 (20.9 %). Larger jobs offer more ways to combine stops, and the optimizer uses them, while a hand-made plan cannot weigh them all.
+Larger jobs save more (Figure 7): jobs above the median of 63 stops save 7.9 trucks on average (24.6 % of their trucks), smaller jobs 4.1 (20.9 %). Larger jobs offer more ways to combine stops, and the optimizer uses them, while a hand-made plan cannot weigh them all.
 :::
 :::
 
 ## 7.2 Accuracy
 
-**Accuracy on a public benchmark.** Table 9 shows the optimizer on every set-P instance whose proven optimal routes visit at most 5 customers: the rule picked the five, and we report all of them. The other 19 need longer routes, which the 5-address rule does not allow. The optimizer finds the proven optimum on four and is 3 distance units (0.3 %) above it on P-n55-k15; the average gap is [**0.06 %**]{.hl}. It uses the same number of vehicles as the optimum on all five, and no instance takes more than 17 s. For comparison, OR-Tools with 30 s per instance finds the optimum on three, is 3.8 % above it on P-n60-k15 and needs one more vehicle on P-n55-k15.
+Table 9 shows the optimizer on every set-P instance whose proven optimal routes visit at most 5 customers: the rule picked the five, and we report all of them. The other 19 need longer routes, which the 5-address rule does not allow. The optimizer finds the proven optimum on four and is 3 distance units (0.3 %) above it on P-n55-k15; the average gap is [**0.06 %**]{.hl}. It uses the same number of vehicles as the optimum on all five, and no instance takes more than 17 s. For comparison, OR-Tools with 30 s per instance finds the optimum on three, is 3.8 % above it on P-n60-k15 and needs one more vehicle on P-n55-k15.
 
 : Table 9. The optimizer on the public benchmark (CVRPLIB set P [14]). Gap = (our distance − proven optimum) / proven optimum.
 
@@ -415,7 +399,7 @@ The GNN short list gives a plan within 0.7 % of the 15-nearest plan in **one ten
 
 The speed-up is largest on small and medium jobs: on jobs under 50 stops the median solve takes 1.4 s with the GNN list against 18.6 s with the 15-nearest list. On the 8 jobs with 100 stops or more both lists need longer (62.7 s against 114.7 s, median), and the 60-second limit per stage with the safety net keeps the time bounded.
 
-# 8. Expected effects on logistics KPIs
+# 8. Expected effects
 
 **Calculation basis.**
 
@@ -441,7 +425,7 @@ We built an interactive web prototype that presents every plan. It shows the hea
 
 ![Figure 10. The prototype (Version 1): its opening screen with the headline numbers, and its chart of trucks saved on each job.](figs/proto_app.png)
 
-**How a dispatcher uses it.** The planner fits into the existing routine (Figure 11): the order export the company already produces goes in, and a plan sheet comes out that a dispatcher can check and book from. Table 13 shows the plan sheet for the synthetic job of Figure 5: every truck with its stops in visiting order, its size and how full it is.
+The planner fits into the existing routine (Figure 11): the order export the company already produces goes in, and a plan sheet comes out that a dispatcher can check and book from. Table 13 shows the plan sheet for the synthetic job of Figure 5: every truck with its stops in visiting order, its size and how full it is.
 
 ![Figure 11. The planner in the daily dispatch routine.](figs/workflow)
 
@@ -459,9 +443,9 @@ We built an interactive web prototype that presents every plan. It shows the hea
 
 # 10. Deployment plan, resources and risks
 
-**What the company needs.** One office PC or small server (8 CPU cores, 16 to 32 GB memory). A GPU is only needed to retrain the model, which takes minutes and can be done monthly on any GPU machine. The road map is free OpenStreetMap data, updated monthly. Input is the existing order export (a spreadsheet); output is a plan per truck (stops in order, truck size, km, hours) as a spreadsheet and on the web page.
+The company needs one office PC or small server (8 CPU cores, 16 to 32 GB memory). A GPU is only needed to retrain the model, which takes minutes and can be done monthly on any GPU machine. The road map is free OpenStreetMap data, updated monthly. Input is the existing order export (a spreadsheet); output is a plan per truck (stops in order, truck size, km, hours) as a spreadsheet and on the web page.
 
-[*Why a shadow mode first:*]{.why} the plan meets the written rules, but dispatchers also know things the data do not hold (section 7.1). Running side by side shows those gaps before any truck is booked from the plan.
+The pilot starts in shadow mode because the plan meets the written rules, but dispatchers also know things the data do not hold (section 7.1). Running side by side shows those gaps before any truck is booked from the plan.
 
 : Table 14. Pilot schedule.
 
@@ -483,11 +467,11 @@ We built an interactive web prototype that presents every plan. It shows the hea
 | Personal data | Everything runs on the company's own computer; no address is sent to an online service, in line with the Personal Information Protection Act |
 | Model drift (new products, new regions) | Monthly retraining on new jobs; the optimizer and the rule check do not depend on the model being right |
 
-**Scaling up.** Nothing in the method is specific to one company: the rules are parameters (addresses per truck, load limit, radius, truck list, 1.4-ton cap). Any shipper or carrier delivering bulky goods with hired trucks can use it, for example furniture, appliances or building materials, and the same design fits port and inland transport legs where loads are grouped by area and volume.
+Nothing in the method is specific to one company: the rules are parameters (addresses per truck, load limit, radius, truck list, 1.4-ton cap). Any shipper or carrier delivering bulky goods with hired trucks can use it, for example furniture, appliances or building materials, and the same design fits port and inland transport legs where loads are grouped by area and volume.
 
-# 11. Novelty and differentiation
+# 11. Novelty
 
-**What we consider new for this problem.** (1) Grouping and routing of bulky deliveries decided together by an exact optimizer under the company's full rule set. (2) A GNN trained on the optimizer's own plans, used to shortlist candidates rather than to make the plan, which keeps the rule guarantee and gains speed. (3) A test on real operating data with the actual dispatch as the baseline, backed by a public benchmark for accuracy. Using a neural network to shortlist candidates for an exact solver is itself established research [7]; we apply it, we do not claim it.
+What we consider new for this problem: (1) Grouping and routing of bulky deliveries decided together by an exact optimizer under the company's full rule set. (2) A GNN trained on the optimizer's own plans, used to shortlist candidates rather than to make the plan, which keeps the rule guarantee and gains speed. (3) A test on real operating data with the actual dispatch as the baseline, backed by a public benchmark for accuracy. Using machine learning to shortlist what an exact solver considers is itself established research [7, 29]; we apply it, we do not claim it. Unlike neural routing methods [19, 20, 21, 22, 23, 26], the planner never returns a route the optimizer has not chosen and checked, so the company's rules hold by construction rather than by training [27].
 
 : Table 16. How this work differs from current practice.
 
@@ -503,7 +487,7 @@ We built an interactive web prototype that presents every plan. It shows the hea
 
 # 12. Limitations, future work and conclusion
 
-**Limitations.** The plan follows the written rules; time windows, driver hours and unloading constraints are not yet in the data. The limit of ten 1.4-ton trucks is assumed per job. The data cover one company over four months of its main season, so per-year figures are an upper bound, and the depot is placed at the centre of its district. *Exact* means exact over the candidate loads, not a proof that a plan is the best possible for the whole job. The benchmark tests the optimizer on round trips without the radius rule, and only on instances whose optimal routes have at most 5 customers; the GNN is tested on the real jobs, not on the benchmark, and its gain over the 8 nearest stops is small (8 trucks over 97 jobs). OR-Tools ran with its standard search for 30 s per job; more time or tuning could narrow its gap.
+**Limitations.** The plan follows the written rules; time windows, driver hours and unloading constraints are not yet in the data. The limit of ten 1.4-ton trucks is assumed per job. The data cover one company over four months of its main season, so per-year figures are an upper bound, and the depot is placed at the centre of its district. *Exact* means exact over the candidate loads, not a proof that a plan is the best possible for the whole job. The benchmark tests the optimizer on round trips without the radius rule, and only on instances whose optimal routes have at most 5 customers; the GNN is tested on the real jobs, not on the benchmark, and its gain over the 8 nearest stops is small (8 trucks over 97 jobs). OR-Tools ran with its standard search for 30 s per job; more time or tuning could narrow its gap, and stronger heuristics such as hybrid genetic search [24, 25] were not run on the real jobs.
 
 **Future work.** (1) A shadow-mode pilot from December 2026 to April 2027, to measure the real savings next to the dispatcher. (2) Customer time windows, driver hours and unloading time as constraints, as soon as the data hold them. (3) An objective on the estimated hire cost instead of trucks first, then kilometres. (4) Monthly retraining of the GNN, with tests on new dates and on larger jobs, where a warm start or a longer list could close the 0.7 % gap to the 15-nearest list.
 
@@ -543,4 +527,36 @@ We built an interactive web prototype that presents every plan. It shows the hea
 [15] E. Uchoa, D. Pecin, A. Pessoa, M. Poggi, T. Vidal and A. Subramanian, "New benchmark instances for the capacitated vehicle routing problem," *European Journal of Operational Research*, 257(3), 845-858, 2017. Library: CVRPLIB, galgos.inf.puc-rio.br/cvrplib.
 
 [16] L. Perron and V. Furnon, *OR-Tools*, version 9.15, Google, developers.google.com/optimization.
+
+[17] Y. Bengio, A. Lodi and A. Prouvost, "Machine learning for combinatorial optimization: A methodological tour d'horizon," *European Journal of Operational Research*, 290(2), 405-421, 2021. doi:10.1016/j.ejor.2020.07.063.
+
+[18] A. Bogyrbayeva, M. Meraliyev, T. Mustakhov and B. Dauletbayev, "Machine learning to solve vehicle routing problems: A survey," *IEEE Transactions on Intelligent Transportation Systems*, 25(6), 4754-4772, 2024. doi:10.1109/TITS.2023.3334976.
+
+[19] Y.-D. Kwon et al., "POMO: Policy optimization with multiple optima for reinforcement learning," *Advances in Neural Information Processing Systems (NeurIPS)*, 33, 21188-21198, 2020.
+
+[20] F. Luo, X. Lin, F. Liu, Q. Zhang and Z. Wang, "Neural combinatorial optimization with heavy decoder: Toward large scale generalization," *Advances in Neural Information Processing Systems (NeurIPS)*, 36, 8845-8864, 2023. doi:10.52202/075280-0387.
+
+[21] Q. Hou, J. Yang, Y. Su, X. Wang and Y. Deng, "Generalize learned heuristics to solve large-scale vehicle routing problems in real-time," *International Conference on Learning Representations (ICLR)*, 2023.
+
+[22] H. Ye et al., "GLOP: Learning global partition and local construction for solving large-scale routing problems in real-time," *Proc. AAAI Conference on Artificial Intelligence*, 38(18), 20284-20292, 2024. doi:10.1609/aaai.v38i18.30009.
+
+[23] S. Li, Z. Yan and C. Wu, "Learning to delegate for large-scale vehicle routing," *Advances in Neural Information Processing Systems (NeurIPS)*, 34, 26198-26211, 2021.
+
+[24] T. Vidal, "Hybrid genetic search for the CVRP: Open-source implementation and SWAP* neighborhood," *Computers & Operations Research*, 140, 105643, 2022. doi:10.1016/j.cor.2021.105643.
+
+[25] N. A. Wouda, L. Lan and W. Kool, "PyVRP: A high-performance VRP solver package," *INFORMS Journal on Computing*, 36(4), 943-955, 2024. doi:10.1287/ijoc.2023.0055.
+
+[26] F. Berto et al., "RouteFinder: Towards foundation models for vehicle routing problems," *Transactions on Machine Learning Research (TMLR)*, 2025.
+
+[27] J. Bi et al., "Learning to handle complex constraints for vehicle routing problems," *Advances in Neural Information Processing Systems (NeurIPS)*, 37, 93479-93509, 2024. doi:10.52202/079017-2964.
+
+[28] D. Merchán et al., "2021 Amazon Last Mile Routing Research Challenge: Data set," *Transportation Science*, 58(1), 8-11, 2024. doi:10.1287/trsc.2022.1173.
+
+[29] M. Morabit, G. Desaulniers and A. Lodi, "Machine-learning-based arc selection for constrained shortest path problems in column generation," *INFORMS Journal on Optimization*, 5(2), 191-210, 2023. doi:10.1287/ijoo.2022.0082.
+
+[30] H. Pollaris, K. Braekers, A. Caris, G. K. Janssens and S. Limbourg, "Vehicle routing problems with loading constraints: State-of-the-art and future directions," *OR Spectrum*, 37(2), 297-330, 2015. doi:10.1007/s00291-014-0386-3.
+
+[31] C. Krebs, J. F. Ehmke and H. Koch, "Advanced loading constraints for 3D vehicle routing problems," *OR Spectrum*, 43(4), 835-875, 2021. doi:10.1007/s00291-021-00645-w.
+
+[32] J. Chi, R. Song and S. He, "Capacitated vehicle routing problems with three-dimensional loading constraints: A systematic review and new taxonomy," *IET Intelligent Transport Systems*, 20(1), e70281, 2026. doi:10.1049/itr2.70281.
 :::
