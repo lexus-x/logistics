@@ -182,6 +182,7 @@ node competition/make_deck.js ko              # Korean slides
 | `competition/benchmark.py`, `benchmark/` | The CVRPLIB set-P accuracy test, its instances and results |
 | `competition/ortools_baseline.py` | The Google OR-Tools baseline |
 | `competition/numbers.json` | Every number quoted in the report and slides |
+| `competition/webfigs/` | Slide figures in the prototype's look (`fig.html`, rendered by `render.mjs`), and the framed prototype screens (`frame.py`) |
 | `competition/figs/` | Figures (English; Korean in `ko/`) |
 | `competition/fonts/` | Open fonts used by the report (SIL OFL 1.1) |
 

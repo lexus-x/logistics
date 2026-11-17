@@ -415,37 +415,50 @@ notes(s, KO
   ? ["합성 데이터, 실제 코드", "후보 목록 다음에 정확 선택", "트럭 6대: 부피로 보아 가능한 최소"]
   : ["Synthetic data, real code", "Short list, then exact choice", "6 trucks: the fewest possible by volume"]);
 
-// ---------- 10. trucks and road km by method ----------
+// ---------- 10. results, as the prototype's results page shows them ----------
 pres.addSection({ title: SEC.res });
 s = pres.addSlide({ masterName: "Content", sectionTitle: SEC.res });
 title(s, L(`${fmt(T("real") - T("gnn_opt"))} fewer trucks, 21 % fewer road km`, `트럭 ${fmt(T("real") - T("gnn_opt"))}대, 도로 km 21% 절감`));
-const rows = [
-  [L("k-means", "k-평균"), "kmeans", HEX.accent3], [L("Real dispatch", "실제 배차"), "real", HEX.accent2], [L("Agglomerative", "병합 군집화"), "agg", HEX.accent3],
-  [L("Optimizer, 15 nearest", "최적화기, 최근접 15곳"), "opt", "9DBBEF"], [L("GNN + optimizer (ours)", "GNN + 최적화기(본 연구)"), "gnn_opt", HEX.accent1],
-];
-const methodChart = (key, title_, max, fmtCode, x, name) => s.addChart(pres.charts.BAR, [{ name: title_, labels: rows.map((r) => r[0]), values: rows.map((r) => M[r[1]][key]) }], Object.assign({
-  x, y: 1.5, w: 6.0, h: 3.9, barDir: "bar", catAxisOrientation: "maxMin", chartColors: rows.map((r) => r[2]), barGapWidthPct: 45,
-  showValue: true, dataLabelPosition: "outEnd", dataLabelFormatCode: fmtCode, dataLabelFontSize: 13, dataLabelColor: HEX.dk1,
-  catAxisLabelFontSize: 13, catAxisLabelColor: HEX.dk1, catAxisLineShow: false, valAxisHidden: true, valAxisMinVal: 0, valAxisMaxVal: max,
-  valGridLine: { style: "none" }, catGridLine: { style: "none" }, showLegend: false,
-  showTitle: true, title: title_, titleFontSize: 16, titleColor: HEX.dk2, objectName: name,
-}, chartText));
-methodChart("trucks", L("Trucks for all 97 jobs", "97개 작업 전체 트럭 수"), 3300, "#,##0", 0.6, "Trucks by method chart");
-methodChart("km", L("Total road km for all 97 jobs", "97개 작업 전체 도로 km"), 860000, "#,##0", 6.7, "Road km by method chart");
-[[L("Existing practice", "기존 방식"), HEX.accent2, "Existing practice"], [L("Classic clustering", "고전적 군집화"), HEX.accent3, "Classic clustering"], [L("This work", "본 연구"), HEX.accent1, "This work"]].forEach(([lab, col, id], k) => {
-  s.addShape(pres.shapes.RECTANGLE, { x: 0.6 + k * 2.4, y: 5.72, w: 0.22, h: 0.22, fill: { color: col }, line: { type: "none" }, objectName: `Legend ${id} swatch` });
-  text(s, lab, { x: 0.95 + k * 2.4, y: 5.66, w: 2.0, h: 0.34, fontSize: 14, objectName: `Legend ${id}` });
-});
-card(s, 7.95, 5.6, 4.75, 1.05, "Per job card");
-text(s, KO
-  ? [{ text: `작업 97건 중 ${N.perjob.fewer}건`, options: { bold: true, color: C.accent1 } }, { text: "에서 실제 배차보다 적은 트럭 사용" }]
-  : [{ text: `${N.perjob.fewer} of 97 jobs `, options: { bold: true, color: C.accent1 } }, { text: "need fewer trucks than the real dispatch" }],
-  { x: 8.2, y: 5.7, w: 4.3, h: 0.85, fontSize: 16, valign: "middle", objectName: "Per job text" });
+// figures drawn for the slides in the prototype's look (competition/webfigs: render.mjs -> figs/slides/ and figs/ko/)
+const webPic = (slide, name, x, y, w, h, alt) => {
+  const f = img(name), z = pngSize(f);
+  let pw = w, ph = (w * z.h) / z.w; if (ph > h) { ph = h; pw = (h * z.w) / z.h; }
+  slide.addImage({ path: f, x: x + (w - pw) / 2, y, w: pw, h: ph, altText: alt, objectName: "Picture " + name });
+  return { x: x + (w - pw) / 2, y, w: pw, h: ph };
+};
+const r10 = webPic(s, "slide_results", 0.6, 1.35, 12.1, 5.05, L("The prototype's results page: 584 fewer trucks (−23.2 %), −21.2 % road km, 0 rule breaks; trucks and road km for every method",
+  "프로토타입 결과 화면: 트럭 584대 감소(−23.2%), 도로 km −21.2%, 규칙 위반 0; 방법별 트럭 수와 도로 km"));
+text(s, L("All 97 jobs, the same roads and rules for every method; the prototype shows the same numbers.", "작업 97건 전체, 모든 방법에 같은 도로와 같은 규칙. 프로토타입도 같은 수치를 보여 줌."),
+  { x: 0.6, y: r10.y + r10.h + 0.08, w: 12.1, h: 0.35, fontSize: 12, color: C.accent4, align: "center", objectName: "Results source" });
 notes(s, KO
-  ? ["작업 97건 전체, 같은 규칙과 도로", "최적화기 두 행이 트럭 수에서 다른 모든 방법보다 우수", "트럭과 함께 총 도로 km도 감소: −21%", "실제 배차는 데이터에 없는 사항도 처리함"]
-  : ["All 97 jobs, same rules and roads", "Optimizer rows beat every other method on trucks", "Total road km falls with the trucks: −21 %", "Real dispatch also handles things not in our data"]);
+  ? ["프로토타입 결과 화면 그대로: 작업 97건 전체", "최적화기 세 행이 트럭 수에서 다른 모든 방법보다 우수", "트럭과 함께 총 도로 km도 감소: −21%", "실제 배차는 데이터에 없는 사항도 처리함"]
+  : ["Straight from the prototype's results page: all 97 jobs", "The three optimizer rows beat every other method on trucks", "Total road km falls with the trucks: −21 %", "Real dispatch also handles things not in our data"]);
 
-// ---------- 11. accuracy ----------
+// ---------- 11. analysis ----------
+s = pres.addSlide({ masterName: "Content", sectionTitle: SEC.res });
+title(s, L("What the results show", "결과 분석"));
+const rj = webPic(s, "slide_perjob", 0.6, 1.3, 12.1, 2.85, L(`Trucks saved per job against the real dispatch, one column per job in date order: fewer trucks on ${N.perjob.fewer} of 97 jobs`,
+  `작업별 트럭 절감(실제 배차 대비), 날짜 순 작업당 막대 하나: 97건 중 ${N.perjob.fewer}건에서 트럭 감소`));
+const finds = [
+  [L("The optimizer saves the trucks", "트럭을 줄이는 것은 최적화기"), L(`Every optimizer plan beats every other method by at least 294 trucks; fewer trucks on ${N.perjob.fewer} of 97 jobs.`, `모든 최적화기 계획이 다른 방법보다 트럭이 294대 이상 적고, 97건 중 ${N.perjob.fewer}건에서 절감.`)],
+  [L("The GNN buys speed", "GNN은 속도를 냄"), L(`7× fewer candidate loads, 10× faster (${N.gnn.s[1]} s vs ${N.gnn.s[0]} s) for 0.7 % more trucks; at the same list size it beats the 8 nearest by 8 trucks.`,
+    `후보 묶음 1/7, 10배 빠름(${N.gnn.s[1]}초 vs ${N.gnn.s[0]}초), 트럭은 0.7% 증가. 같은 목록 크기에서는 최근접 8곳보다 8대 적음.`)],
+  [L("Rules belong inside the model", "규칙은 모델 안에"), L("OR-Tools cannot express the 50 km radius: 2,264 trucks after splitting routes on 89 of 97 jobs.", "OR-Tools는 50 km 반경을 표현하지 못해, 97건 중 89건에서 경로를 쪼갠 뒤 2,264대.")],
+  [L("Bigger jobs save more", "큰 작업일수록 더 절감"), L(`Above 63 stops: −${N.bysize.big_pct} %, below: −${N.bysize.small_pct} %. Where the real dispatch keeps every rule (13 jobs): still −28.2 %.`,
+    `63곳 초과 작업 −${N.bysize.big_pct}%, 이하 −${N.bysize.small_pct}%. 실제 배차가 규칙을 모두 지킨 13건에서도 −28.2%.`)],
+];
+finds.forEach(([h, b], k) => {
+  const x = 0.6 + k * 3.075, y = rj.y + rj.h + 0.2;
+  card(s, x, y, 2.9, 6.75 - y, `Finding ${k + 1} card`);
+  dot(s, x + 0.2, y + 0.18, k + 1, `Finding ${k + 1} marker`, C.accent1);
+  text(s, h, { x: x + 0.82, y: y + 0.14, w: 1.95, h: 0.6, fontSize: L(14, 13), bold: true, color: C.text2, valign: "middle", objectName: `Finding ${k + 1} heading` });
+  text(s, b, { x: x + 0.2, y: y + 0.82, w: 2.55, h: 6.65 - y - 0.82, fontSize: L(12.5, 12), color: C.text1, objectName: `Finding ${k + 1} text` });
+});
+notes(s, KO
+  ? ["작업별 절감: 97건 중 93건", "1 최적화기가 트럭을 줄임", "2 GNN은 속도: 10배 빠르고 트럭은 0.7%만 증가", "3 OR-Tools는 반경 규칙을 표현 못 함", "4 큰 작업일수록 절감이 크고, 규칙 위반 때문이 아님"]
+  : ["Per job: fewer trucks on 93 of 97", "1 The optimizer saves the trucks", "2 The GNN buys speed: 10x faster for 0.7 % more trucks", "3 OR-Tools cannot express the radius rule", "4 Bigger jobs save more; not from rule breaks"]);
+
+// ---------- 12. accuracy ----------
 s = pres.addSlide({ masterName: "Content", sectionTitle: SEC.res });
 title(s, L("Accurate on a public benchmark", "공개 벤치마크에서 확인한 정확도"));
 const hdr = (t_) => ({ text: t_, options: Object.assign({ bold: true, color: C.text2, fill: { color: C.background2 } }, LANG) });
@@ -467,47 +480,16 @@ notes(s, KO
   ? ["정확도 = 공개 벤치마크에서 증명된 최적해와의 격차", "5개 중 4개 최적, 평균 0.06%, 누구나 다시 실행 가능", "GNN: 기본 정확도가 아니라 AUC로 평가"]
   : ["Accuracy = gap to proven optimum on a public benchmark", "4 of 5 optimal, 0.06 % on average, anyone can rerun it", "GNN: judge by AUC, not by default accuracy"]);
 
-// ---------- 12. speed ----------
-s = pres.addSlide({ masterName: "Content", sectionTitle: SEC.res });
-title(s, L("10 times faster with the GNN", "GNN으로 10배 빠르게"));
-const speedOpts = (title_, fmtCode, max, name) => Object.assign({
-  barDir: "bar", catAxisOrientation: "maxMin", chartColors: [HEX.accent3, HEX.accent1], barGapWidthPct: 45,
-  showValue: true, dataLabelPosition: "outEnd", dataLabelFormatCode: fmtCode, dataLabelFontSize: 14, dataLabelColor: HEX.dk1,
-  catAxisLabelFontSize: 14, catAxisLabelColor: HEX.dk1, catAxisLineShow: false, valAxisHidden: true, valAxisMinVal: 0, valAxisMaxVal: max,
-  valGridLine: { style: "none" }, catGridLine: { style: "none" }, showLegend: false,
-  showTitle: true, title: title_, titleFontSize: 16, titleColor: HEX.dk2, objectName: name,
-}, chartText);
-const lists = [L("15 nearest stops", "최근접 15곳"), L("GNN short list", "GNN 후보 목록")];
-s.addChart(pres.charts.BAR, [{ name: L("Loads", "후보 묶음"), labels: lists, values: N.gnn.cols }], Object.assign({ x: 0.6, y: 1.55, w: 5.9, h: 2.9 }, speedOpts(L("Candidate loads per job (median)", "작업당 후보 묶음 수(중앙값)"), "#,##0", 23000, "Candidate loads chart")));
-s.addChart(pres.charts.BAR, [{ name: L("Seconds", "초"), labels: lists, values: N.gnn.s }], Object.assign({ x: 6.8, y: 1.55, w: 5.9, h: 2.9 }, speedOpts(L("Solve time per job, seconds (median)", "작업당 풀이 시간(초, 중앙값)"), L('0.0" s"', '0.0"초"'), 80, "Solve time chart")));
-const sp = [
-  [`${N.gnn.limit[0]} → ${N.gnn.limit[1]}`, L("jobs that hit the 60-second limit", "60초 제한에 걸린 작업 수")],
-  [`${fmt(T("gnn_opt"))} vs ${fmt(T("opt"))}`, L("trucks: within 0.7 % of the slower list", "트럭: 느린 목록과 0.7% 이내 차이")],
-  [L(`${N.timesize.gnn_small_med} s`, `${N.timesize.gnn_small_med}초`), L(`median on jobs under 50 stops (${N.timesize.opt_small_med} s without the GNN)`, `배송지 50곳 미만 작업의 중앙값(GNN 없이 ${N.timesize.opt_small_med}초)`)],
-];
-sp.forEach(([big, label], k) => {
-  const x = 0.6 + k * 4.1;
-  card(s, x, 4.75, 3.85, 1.9, `Speed card ${k + 1}`);
-  text(s, big, { x: x + 0.3, y: 4.85, w: 3.3, h: 0.75, fontSize: L(32, 26), bold: true, color: C.text2, valign: "bottom", objectName: `Speed card ${k + 1} number` });
-  text(s, label, { x: x + 0.3, y: 5.65, w: 3.3, h: 0.85, fontSize: 15, color: C.accent4, objectName: `Speed card ${k + 1} label` });
-});
-notes(s, KO
-  ? ["후보 1/7, 풀이 10배 빠름", "대가: 느린 목록보다 트럭 0.7% 증가", "일상 업무: 수 초 만에 계획"]
-  : ["7x fewer candidates, 10x faster solve", "Honest cost: 0.7 % more trucks than the slow list", "Daily use: a plan in seconds"]);
-
 // ---------- 13. prototype and demo ----------
 pres.addSection({ title: SEC.imp });
 s = pres.addSlide({ masterName: "Content", sectionTitle: SEC.imp });
 title(s, L("A prototype for the daily routine", "일상 업무를 위한 프로토타입"));
-// the one-job map is the right part of the title background (from x = 1,715 of 2,933 px), so it carries the same labels
-const bgFile = img("slide_bg"), bgPx = pngSize(bgFile), cut = 1715 / 2933;
-const pp = { h: 4.6, w: (4.6 * bgPx.w * (1 - cut)) / bgPx.h, y: 1.45 };
-pp.x = 0.6 + (7.9 - pp.w) / 2;
-s.addImage({ path: bgFile, x: pp.x, y: pp.y, w: pp.w / (1 - cut), h: pp.h, sizing: { type: "crop", x: (pp.w / (1 - cut)) * cut, y: 0, w: pp.w, h: pp.h },
-  altText: L("One real dispatch job on the map: 70 stops grouped into 24 trucks, with 50 km circles", "지도 위 실제 배차 작업 하나: 배송지 70곳을 트럭 24대로 묶고 50 km 원 표시"), objectName: "Picture jobmap" });
-text(s, L("One real job as our plan groups it: 70 stops, 24 trucks, no labels. The prototype shows every job like this, behind a password.",
-  "실제 작업 하나를 본 계획으로 묶은 결과: 배송지 70곳, 트럭 24대, 라벨 없음. 프로토타입은 모든 작업을 이렇게 보여 주며 비밀번호로 보호."),
-  { x: 0.6, y: pp.y + pp.h + 0.1, w: 7.9, h: 0.55, fontSize: 11, color: C.accent4, objectName: "Prototype caption" });
+// the prototype's own opening screen, framed as a browser window (webfigs/frame.py)
+const app = webPic(s, "app_top", 0.6, 1.6, 7.9, 3.9, L("The prototype's opening screen: title and headline numbers (1,933 trucks, −23.2 %, −21.2 % road km, 0 rule breaks)",
+  "프로토타입 첫 화면: 제목과 주요 수치(트럭 1,933대, −23.2%, 도로 km −21.2%, 규칙 위반 0)"));
+text(s, L("The prototype opens with the headline numbers; below them, a walk through one job, every method, and every job on a map behind a password.",
+  "프로토타입 첫 화면의 주요 수치. 그 아래에 작업 하나의 진행 과정, 모든 방법 비교, 그리고 비밀번호로 보호된 지도에서 모든 작업을 보여 줌."),
+  { x: 0.6, y: app.y + app.h + 0.15, w: 7.9, h: 0.75, fontSize: 13, color: C.accent4, objectName: "Prototype caption" });
 const flow = [[L("Order export", "주문 내보내기 파일"), L("today's spreadsheet", "현재 쓰는 스프레드시트")], [L("Planner", "배차 계획기"), L("on the company PC, seconds per job", "회사 PC에서 작업당 수 초")],
   [L("Plan sheet and map", "배차표와 지도"), L("stops in order, truck size, km, hours", "방문 순서, 트럭 크기, km, 시간")], [L("Dispatcher", "배차 담당자"), L("reviews, edits, books trucks", "검토, 수정, 트럭 예약")]];
 flow.forEach(([h, b], k) => {
@@ -522,55 +504,47 @@ notes(s, KO
   ? ["기존 업무에 맞춤: 내보내기 파일이 들어가고 배차표가 나옴", "여기서 실시간 시연: 핵심 수치, 이어서 지도 위 작업 하나", "비밀번호 보호, 외부 서비스 없음"]
   : ["Fits the existing routine: export in, plan sheet out", "LIVE DEMO here: headline numbers, then one job on the map", "Password protected; no external services"]);
 
-// ---------- 14. expected effects and pilot ----------
-s = pres.addSlide({ masterName: "Content", sectionTitle: SEC.imp });
-title(s, L("Expected effects and pilot plan", "기대 효과와 시범 운영 계획"));
-const y1 = N.save.real.year;
-const r100 = fmt(Math.round(y1.trucks / 100) * 100), rkm = fmt(Math.round(y1.km / 1000) * 1000), rh = fmt(Math.round(y1.hours / 100) * 100);
-const eff = KO
-  ? [[`약 ${r100}대`, "용차 트럭 감소"], [`약 ${rkm} km`, "도로 거리 감소"], [`약 ${rh}시간`, "운행 시간 감소"]]
-  : [[`~${r100}`, "fewer trucks hired"], [`~${rkm}`, "fewer road km"], [`~${rh}`, "fewer driving hours"]];
-text(s, L("Per year, at most, against the real dispatch", "연간(상한), 실제 배차 대비"), { x: 0.6, y: 1.5, w: 5.2, h: 0.45, fontSize: 19, bold: true, color: C.text2, objectName: "Effects heading" });
-eff.forEach(([big, label], k) => stat(s, 0.6, 2.0 + k * 1.45, 5.2, big, label, `Effect ${k + 1}`));
-text(s, L("Upper bound: April to August is the main season; the 4-month totals × 365 / 123", "상한: 4~8월이 성수기, 4개월 합계 × 365 / 123"), { x: 0.6, y: 6.4, w: 5.4, h: 0.4, fontSize: 11, color: C.accent4, objectName: "Effects note" });
-const pilot = [
-  [L("Dec 2026", "2026년 12월"), L("Setup", "설치"), L("Install on a company PC, train on past jobs", "회사 PC에 설치, 과거 작업으로 학습")],
-  [L("Jan 2027", "2027년 1월"), L("Shadow mode", "섀도 모드(병행 운영)"), L("Runs beside the dispatcher; plans compared, not used", "배차 담당자와 나란히 실행, 계획은 비교만 하고 쓰지 않음")],
-  [L("Feb–Mar 2027", "2027년 2~3월"), L("Assisted mode", "보조 모드"), L("The dispatcher starts from the plan and edits it", "배차 담당자가 계획에서 출발해 수정")],
-  [L("Apr 2027", "2027년 4월"), L("Review", "검토"), L("Measured savings against these estimates", "실측 절감량을 이 추정치와 비교")],
-];
-text(s, L("Pilot", "시범 운영"), { x: 6.6, y: 1.5, w: 6.1, h: 0.45, fontSize: 19, bold: true, color: C.text2, objectName: "Pilot heading" });
-s.addShape(pres.shapes.LINE, { x: 6.85, y: 2.3, w: 0, h: 3.9, line: { color: HEX.accent5, width: 3 }, objectName: "Pilot line" });
-pilot.forEach(([when, h, b], k) => {
-  const y = 2.05 + k * 1.15;
-  dot(s, 6.6, y, k, `Pilot ${k} marker`);
-  text(s, [{ text: `${h}  `, options: { bold: true, color: C.text2 } }, { text: when, options: { color: C.accent1, bold: true } }], { x: 7.35, y: y - 0.02, w: 5.35, h: 0.42, fontSize: 17, objectName: `Pilot ${k} heading` });
-  text(s, b, { x: 7.35, y: y + 0.4, w: 5.35, h: 0.6, fontSize: 15, objectName: `Pilot ${k} text` });
-});
-notes(s, KO
-  ? ["연간 약 1,700대, 약 412,000 km, 약 5,100시간", "근거: 4개월 실측 × 2.97, 성수기 기준 상한", "시범 운영 2026년 12월~2027년 4월, 섀도 모드부터"]
-  : ["Per year ~1,700 trucks, ~412,000 km, ~5,100 hours", "Basis: measured 4 months x 2.97; upper bound, main season", "Pilot Dec 2026 to Apr 2027, shadow mode first"]);
-
-// ---------- 15. closing ----------
+// ---------- 14. conclusion and future work ----------
 s = pres.addSlide({ masterName: "Closing dark", sectionTitle: SEC.imp });
-title(s, L("Exact, fast and checked", "정확하고, 빠르고, 검증된 배차"));
-const news = [
-  [L("Grouping and routing together", "묶음 구성과 경로를 함께"), L("An exact optimizer under the company's full rule set.", "회사의 모든 규칙을 따르는 정확 최적화기.")],
-  [L("AI that keeps the guarantee", "보장을 지키는 AI"), L("The GNN shortlists; the optimizer still checks every rule.", "GNN이 후보를 추리고, 최적화기가 여전히 모든 규칙을 확인.")],
-  [L("Accuracy anyone can check", "누구나 확인할 수 있는 정확도"), L("Proven optimum on 4 of 5 public benchmark instances, 0.06 % on average.", "공개 벤치마크 인스턴스 5개 중 4개에서 증명된 최적해, 평균 격차 0.06%.")],
-  [L("Ready for a pilot", "시범 운영 준비 완료"), L("Seconds per job on one PC; customer data stays inside.", "PC 1대에서 작업당 수 초, 고객 데이터는 회사 안에.")],
+title(s, L("Conclusion and future work", "결론과 향후 과제"));
+const r100 = fmt(Math.round(N.save.real.year.trucks / 100) * 100);
+const cols = [
+  [L("Conclusion", "결론"), C.accent1, [
+    L("23 % fewer trucks, 21 % fewer km and 0 rule breaks on 97 real jobs", "실제 작업 97건에서 트럭 23%, 거리 21% 감소, 규칙 위반 0"),
+    L("Optimizer for quality, GNN for speed: seconds per job on one PC", "품질은 최적화기, 속도는 GNN: PC 1대에서 작업당 수 초"),
+    L("0.06 % from the proven optimum on a public benchmark", "공개 벤치마크에서 증명된 최적해와 평균 0.06% 차이"),
+    L(`Up to ~${r100} fewer trucks a year (main-season upper bound)`, `연간 최대 약 ${r100}대 감소(성수기 기준 상한)`)]],
+  [L("Future work", "향후 과제"), C.accent5, [
+    L("Shadow-mode pilot, Dec 2026 to Apr 2027: measure the real savings", "섀도 모드 시범 운영(2026년 12월~2027년 4월): 실제 절감량 측정"),
+    L("Time windows, driver hours and unloading as new constraints", "시간 창, 기사 근무 시간, 하차 조건을 새 제약으로 추가"),
+    L("Optimize the estimated hire cost directly", "추정 용차 비용을 직접 최적화"),
+    L("Retrain monthly; test on new dates and larger jobs", "매월 재학습, 새 날짜와 더 큰 작업으로 검증")]],
 ];
-news.forEach(([h, b], k) => {
-  const x = 0.8 + (k % 2) * 6.0, y = 2.0 + Math.floor(k / 2) * 1.9;
-  dot(s, x, y + 0.02, k + 1, `Takeaway ${k + 1} marker`, C.accent1);
-  text(s, h, { x: x + 0.7, y, w: 5.0, h: 0.45, fontSize: 20, bold: true, color: C.background1, objectName: `Takeaway ${k + 1} heading` });
-  text(s, b, { x: x + 0.7, y: y + 0.5, w: 5.0, h: 0.9, fontSize: 16, color: C.accent5, objectName: `Takeaway ${k + 1} text` });
+cols.forEach(([h, col, items], c) => {
+  const x = 0.8 + c * 6.0;
+  text(s, h, { x, y: 1.75, w: 5.4, h: 0.5, fontSize: 22, bold: true, color: col, objectName: `${c ? "Future" : "Conclusion"} heading` });
+  items.forEach((it, k) => {
+    const y = 2.45 + k * 0.85;
+    dot(s, x, y + 0.04, k + 1, `${c ? "Future" : "Conclusion"} ${k + 1} marker`, c ? C.accent4 : C.accent1);
+    text(s, it, { x: x + 0.7, y, w: 4.8, h: 0.62, fontSize: 16, color: C.background1, valign: "middle", objectName: `${c ? "Future" : "Conclusion"} ${k + 1} text` });
+  });
 });
-text(s, L("Thank you. Questions?", "감사합니다. 질문을 받겠습니다."), { x: 0.8, y: 6.0, w: 7, h: 0.6, fontSize: 26, bold: true, color: C.background1, objectName: "Thanks" });
-text(s, L("Team ANALOG, Changwon National University", "팀 ANALOG, 국립창원대학교"), { x: 7.3, y: 6.15, w: 5.2, h: 0.4, fontSize: 14, color: C.accent5, align: "right", objectName: "Team line" });
+text(s, L("Thank you. Questions?", "감사합니다. 질문을 받겠습니다."), { x: 0.8, y: 6.05, w: 7, h: 0.6, fontSize: 26, bold: true, color: C.background1, objectName: "Thanks" });
+text(s, L("Team ANALOG, Changwon National University", "팀 ANALOG, 국립창원대학교"), { x: 7.3, y: 6.2, w: 5.2, h: 0.4, fontSize: 14, color: C.accent5, align: "right", objectName: "Team line" });
 notes(s, KO
-  ? ["핵심 네 가지: 통합, AI와 보장, 벤치마크 정확도, 시범 운영 준비", "질문 받기"]
-  : ["Four takeaways: together, AI + guarantee, benchmark accuracy, pilot-ready", "Invite questions"]);
+  ? ["결론: 트럭 23%, 거리 21%, 위반 0, 벤치마크 0.06%", "연간 최대 약 1,700대(상한)", "향후: 섀도 모드 시범 운영, 새 제약, 비용 최적화, 매월 재학습", "질문 받기"]
+  : ["Conclusion: −23 % trucks, −21 % km, 0 breaks, 0.06 % benchmark gap", "Up to ~1,700 trucks a year (upper bound)", "Next: shadow-mode pilot, new constraints, cost objective, monthly retraining", "Invite questions"]);
+
+// ---------- 15. references (the newest report's list, read from report.md) ----------
+s = pres.addSlide({ masterName: "Content", sectionTitle: SEC.imp });
+title(s, L("References", "참고문헌"));
+const refMd = fs.readFileSync(path.join(__dirname, "report.md"), "utf8");
+const refs = refMd.slice(refMd.indexOf("::: refs")).split("\n").filter((l) => /^\[\d+\]/.test(l)).map((l) => l.replace(/\*/g, "").trim());
+if (refs.length < 10) throw new Error(`only ${refs.length} references found in report.md`);
+const half = Math.ceil(refs.length / 2);
+[refs.slice(0, half), refs.slice(half)].forEach((col, c) => text(s, col.map((r, k) => ({ text: r, options: { breakLine: k < col.length - 1, paraSpaceAfter: 5 } })),
+  { x: 0.6 + c * 6.15, y: 1.35, w: 5.95, h: 5.45, fontSize: 10, color: C.text1, lang: "en-US", objectName: `References ${c + 1}` }));
+notes(s, KO ? ["보고서와 같은 참고문헌 목록"] : ["Same list as the report"]);
 
 (async () => {
   fs.mkdirSync(path.dirname(OUT), { recursive: true });

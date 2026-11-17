@@ -1,0 +1,76 @@
+<!doctype html>
+<!-- Slide figures in the prototype's look (its colours and Barlow type), drawn for 16:9 slides with large text.
+     ?fig=results|perjob&lang=en|ko ; data.json from data.py ; rendered by render.mjs -->
+<html><head><meta charset="utf-8"><style>
+@font-face { font-family: Barlow; font-weight: 400; src: url(fonts/barlow-400.woff2) format("woff2"); }
+@font-face { font-family: Barlow; font-weight: 500; src: url(fonts/barlow-500.woff2) format("woff2"); }
+@font-face { font-family: Barlow; font-weight: 600; src: url(fonts/barlow-600.woff2) format("woff2"); }
+@font-face { font-family: "Barlow Condensed"; font-weight: 600; src: url(fonts/barlow-condensed-600.woff2) format("woff2"); }
+@font-face { font-family: NotoKR; src: url(../fonts/NotoSansKR-VF.ttf); font-weight: 100 900; }
+:root { --band: #1437a6; --page: #f4f6fb; --surface: #fff; --ink: #101a33; --ink2: #4a5470; --muted: #858ca0; --grid: #e3e7f0; --axis: #c5cbd8; --ring: rgba(16,26,51,.10); --warm: #eb6834; }
+* { box-sizing: border-box; margin: 0; }
+body { background: var(--page); color: var(--ink); font: 500 20px/1.25 Barlow, NotoKR, sans-serif; }
+:lang(ko) body { font-family: Barlow, NotoKR, sans-serif; }
+#fig { padding: 18px 20px; }
+.tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
+.card { background: var(--surface); border-radius: 14px; box-shadow: 0 0 0 1px var(--ring); padding: 16px 22px; }
+.num { font: 600 50px/1 "Barlow Condensed", NotoKR, sans-serif; color: var(--ink); }
+.lab { color: var(--ink2); font-size: 19px; margin-top: 6px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+h3 { font: 600 27px/1.1 "Barlow Condensed", NotoKR, sans-serif; margin-bottom: 8px; }
+svg text { font-family: Barlow, NotoKR, sans-serif; fill: var(--ink); }
+</style></head><body><div id="fig"></div>
+<script type="module">
+const q = new URLSearchParams(location.search), fig = q.get('fig'), KO = q.get('lang') === 'ko';
+document.documentElement.lang = KO ? 'ko' : 'en';
+const L = (en, ko) => (KO ? ko : en), fmt = n => n.toLocaleString('en-US');
+const D = await (await fetch('data.json')).json(), M = D.methods, root = document.getElementById('fig');
+const NAMES = { real: L('Real dispatch', '실제 배차'), kmeans: L('k-means', 'k-평균'), agg: L('Agglomerative', '병합 군집화'),
+  opt: L('Optimizer, 15 nearest', '최적화기, 최근접 15곳'), knn8: L('Optimizer, 8 nearest', '최적화기, 최근접 8곳'), gnn_opt: L('GNN + optimizer (ours)', 'GNN + 최적화기(본 연구)') };
+const svgEl = (w, h) => { const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('viewBox', `0 0 ${w} ${h}`); s.setAttribute('width', w); s.setAttribute('height', h); return s; };
+const add = (p, tag, a, txt) => { const e = document.createElementNS('http://www.w3.org/2000/svg', tag); for (const k in a) e.setAttribute(k, a[k]); if (txt != null) e.textContent = txt; p.appendChild(e); return e; };
+
+if (fig === 'results') {
+  document.body.style.width = '1200px';
+  const r = M.real, o = M.gnn_opt;
+  root.innerHTML = `<div class="tiles">
+    <div class="card"><div class="num">${fmt(r.trucks - o.trucks)}</div><div class="lab">${L(`fewer trucks than the real dispatch (−${(100 * (1 - o.trucks / r.trucks)).toFixed(1)} %)`, `실제 배차보다 적은 트럭(−${(100 * (1 - o.trucks / r.trucks)).toFixed(1)}%)`)}</div></div>
+    <div class="card"><div class="num">−${(100 * (1 - o.km / r.km)).toFixed(1)} %</div><div class="lab">${L('road km against the real dispatch', '실제 배차 대비 도로 km')}</div></div>
+    <div class="card"><div class="num">0</div><div class="lab">${L('rule breaks in our plans', '본 계획의 규칙 위반')}</div></div></div>
+    <div class="grid2"><div class="card" id="c1"><h3>${L('Trucks, all 97 jobs', '트럭 수, 작업 97건 전체')}</h3></div><div class="card" id="c2"><h3>${L('Road km, all 97 jobs', '도로 km, 작업 97건 전체')}</h3></div></div>`;
+  const order = ['real', 'kmeans', 'agg', 'opt', 'knn8', 'gnn_opt'];
+  for (const [id, key, max] of [['c1', 'trucks', 2900], ['c2', 'km', 720000]]) {
+    const W = 520, H = 300, lx = 214, bw = W - lx - 92, s = svgEl(W, H); document.getElementById(id).appendChild(s);
+    order.forEach((m, i) => {
+      const y = 8 + i * 48, v = M[m][key], w = bw * v / max, ours = m === 'gnn_opt';
+      add(s, 'text', { x: lx - 12, y: y + 22, 'text-anchor': 'end', 'font-size': 19, 'font-weight': ours ? 600 : 500 }, NAMES[m]);
+      add(s, 'rect', { x: lx, y: y + 4, width: w, height: 26, rx: 6, fill: ours ? 'var(--band)' : 'var(--axis)' });
+      add(s, 'text', { x: lx + w + 8, y: y + 24, 'font-size': 19, 'font-weight': ours ? 600 : 500 }, fmt(v));
+    });
+    add(s, 'line', { x1: lx, x2: lx, y1: 4, y2: 8 + 6 * 48, stroke: 'var(--axis)', 'stroke-width': 2 });
+  }
+}
+
+if (fig === 'perjob') {
+  document.body.style.width = '1200px';
+  const J = D.jobs, W = 1160, H = 300, x0 = 58, x1 = W - 10, y0 = 52, yb = H - 44, ymax = 25, s = svgEl(W, H);
+  const card = document.createElement('div'); card.className = 'card'; card.style.padding = '12px 10px 6px 10px'; root.appendChild(card); card.appendChild(s);
+  const Y = v => yb - (yb - y0) * v / ymax, slot = (x1 - x0) / J.length;
+  for (const v of [0, 5, 10, 15, 20]) { add(s, 'line', { x1: x0, x2: x1, y1: Y(v), y2: Y(v), stroke: 'var(--grid)', 'stroke-width': 1.5 }); add(s, 'text', { x: x0 - 10, y: Y(v) + 7, 'text-anchor': 'end', 'font-size': 19, fill: 'var(--ink2)' }, v); }
+  let maxI = 0, negI = -1, prevMonth = '';
+  J.forEach((j, i) => {
+    const x = x0 + i * slot + 1.5, w = slot - 3, v = j.saved;
+    if (v > J[maxI].saved) maxI = i; if (v < 0) negI = i;
+    add(s, 'rect', { x, y: v >= 0 ? Y(v) : Y(0), width: w, height: Math.max(2, Math.abs(Y(v) - Y(0))), rx: 3, fill: v < 0 ? 'var(--warm)' : 'var(--band)' });
+    const mo = j.date.slice(5, 7);
+    if (mo !== prevMonth) { prevMonth = mo; add(s, 'text', { x, y: H - 12, 'font-size': 19, fill: 'var(--ink2)' }, KO ? `${+mo}월` : ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'][+mo]); }
+  });
+  const fewer = J.filter(j => j.saved > 0).length, mx = J[maxI];
+  add(s, 'text', { x: x0 + 4, y: 30, 'font-size': 27, 'font-weight': 600 }, L(`Trucks saved on each job: fewer trucks on ${fewer} of ${J.length} jobs`, `작업별 절감 트럭 수: ${J.length}건 중 ${fewer}건에서 감소`));
+  const mxX = x0 + maxI * slot + slot / 2;
+  add(s, 'text', { x: mxX + 14, y: Y(mx.saved) + 20, 'font-size': 20, 'font-weight': 600, fill: 'var(--band)' }, L(`largest: ${mx.saved} trucks`, `최대 ${mx.saved}대`));
+  if (negI >= 0) add(s, 'text', { x: x1, y: 30, 'text-anchor': 'end', 'font-size': 20, fill: 'var(--warm)', 'font-weight': 600 }, L('orange: 1 job, one more truck', '주황색: 1건은 1대 증가'));
+}
+await document.fonts.ready;
+window.READY = true;
+</script></body></html>

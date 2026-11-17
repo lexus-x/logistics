@@ -2,6 +2,15 @@
 
 All notable changes to this project. Dates are in 2026; the format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.1.0] - 2026-11-17
+
+### Added
+- `competition/webfigs/`: figures drawn for the slides in the prototype's look (its colours and type, large text, English and Korean), and the prototype's screens framed as a browser window. `data.json` holds only method totals and the trucks saved per job.
+
+### Changed
+- Slides (still 15): the results slide uses the new results figure instead of PowerPoint charts; a new analysis slide (trucks saved per job and four findings, speed included); conclusion and future work on one slide; a references slide taken from the report's list; the prototype slide shows the prototype's own opening screen.
+- Report: Figure 10 shows the prototype (its opening screen and its per-job chart); section 12 adds future work. English 19 pages, Korean 17.
+
 ## [1.0.0] - 2026-11-17
 
 Competition release (Version 1), as submitted to the 2nd LogisticSolver 2026.

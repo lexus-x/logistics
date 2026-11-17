@@ -57,7 +57,7 @@ Changwon National University, November 2026
 9. Prototype
 10. Deployment plan, resources and risks
 11. Novelty and differentiation
-12. Limitations and conclusion
+12. Limitations, future work and conclusion
 :::
 
 ## Summary
@@ -439,9 +439,11 @@ Fewer trucks also mean fewer drivers to book and coordinate, fewer loading slots
 
 We built an interactive web prototype that presents every plan. It shows the headline numbers, the comparison of all methods, a per-job chart, and an explorer that shows every job's trucks on a map with their truck size, load, km and hours. Because it shows customer locations, it runs behind a password and loads no external maps or trackers; we will demonstrate it live at the presentation.
 
-**How a dispatcher uses it.** The planner fits into the existing routine (Figure 10): the order export the company already produces goes in, and a plan sheet comes out that a dispatcher can check and book from. Table 13 shows the plan sheet for the synthetic job of Figure 5: every truck with its stops in visiting order, its size and how full it is.
+![Figure 10. The prototype (Version 1): its opening screen with the headline numbers, and its chart of trucks saved on each job.](figs/proto_app.png)
 
-![Figure 10. The planner in the daily dispatch routine.](figs/workflow)
+**How a dispatcher uses it.** The planner fits into the existing routine (Figure 11): the order export the company already produces goes in, and a plan sheet comes out that a dispatcher can check and book from. Table 13 shows the plan sheet for the synthetic job of Figure 5: every truck with its stops in visiting order, its size and how full it is.
+
+![Figure 11. The planner in the daily dispatch routine.](figs/workflow)
 
 : Table 13. The planner's output for the synthetic job (6 trucks for 26 stops).
 
@@ -499,9 +501,11 @@ We built an interactive web prototype that presents every plan. It shows the hea
 | Speed | Minutes per job | Seconds per job (median 6.8 s) |
 | Privacy | n/a | Private map server; no address leaves the company |
 
-# 12. Limitations and conclusion
+# 12. Limitations, future work and conclusion
 
 **Limitations.** The plan follows the written rules; time windows, driver hours and unloading constraints are not yet in the data. The limit of ten 1.4-ton trucks is assumed per job. The data cover one company over four months of its main season, so per-year figures are an upper bound, and the depot is placed at the centre of its district. *Exact* means exact over the candidate loads, not a proof that a plan is the best possible for the whole job. The benchmark tests the optimizer on round trips without the radius rule, and only on instances whose optimal routes have at most 5 customers; the GNN is tested on the real jobs, not on the benchmark, and its gain over the 8 nearest stops is small (8 trucks over 97 jobs). OR-Tools ran with its standard search for 30 s per job; more time or tuning could narrow its gap.
+
+**Future work.** (1) A shadow-mode pilot from December 2026 to April 2027, to measure the real savings next to the dispatcher. (2) Customer time windows, driver hours and unloading time as constraints, as soon as the data hold them. (3) An objective on the estimated hire cost instead of trucks first, then kilometres. (4) Monthly retraining of the GNN, with tests on new dates and on larger jobs, where a warm start or a longer list could close the 0.7 % gap to the 15-nearest list.
 
 **Conclusion.** Exact optimization, made fast by a graph neural network short list, plans bulky deliveries with 23 % fewer trucks and 21 % fewer road kilometres than the real dispatch, while meeting every company rule. On a public benchmark the same optimizer finds the proven optimum on four of five instances, 0.06 % from it on average. It runs in seconds on one PC, keeps customer data inside the company, and is ready for a shadow-mode pilot.
 
