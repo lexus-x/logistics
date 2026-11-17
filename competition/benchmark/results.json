@@ -1,0 +1,67 @@
+[
+ {
+  "name": "P-n16-k8",
+  "customers": 15,
+  "capacity": 35,
+  "vehicles_opt": 8,
+  "optimum": 450,
+  "candidates": 164,
+  "vehicles": 8,
+  "cost": 450,
+  "gap": 0.0,
+  "s": 0.1,
+  "proven": true
+ },
+ {
+  "name": "P-n22-k8",
+  "customers": 21,
+  "capacity": 3000,
+  "vehicles_opt": 8,
+  "optimum": 603,
+  "candidates": 1569,
+  "vehicles": 8,
+  "cost": 603,
+  "gap": 0.0,
+  "s": 0.9,
+  "proven": true
+ },
+ {
+  "name": "P-n23-k8",
+  "customers": 22,
+  "capacity": 40,
+  "vehicles_opt": 8,
+  "optimum": 529,
+  "candidates": 1243,
+  "vehicles": 8,
+  "cost": 529,
+  "gap": 0.0,
+  "s": 0.3,
+  "proven": true
+ },
+ {
+  "name": "P-n55-k15",
+  "customers": 54,
+  "capacity": 70,
+  "vehicles_opt": 15,
+  "optimum": 989,
+  "candidates": 8927,
+  "vehicles": 15,
+  "cost": 992,
+  "gap": 0.3,
+  "s": 7.2,
+  "proven": true
+ },
+ {
+  "name": "P-n60-k15",
+  "customers": 59,
+  "capacity": 80,
+  "vehicles_opt": 15,
+  "optimum": 968,
+  "candidates": 20186,
+  "vehicles": 15,
+  "cost": 968,
+  "gap": 0.0,
+  "s": 16.8,
+  "proven": true
+ }
+]

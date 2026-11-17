@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Node
+node_modules/
+
+# Company data (personal data, never committed) and large local files
+data/
+*.pt
+*.npz
+.bin/libs/

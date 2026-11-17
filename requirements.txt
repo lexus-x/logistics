@@ -1,0 +1,6 @@
+# Planner, tests, demo and benchmark. A CPU build of torch is enough; a GPU only speeds up training the GNN.
+numpy==2.5.4
+scipy==1.18.1   # HiGHS mixed-integer solver (milp), k-d trees, k-means
+torch==2.14.1   # the GNN
+# Optional: the OR-Tools baseline (competition/ortools_baseline.py)
+# ortools==9.15.6755

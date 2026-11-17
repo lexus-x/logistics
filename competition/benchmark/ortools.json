@@ -1,0 +1,47 @@
+[
+ {
+  "name": "P-n16-k8",
+  "optimum": 450,
+  "vehicles_opt": 8,
+  "vehicles": 8,
+  "cost": 450,
+  "gap": 0.0,
+  "s": 30.0
+ },
+ {
+  "name": "P-n22-k8",
+  "optimum": 603,
+  "vehicles_opt": 8,
+  "vehicles": 8,
+  "cost": 603,
+  "gap": 0.0,
+  "s": 30.0
+ },
+ {
+  "name": "P-n23-k8",
+  "optimum": 529,
+  "vehicles_opt": 8,
+  "vehicles": 8,
+  "cost": 529,
+  "gap": 0.0,
+  "s": 30.0
+ },
+ {
+  "name": "P-n55-k15",
+  "optimum": 989,
+  "vehicles_opt": 15,
+  "vehicles": 16,
+  "cost": 965,
+  "gap": -2.43,
+  "s": 30.0
+ },
+ {
+  "name": "P-n60-k15",
+  "optimum": 968,
+  "vehicles_opt": 15,
+  "vehicles": 15,
+  "cost": 1005,
+  "gap": 3.82,
+  "s": 30.0
+ }
+]

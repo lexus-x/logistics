@@ -1,0 +1,8 @@
+{
+  "name": "analog-logisticsolver-slides",
+  "private": true,
+  "description": "Builds the editable slide decks: node make_deck.js [ko]",
+  "dependencies": {
+    "pptxgenjs": "3.12.0"
+  }
+}
